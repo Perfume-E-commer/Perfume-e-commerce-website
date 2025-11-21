@@ -14,100 +14,90 @@ import DashboardTransaction from '@/views/admin/DashboardTransaction.vue'
 import LoginAuth from '@/views/auth/LoginAuth.vue'
 import RegisterAuth from '@/views/auth/RegisterAuth.vue'
 import Error401 from '@/components/layout/Error401.vue'
-import type { RouteRecordRaw } from 'vue-router'
-import { createRouter, createWebHistory } from 'vue-router'
 import CartView from '@/views/customer/CartView.vue'
 
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
-  // Checking Error 404 or 401
+  // error pages
   {
     path: '/401',
     name: '401',
-    component: Error401,
+    component: () => import('@/components/layout/Error401.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/401', // redirect to 401 page
+    redirect: '/401',
   },
+
   // customer
   {
     path: '/',
     name: 'home',
-    component: HomePage,
+    component: () => import('@/views/customer/HomePage.vue'),
   },
   {
     path: '/aboutus',
     name: 'aboutus',
-    component: AboutUs,
+    component: () => import('@/views/customer/AboutUs.vue'),
   },
   {
-    path: '/service',
-    name: 'service',
-    component: OurService,
-  },
-  {
-    path: '/blog',
-    name: 'blog',
-    component: BlogCollection,
-  },
-  {
-    path: '/blog/:id',
-    name: 'blogpage',
-    component: BlogPage,
+    path: '/contact',
+    name: 'contact',
+    component: () => import('@/views/customer/Contact.vue'),
   },
   {
     path: '/productlist',
     name: 'productlist',
-    component: ProductList,
+    component: () => import('@/views/customer/ProductList.vue'),
   },
   {
     path: '/productlist/:id',
     name: 'productdetail',
-    component: ProductDetail,
+    component: () => import('@/views/customer/ProductDetail.vue'),
   },
 
   // auth
   {
     path: '/login',
     name: 'login',
-    component: LoginAuth,
+    component: () => import('@/views/auth/LoginAuth.vue'),
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterAuth,
+    component: () => import('@/views/auth/RegisterAuth.vue'),
   },
 
   // admin
   {
     path: '/admindashboard',
     name: 'admindashboard',
-    component: AdminDashboard,
+    component: () => import('@/views/admin/AdminDashboard.vue'),
   },
   {
     path: '/dashboardaddproduct',
     name: 'dashboardaddproduct',
-    component: DashboardAddProduct,
+    component: () => import('@/views/admin/DashboardAddProduct.vue'),
   },
   {
     path: '/dashboardcategories',
     name: 'dashboardcategories',
-    component: DashboardCategories,
+    component: () => import('@/views/admin/DashboardCategories.vue'),
   },
   {
     path: '/dashboardcustomer',
     name: 'dashboardcustomer',
-    component: DashboardCustomer,
+    component: () => import('@/views/admin/DashboardCustomer.vue'),
   },
   {
     path: '/dashboardordermanagement',
     name: 'dashboardordermanagement',
-    component: DashboardOrderManagement,
+    component: () => import('@/views/admin/DashboardOrderManagement.vue'),
   },
   {
     path: '/dashboardtransaction',
     name: 'dashboardtransaction',
-    component: DashboardTransaction,
+    component: () => import('@/views/admin/DashboardTransaction.vue'),
   },
   {
     path: '/cart',

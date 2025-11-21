@@ -16,6 +16,8 @@ import RegisterAuth from '@/views/auth/RegisterAuth.vue'
 import Error401 from '@/components/layout/Error401.vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import CartView from '@/views/customer/CartView.vue'
+
 const routes: RouteRecordRaw[] = [
   // Checking Error 404 or 401
   {
@@ -106,6 +108,11 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboardtransaction',
     name: 'dashboardtransaction',
     component: DashboardTransaction,
+  },
+  {
+    path: '/cart',
+    name: 'cart',
+    component: CartView
   },
 ]
 

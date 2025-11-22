@@ -6,41 +6,32 @@ import Footer from '@/components/layout/Footer.vue'
 <template>
   <div class="flex flex-col min-h-screen overflow-hidden bg-white">
 
-    <!-- NAVBAR -->
     <header class="bg-white z-50">
       <Navbar />
     </header>
 
-    <!-- BREADCRUMB -->
     <div class="pt-24 px-6 text-sm text-gray-600 flex items-center gap-1">
-      <RouterLink 
-        to="/"
-        class="luxurious-roman-regular text-gray-600 hover:text-[#280559] hover:underline cursor-pointer"
-      >
+      <RouterLink to="/" class="luxurious-roman-regular text-gray-600 hover:text-[#280559] hover:underline cursor-pointer">
         Home
       </RouterLink>
 
       <span>/</span>
 
       <RouterLink
-        to="/contact"
-        class="luxurious-roman-regular text-gray-800 hover:text-[#280559] hover:underline cursor-pointer"
-      >
+        to="/contact" class="luxurious-roman-regular text-gray-800 hover:text-[#280559] hover:underline cursor-pointer">
         Contact
       </RouterLink>
     </div>
 
-    <!-- PAGE TITLE -->
     <section class="w-full text-center mt-10 mb-10">
       <h1 class="luxurious-roman-regular text-4xl lg:text-5xl text-[#000] tracking-wide">
         CONTACT SCENT HAVEN
       </h1>
     </section>
 
-    <!-- MAIN CONTACT SECTION -->
     <section class="w-full flex flex-col lg:flex-row justify-center gap-12 px-6 mb-20">
 
-      <!-- LEFT INFO -->
+   
       <div class="max-w-md space-y-5 luxurious-roman-regular">
 
         <h2 class="text-2xl font-semibold">Get in Touch</h2>
@@ -52,25 +43,21 @@ import Footer from '@/components/layout/Footer.vue'
 
         <div class="space-y-4 text-gray-700 luxurious-roman-regular">
 
-          <!-- PHONE -->
           <div class="flex items-center gap-3">
             <img src="/Image/Contact/streamline_phone-solid.png" class="w-6 h-6" />
             <span>+855 99 623 668</span>
           </div>
 
-          <!-- EMAIL -->
           <div class="flex items-center gap-3">
             <img src="/Image/Contact/material-symbols_mail.png" class="w-6 h-6" />
             <span>ScentHaven@gmail.com</span>
           </div>
 
-          <!-- LOCATION -->
           <div class="flex items-center gap-3">
             <img src="/Image/Contact/mdi_location.png" class="w-6 h-6" />
             <span>644st, Samdech Monireth Blvd(217), Phnom Penh, Cambodia</span>
           </div>
 
-          <!-- TELEGRAM (REPLACED 🔗) -->
           <div class="flex items-center gap-3">
             <img 
               src="/Image/Contact/image 335.png" 
@@ -81,8 +68,6 @@ import Footer from '@/components/layout/Footer.vue'
 
         </div>
 
-
-        <!-- MAP -->
         <div>
           <iframe
             class="w-full h-64 rounded-xl"
@@ -93,7 +78,6 @@ import Footer from '@/components/layout/Footer.vue'
         </div>
       </div>
 
-      <!-- RIGHT FORM -->
       <div class="w-full max-w-lg luxurious-roman-regular space-y-4">
         
         <div class="flex gap-4">
@@ -130,7 +114,6 @@ import Footer from '@/components/layout/Footer.vue'
       </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="bg-gray-50 z-50 mt-auto">
       <Footer />
     </footer>

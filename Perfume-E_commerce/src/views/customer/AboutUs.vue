@@ -6,42 +6,29 @@ import Footer from '@/components/layout/Footer.vue'
 <template>
   <div class="flex flex-col min-h-screen overflow-hidden bg-white">
 
-    <!-- NAVBAR -->
     <header class="bg-white z-50">
       <Navbar />
     </header>
 
-    <!-- BREADCRUMB -->
     <div class="pt-24 px-6 text-sm text-gray-600 flex items-center gap-1">
       <RouterLink 
-        to="/"
-        class="luxurious-roman-regular text-gray-600 hover:text-[#280559] hover:underline cursor-pointer"
-      >
+        to="/" class="luxurious-roman-regular text-gray-600 hover:text-[#280559] hover:underline cursor-pointer">
         Home
       </RouterLink>
 
       <span>/</span>
 
       <RouterLink
-        to="/aboutus"
-        class="luxurious-roman-regular text-gray-800 hover:text-[#280559] hover:underline cursor-pointer"
-      >
+        to="/aboutus" class="luxurious-roman-regular text-gray-800 hover:text-[#280559] hover:underline cursor-pointer">
         About Us
       </RouterLink>
     </div>
 
-    
-
-    <!-- HERO SECTION (MainHero Style) -->
     <section
       class="relative w-full h-[70vh] bg-cover bg-center flex items-center justify-center mt-8 rounded-xl overflow-hidden"
-      style="background-image: url('/Image/AboutPage/DR.D_candid_shot 1.png')"
-    >
-
-      <!-- FULL BLUR LAYER (same size as image) -->
+      style="background-image: url('/Image/AboutPage/DR.D_candid_shot 1.png')">
       <div class="absolute inset-0 backdrop-blur-md bg-white/30"></div>
 
-      <!-- CONTENT stays NORMAL -->
       <div class="relative z-10 text-center px-10 py-12 max-w-3xl">
         <h1 class="luxurious-roman-regular font-bold text-4xl lg:text-5xl xl:text-6xl text-[#280559] leading-tight mb-4">
           About Us
@@ -57,8 +44,6 @@ import Footer from '@/components/layout/Footer.vue'
 
     </section>
 
-
-    <!-- OUR STORY -->
     <section class="w-full py-20 bg-white flex justify-center px-6">
       <div class="max-w-3xl text-center space-y-6">
         <h2 class="luxurious-roman-regular font-bold text-3xl lg:text-4xl xl:text-5xl text-[#280559] leading-tight">
@@ -75,7 +60,6 @@ import Footer from '@/components/layout/Footer.vue'
       </div>
     </section>
 
-    <!-- PERFUME BANNER IMAGE -->
     <section class="w-full">
       <img
         src="/Image/AboutPage/top of the brand 1.png"
@@ -84,7 +68,6 @@ import Footer from '@/components/layout/Footer.vue'
       />
     </section>
 
-    <!-- UNIQUE SECTION -->
     <section class="w-full py-20 bg-white flex flex-col items-center px-6">
       
       <h2 class="luxurious-roman-regular font-bold text-3xl lg:text-4xl xl:text-5xl text-center text-[#280559] leading-tight mb-10">
@@ -92,8 +75,7 @@ import Footer from '@/components/layout/Footer.vue'
       </h2>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl">
-        
-        <!-- CARD 1 -->
+ 
         <div class=" space-y-4">
           <h3 class="luxurious-roman-regular font-bold text-xl lg:text-2xl text-[#280559]">
             Personalized Service
@@ -103,7 +85,6 @@ import Footer from '@/components/layout/Footer.vue'
           </p>
         </div>
 
-        <!-- CARD 2 -->
         <div class=" space-y-4">
           <h3 class="luxurious-roman-regular font-bold text-xl lg:text-2xl text-[#280559]">
             High Quality Ingredients
@@ -113,7 +94,6 @@ import Footer from '@/components/layout/Footer.vue'
           </p>
         </div>
 
-        <!-- CARD 3 -->
         <div class=" space-y-4">
           <h3 class="luxurious-roman-regular font-bold text-xl lg:text-2xl text-[#280559]">
             Locally Inspired
@@ -143,7 +123,6 @@ import Footer from '@/components/layout/Footer.vue'
       </p>
     </div>
 
-    <!-- FOOTER -->
     <footer class="bg-gray-50 z-50">
       <Footer />
     </footer>

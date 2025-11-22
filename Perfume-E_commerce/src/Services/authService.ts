@@ -1,16 +1,35 @@
 import axios from "axios";
 
-const API = "http://localhost:3000/api/auth";
+const API = "http://localhost:8080/api/auth";
 
 export default {
   async login(email: string, password: string) {
-    const res = await axios.post(`${API}/login`, { email, password });
+    const res = await axios.post(`${API}/signin`, { email, password }); 
     return res.data;
   },
 
-  async register(name: string, email: string, password: string) {
-    const res = await axios.post(`${API}/register`, { name, email, password });
+  async register(firstName: string, lastName: string, email: string, password: string) {
+    const res = await axios.post(`${API}/register`, { 
+      firstName, 
+      lastName, 
+      email, 
+      password 
+    });
     return res.data;
+  },
+
+  async verifyEmail(email: string, code: string) {
+    const res = await axios.post(`${API}/verify`, null, {
+        params: { email, code }
+    });
+    return res.data;
+  },
+
+  async resendCode(email: string) {
+     const res = await axios.post(`${API}/resend-verification`, null, {
+         params: { email }
+     });
+     return res.data;
   },
 
   logout() {

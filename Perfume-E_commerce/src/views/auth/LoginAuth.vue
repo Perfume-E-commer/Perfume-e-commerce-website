@@ -1,81 +1,83 @@
 <template>
-  <div class="min-h-screen bg-white flex items-start justify-center relative">
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 relative">
+    
+    <div class="absolute inset-0 opacity-5 pointer-events-none bg-[url('/Image/HomePage/Main.png')] bg-cover bg-center"></div>
 
-    <!-- Logo top-left -->
-    <img
-      src=""
-      alt="Logo"
-      class="absolute top-6 left-6 w-40"
-    />
+    <div class="w-full max-w-md bg-white shadow-2xl rounded-2xl p-8 sm:p-10 relative z-10 border border-gray-100">
+      
+      <div class="text-center mb-8">
+        <img src="/Logo.png" alt="ScentHaven" class="h-16 mx-auto mb-4 object-contain" />
+        <h1 class="luxurious-roman-regular text-3xl text-[#280559] mb-2">Welcome Back</h1>
+        <p class="text-gray-500 text-sm font-light">Please sign in to access your account</p>
+      </div>
 
-    <!-- Card -->
-    <div class="mt-24 w-full max-w-md bg-white shadow-xl rounded-xl p-8 border border-gray-100">
-      <h2 class="text-gray-700 font-semibold text-lg mb-1">Welcome !</h2>
-      <h1 class="text-2xl font-bold text-gray-900 mb-1">Sign in to</h1>
-      <p class="text-gray-400 text-sm mb-6">Lorem Ipsum is simply</p>
+      <div v-if="authStore.error" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg text-center">
+        {{ authStore.error }}
+      </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-4">
+      <form @submit.prevent="handleLogin" class="space-y-5">
         
-        <!-- Username -->
         <div>
-          <label class="text-gray-600 text-sm">User name</label>
+          <label class="block text-sm font-medium text-[#280559] mb-1 pl-1">Email Address</label>
           <input
-            v-model="username"
-            type="text"
-            placeholder="Enter your user name"
-            class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-purple-600 focus:outline-none"
+            v-model="email"
+            type="email"
+            required
+            placeholder="name@example.com"
+            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#280559] focus:border-transparent transition-all"
           />
         </div>
 
-        <!-- Password -->
         <div>
-          <label class="text-gray-600 text-sm">Password</label>
-
-          <div class="relative mt-1">
+          <label class="block text-sm font-medium text-[#280559] mb-1 pl-1">Password</label>
+          <div class="relative">
             <input
               :type="showPassword ? 'text' : 'password'"
               v-model="password"
-              placeholder="Enter your Password"
-              class="w-full border border-gray-300 rounded-md p-2 pr-10 focus:ring-2 focus:ring-purple-600 focus:outline-none"
+              required
+              placeholder="Enter your password"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#280559] focus:border-transparent transition-all"
             />
-
-            <!-- Toggle -->
-            <button
-              type="button"
+            <button 
+              type="button" 
               @click="showPassword = !showPassword"
-              class="absolute right-3 top-2.5 text-gray-500"
+              class="absolute right-4 top-3.5 text-gray-400 hover:text-[#280559] transition"
             >
-              <span v-if="showPassword">🙈</span>
-              <span v-else>👁️</span>
+              <span v-if="showPassword">Hide</span>
+              <span v-else>Show</span>
             </button>
           </div>
         </div>
 
-        <!-- Remember + Forgot -->
-        <div class="flex justify-between items-center text-sm">
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input type="checkbox" class="rounded border-gray-300" />
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 text-[#280559] border-gray-300 rounded focus:ring-[#280559]">
             <span class="text-gray-600">Remember me</span>
           </label>
-
-          <a href="#" class="text-purple-700 hover:underline">Forgot Password?</a>
+          <a href="#" class="text-[#280559] font-medium hover:underline">Forgot Password?</a>
         </div>
 
-        <!-- Button -->
         <button
           type="submit"
-          class="w-full bg-purple-800 hover:bg-purple-900 text-white py-2 rounded-md font-medium transition"
+          :disabled="authStore.loading"
+          class="w-full bg-[#280559] hover:bg-[#1a033a] text-white font-medium py-3.5 rounded-xl transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-purple-900/20"
         >
-          Login
+          <span v-if="authStore.loading" class="flex items-center justify-center gap-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Signing In...
+          </span>
+          <span v-else>Sign In</span>
         </button>
 
       </form>
 
-      <!-- Link -->
-      <p class="text-center text-gray-600 text-sm mt-4">
-        Don’t have an Account?
-        <router-link to="/auth/register" class="text-purple-700 font-medium hover:underline">
-          Register
+      <p class="mt-8 text-center text-sm text-gray-500">
+        Don't have an account? 
+        <router-link to="/register" class="text-[#280559] font-bold hover:underline">
+          Create Account
         </router-link>
       </p>
 
@@ -85,12 +87,20 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useAuthStore } from "@/stores/authStore";
 
-const username = ref("");
+const authStore = useAuthStore();
+const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 
-function handleLogin() {
-  console.log("Login submitted:", username.value, password.value);
-}
+const handleLogin = async () => {
+  await authStore.login(email.value, password.value);
+};
 </script>
+
+<style scoped>
+.luxurious-roman-regular {
+  font-family: 'Luxurious Roman', serif;
+}
+</style>

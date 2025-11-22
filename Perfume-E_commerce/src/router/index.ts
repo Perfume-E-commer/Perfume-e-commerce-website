@@ -16,6 +16,7 @@ import RegisterAuth from '@/views/auth/RegisterAuth.vue'
 import Error401 from '@/components/layout/Error401.vue'
 import CartView from '@/views/customer/CartView.vue'
 import VerifyEmail from '@/views/auth/VerifyEmail.vue'
+import UserProfile from '@/views/customer/UserProfile.vue'
 
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
@@ -110,6 +111,12 @@ const routes: RouteRecordRaw[] = [
     name: 'verify',
     component: VerifyEmail
   },
+  {
+  path: '/account',
+  name: 'account',
+  component: UserProfile,
+  meta: { requiresAuth: true }
+}
 ]
 
 const router = createRouter({

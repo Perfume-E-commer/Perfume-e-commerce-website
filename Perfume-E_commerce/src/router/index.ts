@@ -1,19 +1,3 @@
-import AboutUs from '@/views/customer/AboutUs.vue'
-import BlogCollection from '@/views/customer/BlogCollection.vue'
-import BlogPage from '@/views/customer/BlogPage.vue'
-import HomePage from '@/views/customer/HomePage.vue'
-import OurService from '@/views/customer/OurService.vue'
-import ProductDetail from '@/views/customer/ProductDetail.vue'
-import ProductList from '@/views/customer/ProductList.vue'
-import AdminDashboard from '@/views/admin/AdminDashboard.vue'
-import DashboardAddProduct from '@/views/admin/DashboardAddProduct.vue'
-import DashboardCategories from '@/views/admin/DashboardCategories.vue'
-import DashboardCustomer from '@/views/admin/DashboardCustomer.vue'
-import DashboardOrderManagement from '@/views/admin/DashboardOrderManagement.vue'
-import DashboardTransaction from '@/views/admin/DashboardTransaction.vue'
-import LoginAuth from '@/views/auth/LoginAuth.vue'
-import RegisterAuth from '@/views/auth/RegisterAuth.vue'
-import Error401 from '@/components/layout/Error401.vue'
 import CartView from '@/views/customer/CartView.vue'
 import VerifyEmail from '@/views/auth/VerifyEmail.vue'
 import UserProfile from '@/views/customer/UserProfile.vue'
@@ -22,9 +6,9 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   // error pages
   {
-    path: '/401',
-    name: '401',
-    component: () => import('@/components/layout/Error401.vue'),
+    path: '/404',
+    name: '404',
+    component: () => import('@/components/layout/Error404.vue'),
   },
   {
     path: '/:pathMatch(.*)*',
@@ -89,6 +73,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/dashboardcustomer',
     name: 'dashboardcustomer',
+    // @ts-ignore: implicit any for .vue import; add a proper Vue shim (src/shims-vue.d.ts) to remove this ignore
     component: () => import('@/views/admin/DashboardCustomer.vue'),
   },
   {
@@ -104,19 +89,19 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/cart',
     name: 'cart',
-    component: CartView
+    component: CartView,
   },
   {
     path: '/verify',
     name: 'verify',
-    component: VerifyEmail
+    component: VerifyEmail,
   },
   {
-  path: '/account',
-  name: 'account',
-  component: UserProfile,
-  meta: { requiresAuth: true }
-}
+    path: '/account',
+    name: 'account',
+    component: UserProfile,
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({

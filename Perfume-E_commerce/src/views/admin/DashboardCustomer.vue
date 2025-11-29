@@ -62,37 +62,45 @@
 <script>
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import Sidebar from '@/views/layout/Sidebar.vue';
+import Sidebar from '@/views/layout/Sidebar.vue'
 
 export default {
   name: 'UserProfileSection',
   props: {
     user: {
       type: Object,
-      required: true,
+      required: false,
     },
   },
   emits: ['nav-click'],
   setup(props) {
+    const auth = useAuthStore()
+
+    // prefer passed `user` prop, otherwise fall back to auth store user
+    const user = computed(() => {
+      return props.user ?? auth.user ?? {}
+    })
+
     const userAvatar = computed(() => {
-      return props.user.profile?.avatar
-        ? `/storage/${props.user.profile.avatar}`
+      return user.value?.profile?.avatar
+        ? `/storage/${user.value.profile.avatar}`
         : '/images/default-avatar.png'
     })
 
     const userRoleText = computed(() => {
-      if (props.user.isSuperAdmin) return 'Super Admin'
-      if (props.user.isRegularAdmin) return 'Admin'
+      if (user.value?.isSuperAdmin) return 'Super Admin'
+      if (user.value?.isRegularAdmin) return 'Admin'
       return 'User'
     })
 
     const roleBadgeClasses = computed(() => {
-      if (props.user.isSuperAdmin) return 'bg-purple-100 text-purple-800'
-      if (props.user.isRegularAdmin) return 'bg-red-100 text-red-800'
+      if (user.value?.isSuperAdmin) return 'bg-purple-100 text-purple-800'
+      if (user.value?.isRegularAdmin) return 'bg-red-100 text-red-800'
       return 'bg-blue-100 text-blue-800'
     })
 
     return {
+      user,
       userAvatar,
       userRoleText,
       roleBadgeClasses,

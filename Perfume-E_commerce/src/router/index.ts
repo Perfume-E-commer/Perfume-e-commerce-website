@@ -3,6 +3,7 @@ import VerifyEmail from '@/views/auth/VerifyEmail.vue'
 import UserProfile from '@/views/customer/UserProfile.vue'
 
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { initFlowbite } from 'flowbite'
 const routes: RouteRecordRaw[] = [
   // error pages
   {
@@ -12,7 +13,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/401',
+    redirect: '/404',
   },
 
   // customer
@@ -37,8 +38,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/customer/ProductList.vue'),
   },
   {
-    path: '/productlist/:id',
-    name: 'productdetail',
+    path: '/productdetail/:id',
+    name: 'ProductDetail',
     component: () => import('@/views/customer/ProductDetail.vue'),
   },
 
@@ -108,5 +109,4 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
-
 export default router

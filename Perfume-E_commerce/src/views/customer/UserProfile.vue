@@ -10,7 +10,7 @@
       </div>
 
       <div class="flex flex-col lg:flex-row gap-8 items-start">
-        <aside class="w-full lg:w-1/4 flex-shrink-0">
+        <aside class="w-full lg:w-1/4 shrink-0">
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <ul class="flex flex-col text-gray-600">
               <li>

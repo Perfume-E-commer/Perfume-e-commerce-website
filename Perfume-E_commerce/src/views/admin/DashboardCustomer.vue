@@ -2,7 +2,7 @@
   <div class="border-t border-gray-200 p-4">
     <Sidebar />
     <div class="flex items-center space-x-3 mb-3">
-      <div class="flex-shrink-0">
+      <div class="shrink-0">
         <img
           :src="userAvatar"
           alt="Avatar"

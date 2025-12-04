@@ -16,6 +16,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = ''
 
       try {
+        console.log('Attempting login with:', email)
+        const data = await authService.login(email, password)
+        console.log('Login response:', data)
         const data = await authService.login(email, password)
 
         this.token = data.token
@@ -32,6 +35,10 @@ export const useAuthStore = defineStore('auth', {
 
         return true
       } catch (err: any) {
+        console.error('Login error:', err)
+        console.error('Error response:', err.response)
+        this.error =
+          err.response?.data?.message || err.response?.data || err.message || 'Login failed'
         this.error = err.response?.data?.message || 'Login failed'
         return false
       } finally {

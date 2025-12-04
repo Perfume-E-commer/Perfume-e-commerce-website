@@ -1,11 +1,41 @@
+import AboutUs from '@/views/customer/AboutUs.vue'
+import BlogCollection from '@/views/customer/BlogCollection.vue'
+import BlogPage from '@/views/customer/BlogPage.vue'
+import HomePage from '@/views/customer/HomePage.vue'
+import OurService from '@/views/customer/OurService.vue'
+import ProductDetail from '@/views/customer/ProductDetail.vue'
+import ProductList from '@/views/customer/ProductList.vue'
+import MainDashboard from '@/views/admin/MainDashboard.vue'
+import AdminDashboard from '@/views/admin/AdminDashboard.vue'
+import DashboardAddProduct from '@/views/admin/DashboardAddProduct.vue'
+import DashboardCategories from '@/views/admin/DashboardCategories.vue'
+import DashboardOrderManagement from '@/views/admin/DashboardOrderManagement.vue'
+import DashboardTransaction from '@/views/admin/DashboardTransaction.vue'
+import DashboardCustomer from '../views/admin/DashboardCustomer.vue'
+import LoginAuth from '@/views/auth/LoginAuth.vue'
+import RegisterAuth from '@/views/auth/RegisterAuth.vue'
 import CartView from '@/views/customer/CartView.vue'
 import VerifyEmail from '@/views/auth/VerifyEmail.vue'
+import CreateAdmin from '@/views/auth/CreateAdmin.vue'
+import NotFound from '@/components/layout/NotFound.vue'
+import CartView from '@/views/customer/CartView.vue'
 import UserProfile from '@/views/customer/UserProfile.vue'
+import ViewCategory from '@/views/components/viewCategory.vue'
+import UpdateCategory from '@/views/admin/UpdateCategory.vue'
 
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { initFlowbite } from 'flowbite'
 const routes: RouteRecordRaw[] = [
   // error pages
+  // {
+  //   path: '/:CatchAll(.*)',
+  //   name: 'NotFound',
+  //   component: NotFound,
+  // },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    redirect: '/NotFound',
   {
     path: '/404',
     name: '404',
@@ -20,24 +50,28 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: () => import('@/views/customer/HomePage.vue'),
+    component: HomePage,
   },
   {
     path: '/aboutus',
     name: 'aboutus',
-    component: () => import('@/views/customer/AboutUs.vue'),
+    component: AboutUs,
   },
   {
     path: '/contact',
     name: 'contact',
-    component: () => import('@/views/customer/Contact.vue'),
+    component: OurService,
   },
   {
     path: '/productlist',
     name: 'productlist',
-    component: () => import('@/views/customer/ProductList.vue'),
+    component: ProductList,
   },
   {
+    path: '/productlist/:id',
+    name: 'productdetail',
+    component: ProductDetail,
+      
     path: '/productdetail/:id',
     name: 'ProductDetail',
     component: () => import('@/views/customer/ProductDetail.vue'),
@@ -47,26 +81,23 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'login',
-    component: () => import('@/views/auth/LoginAuth.vue'),
+    component: LoginAuth,
   },
   {
     path: '/register',
     name: 'register',
-    component: () => import('@/views/auth/RegisterAuth.vue'),
-  },
-
-  // admin
-  {
-    path: '/admindashboard',
-    name: 'admindashboard',
-    component: () => import('@/views/admin/AdminDashboard.vue'),
+    component: RegisterAuth,
   },
   {
-    path: '/dashboardaddproduct',
-    name: 'dashboardaddproduct',
-    component: () => import('@/views/admin/DashboardAddProduct.vue'),
+    path: '/create-admin',
+    name: 'createadmin',
+    component: CreateAdmin,
   },
   {
+    path: '/verify',
+    name: 'verify',
+    component: VerifyEmail,
+      
     path: '/dashboardcategories',
     name: 'dashboardcategories',
     component: () => import('@/views/admin/DashboardCategories.vue'),
@@ -82,10 +113,56 @@ const routes: RouteRecordRaw[] = [
     name: 'dashboardordermanagement',
     component: () => import('@/views/admin/DashboardOrderManagement.vue'),
   },
+
+  // admin
   {
-    path: '/dashboardtransaction',
-    name: 'dashboardtransaction',
-    component: () => import('@/views/admin/DashboardTransaction.vue'),
+    path: '/mainDashboard',
+    name: 'admindashboard',
+    component: MainDashboard,
+    children: [
+      {
+        path: 'admindashboard',
+        name: 'admindashboard',
+        component: AdminDashboard,
+      },
+      {
+        path: 'dashboardordermanagement',
+        name: 'dashboardordermanagement',
+        component: DashboardOrderManagement,
+      },
+      {
+        path: 'dashboardcustomer',
+        name: 'dashboardcustomer',
+        component: DashboardCustomer,
+      },
+      {
+        path: 'dashboardcategories',
+        name: 'dashboardcategories',
+        component: DashboardCategories,
+        children: [
+          {
+            path: 'updatecategory/:id',
+            name: 'updatecategory',
+            component: UpdateCategory,
+          },
+        ],
+      },
+      {
+        path: 'dashboardtransaction',
+        name: 'dashboardtransaction',
+        component: DashboardTransaction,
+      },
+      {
+        path: 'dashboardaddproduct',
+        name: 'dashboardaddproduct',
+        component: DashboardAddProduct,
+      },
+      {
+        path: 'dashboardaddproduct/:id',
+        name: 'dashboardeditproduct',
+        component: DashboardAddProduct,
+      },
+    ],
   },
   {
     path: '/cart',

@@ -14,6 +14,7 @@ import DashboardTransaction from '@/views/admin/DashboardTransaction.vue'
 import DashboardCustomer from '../views/admin/DashboardCustomer.vue'
 import LoginAuth from '@/views/auth/LoginAuth.vue'
 import RegisterAuth from '@/views/auth/RegisterAuth.vue'
+import CartView from '@/views/customer/CartView.vue'
 import VerifyEmail from '@/views/auth/VerifyEmail.vue'
 import CreateAdmin from '@/views/auth/CreateAdmin.vue'
 import NotFound from '@/components/layout/NotFound.vue'
@@ -23,6 +24,7 @@ import ViewCategory from '@/views/components/viewCategory.vue'
 import UpdateCategory from '@/views/admin/UpdateCategory.vue'
 
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import { initFlowbite } from 'flowbite'
 const routes: RouteRecordRaw[] = [
   // error pages
   // {
@@ -34,6 +36,14 @@ const routes: RouteRecordRaw[] = [
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     redirect: '/NotFound',
+  {
+    path: '/404',
+    name: '404',
+    component: () => import('@/components/layout/Error404.vue'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
   },
 
   // customer
@@ -61,6 +71,10 @@ const routes: RouteRecordRaw[] = [
     path: '/productlist/:id',
     name: 'productdetail',
     component: ProductDetail,
+      
+    path: '/productdetail/:id',
+    name: 'ProductDetail',
+    component: () => import('@/views/customer/ProductDetail.vue'),
   },
 
   // auth
@@ -83,6 +97,21 @@ const routes: RouteRecordRaw[] = [
     path: '/verify',
     name: 'verify',
     component: VerifyEmail,
+      
+    path: '/dashboardcategories',
+    name: 'dashboardcategories',
+    component: () => import('@/views/admin/DashboardCategories.vue'),
+  },
+  {
+    path: '/dashboardcustomer',
+    name: 'dashboardcustomer',
+    // @ts-ignore: implicit any for .vue import; add a proper Vue shim (src/shims-vue.d.ts) to remove this ignore
+    component: () => import('@/views/admin/DashboardCustomer.vue'),
+  },
+  {
+    path: '/dashboardordermanagement',
+    name: 'dashboardordermanagement',
+    component: () => import('@/views/admin/DashboardOrderManagement.vue'),
   },
 
   // admin
@@ -157,5 +186,4 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
-
 export default router

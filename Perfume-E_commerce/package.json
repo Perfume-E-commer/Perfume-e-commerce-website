@@ -24,6 +24,7 @@
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
     "flowbite-datepicker": "^2.0.0",
+    "flowbite": "^4.0.1",
     "pinia": "^3.0.3",
     "primevue": "^4.4.1",
     "tailwindcss": "^4.1.17",

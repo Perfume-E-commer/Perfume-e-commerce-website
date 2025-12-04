@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView, useRouter } from 'vue-router'
-import Loading from '@/components/layout/Loading.vue'
+import Loading from './components/layout/Loading.vue'
 import { ref } from 'vue'
 
 const isLoading = ref(true)
@@ -16,10 +16,12 @@ router.afterEach(() => {
 </script>
 
 <template>
-  <Loading v-if="isLoading" />
-  <router-view else v-slot="{ Component }">
-    <Transition name="fade" mode="out-in">
-      <component :is="Component" />
-    </Transition>
-  </router-view>
+  <div>
+    <Loading v-if="isLoading" />
+    <router-view v-else v-slot="{ Component }">
+      <Transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </router-view>
+  </div>
 </template>

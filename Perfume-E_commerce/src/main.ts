@@ -8,7 +8,9 @@ import router from './router'
 
 import VueApexCharts from 'vue3-apexcharts'
 import PrimeVue from 'primevue/config'
-import Aura from '@primeuix/themes/aura';
+import Aura from '@primeuix/themes/aura'
+
+// import Datepicker from 'flowbite-datepicker'
 
 const app = createApp(App)
 
@@ -17,10 +19,9 @@ app.use(router)
 app.use(VueApexCharts)
 // app.use(PrimeVue);
 app.use(PrimeVue, {
-    theme: {
-        preset: Aura
-    }
-});
-
+  theme: {
+    preset: Aura,
+  },
+})
 
 app.mount('#app')

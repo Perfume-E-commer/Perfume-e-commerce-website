@@ -11,7 +11,7 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 
 // import Datepicker from 'flowbite-datepicker'
-import { initFlowbite } from 'flowbite'
+// import { initFlowbite } from 'flowbite'
 
 const app = createApp(App)
 app.use(createPinia())
@@ -23,5 +23,5 @@ app.use(PrimeVue, {
   },
 })
 
-initFlowbite()
+// initFlowbite()
 app.mount('#app')

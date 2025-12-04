@@ -290,5 +290,8 @@
         </ul>
       </div>
     </aside>
+    <!-- <div class="p-4 sm:ml-64 mt-16"> -->
+      <!-- <router-view /> -->
+    <!-- </div> -->
   </div>
 </template>

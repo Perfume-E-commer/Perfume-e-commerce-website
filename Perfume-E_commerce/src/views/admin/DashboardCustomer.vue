@@ -1,4 +1,6 @@
 <template>
+  <div class="p-6 bg-gray-100 min-h-screen">
+    <div class="py-8">hello customer dashboard</div>
   <div class="border-t border-gray-200 p-4">
     <Sidebar />
     <div class="flex items-center space-x-3 mb-3">
@@ -58,6 +60,11 @@
     </div>
   </div>
 </template>
+<script lang="ts">
+import { defineComponent } from 'vue'
+export default defineComponent({
+  name: 'DashboardCustomer',
+})
 
 <script>
 import { computed } from 'vue'

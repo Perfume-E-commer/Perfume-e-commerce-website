@@ -19,6 +19,7 @@ export const useAuthStore = defineStore('auth', {
         console.log('Attempting login with:', email)
         const data = await authService.login(email, password)
         console.log('Login response:', data)
+        const data = await authService.login(email, password)
 
         this.token = data.token
         this.user = { email: data.email, role: data.role }
@@ -38,6 +39,7 @@ export const useAuthStore = defineStore('auth', {
         console.error('Error response:', err.response)
         this.error =
           err.response?.data?.message || err.response?.data || err.message || 'Login failed'
+        this.error = err.response?.data?.message || 'Login failed'
         return false
       } finally {
         this.loading = false

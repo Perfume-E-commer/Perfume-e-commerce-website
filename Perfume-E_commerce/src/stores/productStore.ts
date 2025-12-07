@@ -3,34 +3,6 @@ import axios from 'axios'
 import type { Product, ProductFilter, ProductPage } from '@/types/Product'
 
 const API_URL = '/api/products'
-import axios from 'axios'
-import { defineStore } from 'pinia'
-
-interface StorySection {
-  title: string
-  content: string
-}
-
-interface KeyNote {
-  id: number
-  type: string
-  scent: string
-  image: string
-}
-
-export interface Product {
-  title: string
-  price: number
-  image: string
-  description: string
-  variants: any[]
-  productStory: {
-    intro: StorySection
-    overture: StorySection
-    keyNotes: KeyNote[]
-    features: StorySection[]
-  }
-}
 
 export const useProductStore = defineStore('product', {
   state: () => ({
@@ -153,15 +125,9 @@ export const useProductStore = defineStore('product', {
     getProductById: (state) => (id: string) => {
       return state.products.find((product) => product.id === id)
     },
+    getAllProduct: (state) => state.products,
     featuredProducts: (state) => state.products.filter((p) => p.isFeatured),
     onSaleProducts: (state) => state.products.filter((p) => p.isOnSale),
     outOfStockProducts: (state) => state.products.filter((p) => p.stock <= 0),
   },
-  }),
-
-  getters: {
-    getAllProduct: (state) => state.products,
-  },
-
-  actions: {},
 })

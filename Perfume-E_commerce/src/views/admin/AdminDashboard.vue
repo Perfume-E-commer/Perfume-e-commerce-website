@@ -129,7 +129,6 @@
   </div>
 </template>
 <script setup lang="ts">
-import Sidebar from '../layout/Sidebar.vue'
 import TotalSaleOrder from '../components/TotalSale&Order.vue'
 import PendingCanceled from '../components/Pending&Canceled.vue'
 import ApexCharts from '../components/ApexCharts.vue'

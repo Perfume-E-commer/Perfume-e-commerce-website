@@ -2,6 +2,7 @@ import './assets/main.css'
 
 import { createApp, onMounted } from 'vue'
 import { createPinia } from 'pinia'
+import 'flowbite'
 
 import App from './App.vue'
 import router from './router'

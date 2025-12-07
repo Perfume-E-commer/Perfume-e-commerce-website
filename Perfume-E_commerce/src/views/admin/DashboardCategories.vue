@@ -1,7 +1,6 @@
 <template>
   <div class="flex h-screen bg-gray-100">
-    <Sidebar />
-    <div class="flex-1 p-6 sm:ml-64 mt-14">
+    <div class="flex-1 p-6">
       <div class="mb-6 flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-800">Product Management</h1>
         <ButtonRectangle
@@ -52,8 +51,8 @@
 
       <!-- Products Table -->
       <div v-else class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
+        <div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs">
+          <table class="w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
                 <th
@@ -169,7 +168,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Sidebar from '../layout/Sidebar.vue'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
 import { productService } from '@/Services/apiProduct'
 import type { Product } from '@/types/Product'

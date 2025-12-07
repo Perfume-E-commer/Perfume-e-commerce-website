@@ -94,13 +94,18 @@ const routes: RouteRecordRaw[] = [
   // admin
   {
     path: '/mainDashboard',
-    name: 'admindashboard',
+    name: 'mainDashboard',
     component: () => import('@/views/admin/MainDashboard.vue'),
     children: [
       {
         path: 'admindashboard',
         name: 'admindashboard',
         component: () => import('@/views/admin/AdminDashboard.vue'),
+      },
+      {
+        path: 'adminprofile',
+        name: 'adminprofile',
+        component: () => import('@/views/admin/AdminProfile.vue'),
       },
       {
         path: 'dashboardordermanagement',

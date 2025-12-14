@@ -1,6 +1,6 @@
 <template>
   <div>
-    <apexchart height="250" type="area" :options="options" :series="series"></apexchart>
+    <apexchart :height="height" type="area" :options="options" :series="series"></apexchart>
   </div>
 </template>
 <!-- <script lang="ts">
@@ -39,7 +39,12 @@ import ChartVue from 'vue3-apexcharts'
 
 export default defineComponent({
   name: 'ApexCharts',
-
+  props: {
+    height: {
+      type: [Number, String],
+      // default: 350,
+    },
+  },
   setup() {
     const options = ref({
       chart: {

@@ -162,6 +162,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/customer/UserProfile.vue'),
     meta: { requiresAuth: true },
   },
+
+  {
+  path: '/account/order-history',
+  name: 'OrderHistory',
+  component: () => import('@/views/customer/OrderHistoryView.vue')
+  },
 ]
 
 const router = createRouter({

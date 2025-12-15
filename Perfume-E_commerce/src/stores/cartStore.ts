@@ -5,6 +5,10 @@ import { ref, computed } from 'vue'
 export interface CartItem {
   productId: string
   productName: string
+  imageUrl: string
+  size: string
+  category: string
+  variantId: string | number
   quantity: number
   price: number
 }
@@ -12,6 +16,12 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[]
   totalPrice: number
+}
+
+export interface AddToCartPayload {
+  productId: string | number
+  variantId: string | number
+  quantity: number
 }
 
 export const useCartStore = defineStore('cart', () => {
@@ -25,7 +35,7 @@ export const useCartStore = defineStore('cart', () => {
   async function fetchCart() {
     isLoading.value = true
     try {
-      const response = await apiClient.get('/cart')
+      const response = await apiClient.get('/cart/fetch')
       cart.value = response.data
     } catch (error) {
       console.error('Failed to fetch cart', error)
@@ -34,12 +44,27 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  async function addToCart(productId: string, quantity: number = 1) {
+  async function addToCart(payload: AddToCartPayload) {
     try {
-      const response = await apiClient.post('/cart/add', { productId, quantity })
+      // Pass variantId to the backend
+      const response = await apiClient.post('/cart/add', {
+        productId: payload.productId, // Include productId for product grouping
+        variantId: payload.variantId, // The specific variant being added
+        quantity: payload.quantity,
+      })
       cart.value = response.data
     } catch (error) {
       console.error('Error adding to cart', error)
+      throw error
+    }
+  }
+
+  async function updateQuantity(productId: string, quantity: number) {
+    try {
+      const response = await apiClient.put(`/cart/update/${productId}`, { quantity })
+      cart.value = response.data
+    } catch (error) {
+      console.error('Error updating quantity', error)
       throw error
     }
   }
@@ -53,12 +78,13 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  return { 
-    cart, 
-    itemCount, 
-    isLoading, 
-    fetchCart, 
-    addToCart, 
-    removeFromCart 
+  return {
+    cart,
+    itemCount,
+    isLoading,
+    fetchCart,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
   }
 })

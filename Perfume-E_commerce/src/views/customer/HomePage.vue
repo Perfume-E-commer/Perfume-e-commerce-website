@@ -4,34 +4,30 @@ import Footer from '@/components/layout/Footer.vue'
 import Main from '@/components/customer/landingpage/Main.vue'
 import OverlayPerfume from '@/components/customer/landingpage/OverlayPerfume.vue'
 import ValuePerfume from '@/components/customer/landingpage/ValuePerfume.vue'
-import BestSelling from '@/components/customer/landingpage/BestSelling.vue'
 import Collection from '@/components/customer/landingpage/Collection.vue'
 import Promotion from '@/components/customer/landingpage/Promotion.vue'
 import Articles from '@/components/customer/landingpage/Articles.vue'
 import Scrolldown from '@/components/layout/Scrolldown.vue'
+import ProductListPerfume from '@/components/customer/product/ProductListPerfume.vue'
+import { useProductStore } from '@/stores/productStore'
+import { onMounted, watch } from 'vue'
+import Loading from '@/components/layout/Loading.vue'
+import EditionComponent from '@/components/customer/landingpage/EditionComponent.vue'
+import { storeToRefs } from 'pinia'
+import SeeMoreButton from '@/components/customer/landingpage/SeeMoreButton.vue'
 
-const bestSelling = [
-  {
-    title: 'BLEU DE CHANEL',
-    price: 120,
-    image: '/Image/HomePage/BlueChanel.png',
-  },
-  {
-    title: 'BLEU DE CHANEL',
-    price: 100,
-    image: '/Image/HomePage/BlueChanel.png',
-  },
-  {
-    title: 'BLEU DE CHANEL',
-    price: 150,
-    image: '/Image/HomePage/BlueChanel.png',
-  },
-  {
-    title: 'BLEU DE CHANEL',
-    price: 250,
-    image: '/Image/HomePage/BlueChanel.png',
-  },
-]
+const productStore = useProductStore()
+
+const { products, loading } = storeToRefs(productStore)
+const { fetchAllProducts } = productStore
+
+onMounted(() => {
+  fetchAllProducts()
+  console.log('perfume list: ', productStore.products)
+})
+watch(products, () => {
+  console.log('Perfume List', productStore.products)
+})
 
 const lastedArticles = [
   {
@@ -56,7 +52,7 @@ const lastedArticles = [
 </script>
 <template>
   <div class="flex flex-col min-h-screen overflow-hidden">
-    <header class="bg-white z-50">
+    <header class="bg-white z-100">
       <Navbar />
     </header>
     <main class="flex flex-col items-center justify-center">
@@ -67,7 +63,7 @@ const lastedArticles = [
           text="waken your confidence and embrace the sweet smell of victory with ScentHaven—discover the fragrance that elevates your presence and defines who you are."
         />
       </section>
-      <section class="w-full h-screen">
+      <section>
         <OverlayPerfume
           image="/Image/HomePage/DiorOverlay.png"
           title="Welcome to ScentHaven"
@@ -83,7 +79,21 @@ const lastedArticles = [
         />
       </section>
       <section class="w-full bg-white z-30">
-        <BestSelling :bestSelling="bestSelling" />
+        <EditionComponent />
+      </section>
+      <section class="w-full bg-white z-30">
+        <h1
+          class="text-center luxurious-roman-regular font-bold text-[#280559] text-2xl md:text-4xl lg:text-5xl mb-6"
+        >
+          Best Selling Products
+        </h1>
+        <ProductListPerfume v-if="!loading" :details-item="products" />
+        <div v-else class="text-center text-black luxurious-regular-roman">
+          Loading Product.....
+        </div>
+        <div class="flex justify-center mb-10">
+          <SeeMoreButton url="/products" />
+        </div>
       </section>
       <section class="w-full bg-white z-30">
         <Collection />
@@ -103,5 +113,6 @@ const lastedArticles = [
       <Footer />
     </footer>
     <Scrolldown />
+    <Loading v-if="loading" />
   </div>
 </template>

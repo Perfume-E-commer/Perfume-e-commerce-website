@@ -1,9 +1,9 @@
 // services/api.js
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
-import type { Product } from '@/types/Product'
+import type { Product } from '@/types/adminProduct'
 
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_BASE_URL = 'https://rithserver.tail683264.ts.net:8443/api/'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -26,6 +26,9 @@ export const productService = {
     return api.get('/products')
   },
 
+  getPaginationProducts(page: number, limit: number) {
+    return api.get(`/products?page=${page}&limit=${limit}`)
+  },
   // Get product by ID
   getProductById(id: string) {
     return api.get(`/products/${id}`)

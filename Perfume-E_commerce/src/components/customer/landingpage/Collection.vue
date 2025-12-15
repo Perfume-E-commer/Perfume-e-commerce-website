@@ -5,7 +5,7 @@
     <h1
       class="text-center luxurious-roman-regular font-bold text-[#280559] text-2xl md:text-4xl lg:text-5xl mb-6"
     >
-      Best Selling Product
+      Our Collection
     </h1>
     <div class="grid grid-cols-1 gap-4 sm:gap-6 mt-10">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">

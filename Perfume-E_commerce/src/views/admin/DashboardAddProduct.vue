@@ -723,8 +723,8 @@ import ButtonRectangle from '../components/ButtonRectangle.vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useAuthStore } from '@/stores/authStore'
-import { productService } from '@/Services/apiProduct'
-import type { Product } from '@/types/Product'
+import { productService } from '@/Services/productService'
+import type { Product } from '@/types/adminProduct'
 
 const router = useRouter()
 const route = useRoute()

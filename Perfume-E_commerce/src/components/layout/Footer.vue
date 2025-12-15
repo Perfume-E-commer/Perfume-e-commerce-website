@@ -4,7 +4,7 @@
   <footer class="w-full px-6 pb-10 bg-gray-100/50">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between pt-20 gap-20">
       <!-- Newsletter -->
-      <div class="w-full md:w-1/3 flex flex-col gap-4">
+      <div class="w-full md:w-1/3 text-black flex flex-col gap-4">
         <img src="/Logo.png" alt="Logo" class="w-[180px] md:w-[220px]" />
 
         <h1 class="luxurious-roman-regular font-medium text-xl md:text-2xl">
@@ -110,7 +110,7 @@
       </div>
 
       <!-- Footer Links -->
-      <div class="w-full md:w-2/3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-20">
+      <div class="w-full md:w-2/3 grid grid-cols-2 sm:grid-cols-3 text-black lg:grid-cols-4 gap-20">
         <div class="flex flex-col">
           <h1 class="text-lg luxurious-roman-regular font-medium mb-2">Category</h1>
           <div class="text-sm luxurious-roman-regular font-light space-y-1">
@@ -150,7 +150,7 @@
       </div>
     </div>
     <div
-      class="max-w-7xl mx-auto border-t border-gray-300 mt-10 pt-6 text-center md:text-base luxurious-roman-regular font-light"
+      class="max-w-7xl mx-auto border-t text-black border-gray-300 mt-10 pt-6 text-center md:text-base luxurious-roman-regular font-light"
     >
       &copy; 2025 ScentHaven Perfumes. All rights reserved.
     </div>

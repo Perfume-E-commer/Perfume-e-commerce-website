@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = 'http://localhost:8080/api/auth'
+const API = 'https://rithserver.tail683264.ts.net:8443/api/auth'
 
 export default {
   async login(email: string, password: string) {
@@ -35,5 +35,10 @@ export default {
   logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+  },
+
+  isAuthenticated() {
+    const token = localStorage.getItem('token')
+    return !!token
   },
 }

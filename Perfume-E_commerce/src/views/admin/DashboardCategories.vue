@@ -171,8 +171,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../layout/Sidebar.vue'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
-import { productService } from '@/Services/apiProduct'
-import type { Product } from '@/types/Product'
+import { productService } from '@/Services/productService'
+import type { Product } from '@/types/adminProduct'
 
 const router = useRouter()
 

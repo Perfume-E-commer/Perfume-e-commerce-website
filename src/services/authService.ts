@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API = 'https://rithserver.tail683264.ts.net:8443/api/auth'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
+const API = `${API_BASE_URL}/auth`
 
 export default {
   async login(email: string, password: string) {

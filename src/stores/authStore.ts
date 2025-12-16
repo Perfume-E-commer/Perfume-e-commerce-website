@@ -2,10 +2,14 @@ import { defineStore } from 'pinia'
 import authService from '@/services/authService'
 import router from '@/router'
 
+interface User {
+  email: string;
+  role: 'USER' | 'ADMIN';
+}
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: JSON.parse(localStorage.getItem('user') || 'null'),
+    user: (JSON.parse(localStorage.getItem('user') || 'null')) as User | null,
     token: localStorage.getItem('token') || '',
     loading: false,
     error: '',

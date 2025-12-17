@@ -2,6 +2,7 @@
 import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import Main from '@/components/customer/landingpage/Main.vue'
+import LimitedEdition from '@/components/customer/landingpage/LimitedEdition.vue'
 import OverlayPerfume from '@/components/customer/landingpage/OverlayPerfume.vue'
 import ValuePerfume from '@/components/customer/landingpage/ValuePerfume.vue'
 import BestSelling from '@/components/customer/landingpage/BestSelling.vue'
@@ -53,6 +54,25 @@ const lastedArticles = [
       "Rose, often referred to as the ”Queen of Flowers”. has held as special place in human culture and history for centuries. Beyond it's captivating beauty, this iconic bloom has also inspired perfumes to create some of the most timeless and exquisite fragrance in the world.",
   },
 ]
+const limitedBanners = [
+  {
+    title: 'The Legacy Collection',
+    subtitle: 'Rare releases crafted for uniqueness',
+    image: '/Image/HomePage/LimitedEdittion.png',
+    featured: true,
+  },
+  {
+    title: 'Midnight Oud',
+    subtitle: 'Dark, bold, and exclusive',
+    image: '/Image/HomePage/DiorOverlay.png',
+  },
+  {
+    title: 'Velvet Rose',
+    subtitle: 'Soft luxury for timeless moments',
+    image: '/Image/HomePage/Red1.png',
+  },
+]
+
 </script>
 <template>
   <div class="flex flex-col min-h-screen overflow-hidden">
@@ -74,6 +94,9 @@ const lastedArticles = [
           text='Welcome to ScentHaven Perfumes, where the spirit of victory and triumph come alive through scents that empower and inspire. Our curated collection, aptly named "Victory Scented," is a celebration of success and elegance, designed to unleash your victorious essence. Indulge in the sweet taste of triumph with captivating fragrances that tell the tale of your achievements. At ScentHaven, we believe that every victory deserves a signature scent, and we are dedicated to providing unforgettable fragrances that elevate your spirit and empower your journey.'
         />
       </section>
+      
+      
+
       <section class="w-full flex flex-row justify-center items-center bg-white z-30">
         <ValuePerfume
           image="/Image/HomePage/Bureberry.png"
@@ -82,6 +105,11 @@ const lastedArticles = [
           text2="Embracing sustainability and continuous learning, Local Face strives to be more than just a shopping destination; we are a community that inspires and empowers individuals on their fragrance journey."
         />
       </section>
+
+      <section class="w-full bg-white z-30">
+        <LimitedEdition :banners="limitedBanners" />
+      </section>
+
       <section class="w-full bg-white z-30">
         <BestSelling :bestSelling="bestSelling" />
       </section>

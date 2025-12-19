@@ -106,8 +106,8 @@
               <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <img
-                    :src="product.imageUrl || 'https://via.placeholder.com/50'"
-                    :alt="product.name"
+                    :src="product.imageUrl || '/src/assets/logo.svg'"
+                    alt="Product Image"
                     class="h-12 w-12 rounded object-cover"
                   />
                 </td>

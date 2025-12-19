@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 import type { Product } from '@/types/adminProduct'
 
-const API_BASE_URL = 'https://rithserver.tail683264.ts.net:8443/api/'
+const API_BASE_URL = 'http://localhost:8080/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,

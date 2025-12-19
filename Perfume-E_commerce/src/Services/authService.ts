@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = 'https://rithserver.tail683264.ts.net:8443/api/auth'
+const API = 'http://localhost:8080/api/auth'
 
 export default {
   async login(email: string, password: string) {

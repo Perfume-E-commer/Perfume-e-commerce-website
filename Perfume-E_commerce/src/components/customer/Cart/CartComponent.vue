@@ -28,21 +28,26 @@ const formatPrice = (value: number) => {
   }).format(value)
 }
 
-// Handler for quantity decrease (optional: needs implementation in your store)
-const decreaseQuantity = (productId: string, currentQuantity: number) => {
+const decreaseQuantity = (productId: string, currentQuantity: number, size?: string) => {
   if (currentQuantity > 1) {
-    // Decrease quantity by 1
-    cartStore.updateQuantity(productId, currentQuantity - 1)
+    cartStore.updateQuantity({ 
+      productId, 
+      quantity: currentQuantity - 1, 
+      size 
+    }) 
   } else {
-    // Remove if quantity hits 0
-    cartStore.removeFromCart(productId)
+    cartStore.removeFromCart(productId, size)
   }
 }
 
-const increaseQuantity = (productId: string, currentQuantity: number) => {
-  // Increase quantity by 1
-  cartStore.updateQuantity(productId, currentQuantity + 1)
+const increaseQuantity = (productId: string, currentQuantity: number, size?: string) => {
+  cartStore.updateQuantity({ 
+    productId, 
+    quantity: currentQuantity + 1, 
+    size 
+  })
 }
+
 </script>
 
 <template>
@@ -119,7 +124,7 @@ const increaseQuantity = (productId: string, currentQuantity: number) => {
             <div class="flex items-center space-x-6">
               <div class="flex items-center border border-gray-300 rounded">
                 <button
-                  @click="decreaseQuantity(item.productId, item.quantity)"
+                  @click="decreaseQuantity(item.productId, item.quantity, item.size)"
                   class="px-3 py-1 hover:bg-gray-100 text-gray-600 font-medium"
                 >
                   -
@@ -128,7 +133,7 @@ const increaseQuantity = (productId: string, currentQuantity: number) => {
                   {{ item.quantity }}
                 </span>
                 <button
-                  @click="increaseQuantity(item.productId, item.quantity)"
+                  @click="increaseQuantity(item.productId, item.quantity, item.size)"
                   class="px-3 py-1 hover:bg-gray-100 text-gray-600 font-medium"
                 >
                   +

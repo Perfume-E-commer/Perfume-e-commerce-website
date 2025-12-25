@@ -1,7 +1,7 @@
 // services/apiProduct.ts
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
-import type { Product } from '@/types/Product'
+import type { Product } from '../types/adminProduct'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://localhost:8080/api`;
 

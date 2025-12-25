@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import type { Product, ProductFilter, ProductPage } from '@/types/adminProduct'
-import { productService } from '@/Services/productService'
+import { productService } from '../services/productService'
 const API_URL = '/api/products'
 
 export const useProductStore = defineStore('product', {

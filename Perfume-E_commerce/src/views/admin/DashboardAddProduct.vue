@@ -69,7 +69,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { productService } from '@/services/apiProduct'
-import type { Product } from '@/types/Product'
+import type { Product } from '../../types/adminProduct'
 import ProductBasicInfo from './product/ProductBasicInfo.vue'
 import ProductPricing from './product/ProductPricing.vue'
 import ProductAttributes from './product/ProductAttributes.vue'

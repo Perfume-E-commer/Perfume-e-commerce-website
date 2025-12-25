@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Categories Management</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Products Management</h1>
       <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
         <ButtonRectangle
           textColor="white"
@@ -54,151 +54,132 @@
           </RouterLink>
         </ButtonRectangle>
       </div>
+    </div>
 
-      <!-- Success/Error Messages -->
-      <div
-        v-if="successMessage"
-        class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded"
-      >
-        {{ successMessage }}
-      </div>
-      <div
-        v-if="errorMessage"
-        class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded"
-      >
-        {{ errorMessage }}
-      </div>
+    <!-- Success/Error Messages -->
+    <div
+      v-if="successMessage"
+      class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded"
+    >
+      {{ successMessage }}
+    </div>
+    <div
+      v-if="errorMessage"
+      class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded"
+    >
+      {{ errorMessage }}
+    </div>
 
-      <!-- Loading State -->
-      <div v-if="isLoading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-      </div>
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+    </div>
 
-      <!-- Products Table -->
-      <div v-else class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs">
-          <table class="w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Image
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Name
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Brand
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Category
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Price
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Stock
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-                <th
-                  class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-if="products.length === 0">
-                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
-                  No products found. Click "Add New Product" to create one.
-                </td>
-              </tr>
-              <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <img
-                    :src="product.imageUrl || 'https://via.placeholder.com/50'"
-                    :alt="product.name"
-                    class="h-12 w-12 rounded object-cover"
-                  />
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-500">{{ product.brand }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800"
-                  >
-                    {{ product.category }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">${{ product.price }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ product.stock }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    :class="[
-                      product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                      'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                    ]"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
-                  </svg>
-                  <div>Stock</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">$2999</td>
-            </tr>
+    <!-- Products Table -->
+    <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs">
+        <table class="w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
             <tr>
               <th
-                scope="row"
-                class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                <div>
-                  <img
-                    src="/Image/HomePage/BlueChanel.png"
-                    class="h-10 w-9 rounded-lg bg-gray-400"
-                    alt=""
-                  />
-                </div>
-                <div>Apple MacBook Pro 17</div>
+                Image
               </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#21C45D]">
-                <div class="flex items-center space-x-2">
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
-                  </svg>
-                  <div>Stock</div>
-                </div>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Name
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Brand
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Category
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Price
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Stock
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Status
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-if="products.length === 0">
+              <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                No products found. Click "Add New Product" to create one.
               </td>
-              <td class="px-6 py-4">$2999</td>
+            </tr>
+            <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <img
+                  :src="product.imageUrl || 'https://via.placeholder.com/50'"
+                  :alt="product.name"
+                  class="h-12 w-12 rounded object-cover"
+                />
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-500">{{ product.brand }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800"
+                >
+                  {{ product.category }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${{ product.price }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ product.stock }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  :class="[
+                    product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
+                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                  ]"
+                >
+                  {{ product.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  @click="editProduct(product.id)"
+                  class="text-indigo-600 hover:text-indigo-900 mr-4"
+                >
+                  Edit
+                </button>
+                <button
+                  @click="confirmDelete(product.id)"
+                  class="text-red-600 hover:text-red-900"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -206,12 +187,13 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
-import { productService } from '@/Services/apiProduct'
-import type { Product } from '@/types/Product'
+import { productService } from '../../services/apiProduct'
+import type { Product } from '../../types/adminProduct'
 
 const router = useRouter()
 
@@ -240,7 +222,7 @@ const loadProducts = async () => {
 
 const editProduct = (id: string) => {
   if (id) {
-    router.push(`/maindashboard/dashboardaddproduct/${id}`)
+    router.push(`/maindashboard/product/edit/${id}`)
   }
 }
 

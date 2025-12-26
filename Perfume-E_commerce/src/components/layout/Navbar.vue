@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Handbag, UserRound, Search, Menu, X, Heart, CircleUserRound } from 'lucide-vue-next'
-import { computed, ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
+import NotificationBell from '@/components/ui/NotificationBell.vue'
 
+const authStore = useAuthStore()
 const menuOpen = ref(false)
 const searchOpen = ref(false)
-const authStore = useAuthStore()
 
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
@@ -84,12 +85,7 @@ const isLoggedIn = computed(() => !!authStore.token)
         </div>
 
         <div class="flex gap-4 items-center">
-          <button
-            @click="toggleSearch"
-            class="lg:hidden text-black hover:text-[#280559] hover:scale-110 transition-all duration-300"
-          >
-            <Search stroke-width="1.5" class="w-6 h-6" />
-          </button>
+          <button @click="toggleSearch" />
 
           <router-link
             to="/account"

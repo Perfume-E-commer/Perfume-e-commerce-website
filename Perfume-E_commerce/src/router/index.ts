@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
     redirect: '/404',
   },
 
-  // customer
+  // CUSTOMER ROUTES (Public)
   {
     path: '/',
     name: 'home',
@@ -81,8 +81,19 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/customer/UserProfile.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/account',
+    name: 'account',
+    component: () => import('@/views/customer/UserProfile.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/cart',
+    name: 'cart',
+    component: () => import('@/views/customer/CartView.vue'),
+  },
 
-  // auth
+  // AUTH ROUTES
   {
     path: '/login',
     name: 'login',
@@ -97,7 +108,7 @@ const routes: RouteRecordRaw[] = [
   // admin
   {
     path: '/create-admin',
-    name: 'createadmin',
+    name: 'create-admin',
     component: () => import('@/views/auth/CreateAdmin.vue'),
   },
   {
@@ -105,28 +116,29 @@ const routes: RouteRecordRaw[] = [
     name: 'verify',
     component: () => import('@/views/auth/VerifyEmail.vue'),
   },
-  {
-    path: '/dashboardcategories',
-    name: 'dashboardcategories',
-    component: () => import('@/views/admin/DashboardCategories.vue'),
-  },
-  {
-    path: '/dashboardcustomer',
-    name: 'dashboardcustomer',
-    // @ts-ignore: implicit any for .vue import; add a proper Vue shim (src/shims-vue.d.ts) to remove this ignore
-    component: () => import('@/views/admin/DashboardCustomer.vue'),
-  },
-  {
-    path: '/dashboardordermanagement',
-    name: 'dashboardordermanagement',
-    component: () => import('@/views/admin/DashboardOrderManagement.vue'),
-  },
 
-  // admin
+  // {
+  //   path: '/dashboardcategories',
+  //   name: 'dashboardcategories',
+  //   component: () => import('@/views/admin/ProductList.vue'),
+  // },
+  // {
+  //   path: '/dashboardcustomer',
+  //   name: 'dashboardcustomer',
+  //   component: () => import('@/views/admin/DashboardCustomer.vue'),
+  // },
+  // {
+  //   path: '/dashboardordermanagement',
+  //   name: 'dashboardordermanagement',
+  //   component: () => import('@/views/admin/DashboardOrderManagement.vue'),
+  // },
+
+  // ADMIN DASHBOARD (Layout Wrapper)
   {
     path: '/mainDashboard',
     name: 'mainDashboard',
     component: () => import('@/views/admin/MainDashboard.vue'),
+    redirect: '/mainDashboard/admindashboard',
     children: [
       {
         path: 'admindashboard',
@@ -138,6 +150,35 @@ const routes: RouteRecordRaw[] = [
         name: 'adminprofile',
         component: () => import('@/views/admin/AdminProfile.vue'),
       },
+
+      // --- PRODUCT MANAGEMENT (Cleaned Paths) ---
+      {
+        path: 'products',
+        name: 'product-list',
+        component: () => import('@/views/admin/ProductList.vue'),
+      },
+      {
+        path: 'product/add',
+        name: 'product-add',
+        component: () => import('@/views/admin/DashboardAddProduct.vue'),
+      },
+      {
+        path: 'product/edit/:id',
+        name: 'product-edit',
+        component: () => import('@/views/admin/DashboardAddProduct.vue'),
+      },
+      // {
+      //   path: 'dashboardcategories',
+      //   name: 'dashboardcategories',
+      //   component: () => import('@/views/admin/ProductList.vue'),
+      //   children: [
+      //     {
+      //       path: 'updatecategory/:id',
+      //       name: 'updatecategory',
+      //       component: () => import('@/views/admin/UpdateCategory.vue'),
+      //     },
+      //   ],
+      // },
       {
         path: 'dashboardordermanagement',
         name: 'dashboardordermanagement',
@@ -149,32 +190,20 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },
       {
-        path: 'dashboardcategories',
-        name: 'dashboardcategories',
-        component: () => import('@/views/admin/DashboardCategories.vue'),
-        children: [
-          {
-            path: 'updatecategory/:id',
-            name: 'updatecategory',
-            component: () => import('@/views/admin/UpdateCategory.vue'),
-          },
-        ],
-      },
-      {
         path: 'dashboardtransaction',
         name: 'dashboardtransaction',
         component: () => import('@/views/admin/DashboardTransaction.vue'),
       },
-      {
-        path: 'dashboardaddproduct',
-        name: 'dashboardaddproduct',
-        component: () => import('@/views/admin/DashboardAddProduct.vue'),
-      },
-      {
-        path: 'dashboardaddproduct/:id',
-        name: 'dashboardeditproduct',
-        component: () => import('@/views/admin/DashboardAddProduct.vue'),
-      },
+      // {
+      //   path: 'dashboard-addproduct',
+      //   name: 'dashboard-addproduct',
+      //   component: () => import('@/views/admin/DashboardAddProduct.vue'),
+      // },
+      // {
+      //   path: 'dashboard-addproduct/:id',
+      //   name: 'dashboard-editproduct',
+      //   component: () => import('@/views/admin/DashboardAddProduct.vue'),
+      // },
     ],
   },
 ]

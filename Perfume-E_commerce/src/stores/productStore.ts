@@ -1,133 +1,143 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-import type { Product, ProductFilter, ProductPage } from '@/types/Product'
+import { ref, computed } from 'vue'
+import type { Product, ProductPage } from '@/types/clientProduct'
+import { productService } from '@/Services/productService'
 
-const API_URL = '/api/products'
+// Transform backend product data to frontend Product type
+function transformBackendProduct(backendData: any): Product {
+  return {
+    id: backendData.id,
+    name: backendData.name,
+    price: backendData.price,
+    image: backendData.imageUrl, // Map imageUrl to image
+    descriptions: backendData.description, // Map description to descriptions
+    variants: (backendData.variants || []).map((v: any) => ({
+      id: v.id || v.size, // Fallback to size if id doesn't exist
+      size: v.size,
+      imageUrl: v.imageUrl,
+      price: v.price,
+      stock: v.stock,
+    })),
+    productStorys: {
+      intro: backendData.productStory?.intro || { title: '', content: '' },
+      overture: backendData.productStory?.overture || { title: '', content: '' },
+      keyNotes: [], // Backend doesn't have keyNotes separately
+      features: backendData.features || [],
+      scentNotes: (backendData.scentNotes || []).map((note: any) => ({
+        type: note.type,
+        scent: note.scent,
+        image: note.imageUrl, // Map imageUrl to image
+      })),
+    },
+  }
+}
 
-export const useProductStore = defineStore('product', {
-  state: () => ({
-    products: [] as Product[],
-    currentProduct: null as Product | null,
-    filter: {
-      page: 0,
-      size: 10,
-    } as ProductFilter,
-    pageData: null as ProductPage | null,
-    loading: false,
-    error: null as string | null,
-  }),
+export const useProductStore = defineStore('product', () => {
+  // Product State
+  const products = ref<Product[]>([])
+  const currentProduct = ref<Product | null>(null)
 
-  actions: {
-    async fetchProducts() {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await axios.get(API_URL)
-        this.products = response.data
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to fetch products'
-      } finally {
-        this.loading = false
+  // Pagination State
+  const pagination = ref({
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: false,
+  })
+
+  // UI State
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const hasProducts = computed(() => products.value.length > 0)
+  const totalProducts = computed(() => pagination.value.totalElements)
+
+  async function fetchAllProducts() {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await productService.getAllProducts()
+      products.value = response.data.map(transformBackendProduct)
+    } catch (err: any) {
+      console.error('Error fetching products:', err)
+      error.value = err.response?.data?.message || 'Failed to fetch products'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function fetchProducts(page: number = 0, size: number = 16) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await productService.getPaginationProducts(page, size)
+      const data: ProductPage = response.data
+
+      // Transform backend products to match frontend type
+      products.value = data.content.map(transformBackendProduct)
+      pagination.value = {
+        page: data.number,
+        size: data.size,
+        totalElements: data.totalElements,
+        totalPages: data.totalPages,
+        last: data.last,
       }
-    },
+    } catch (err: any) {
+      console.error('Error fetching products:', err)
+      error.value = err.response?.data?.message || 'Failed to fetch products'
+    } finally {
+      loading.value = false
+    }
+  }
 
-    async fetchFilteredProducts(filter: ProductFilter) {
-      this.loading = true
-      this.error = null
-      this.filter = filter
-      try {
-        const params = new URLSearchParams()
-        Object.entries(filter).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            params.append(key, value.toString())
-          }
-        })
+  async function fetchProductById(id: string) {
+    loading.value = true
+    error.value = null
+    currentProduct.value = null // Reset current view
 
-        const response = await axios.get(`${API_URL}/filter?${params}`)
-        this.pageData = response.data
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to fetch products'
-      } finally {
-        this.loading = false
-      }
-    },
+    try {
+      const response = await productService.getProductById(id)
+      const backendData = response.data
 
-    async fetchProductById(id: string) {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await axios.get(`${API_URL}/${id}`)
-        this.currentProduct = response.data
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to fetch product'
-      } finally {
-        this.loading = false
-      }
-    },
+      // Transform backend data to match frontend Product type
+      currentProduct.value = transformBackendProduct(backendData)
+    } catch (err: any) {
+      error.value = 'Failed to load product details'
+    } finally {
+      loading.value = false
+    }
+  }
 
-    async createProduct(product: Product) {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await axios.post(API_URL, product)
-        this.products.push(response.data)
-        return response.data
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to create product'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
+  async function searchProducts(query: string) {
+    loading.value = true
+    try {
+      const response = await productService.searchProducts(query)
+      products.value = response.data
+    } catch (err: any) {
+      error.value = 'Search failed'
+    } finally {
+      loading.value = false
+    }
+  }
 
-    async updateProduct(id: string, product: Product) {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await axios.put(`${API_URL}/${id}`, product)
-        const index = this.products.findIndex((p) => p.id === id)
-        if (index !== -1) {
-          this.products[index] = response.data
-        }
-        if (this.currentProduct?.id === id) {
-          this.currentProduct = response.data
-        }
-        return response.data
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to update product'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
+  return {
+    // State
+    products,
+    currentProduct,
+    pagination,
+    loading,
+    error,
 
-    async deleteProduct(id: string) {
-      this.loading = true
-      this.error = null
-      try {
-        await axios.delete(`${API_URL}/${id}`)
-        this.products = this.products.filter((p) => p.id !== id)
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to delete product'
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
+    // Getters
+    hasProducts,
+    totalProducts,
 
-    clearCurrentProduct() {
-      this.currentProduct = null
-    },
-  },
-
-  getters: {
-    totalProducts: (state) => state.pageData?.totalElements || state.products.length,
-    getProductById: (state) => (id: string) => {
-      return state.products.find((product) => product.id === id)
-    },
-    getAllProduct: (state) => state.products,
-    featuredProducts: (state) => state.products.filter((p) => p.isFeatured),
-    onSaleProducts: (state) => state.products.filter((p) => p.isOnSale),
-    outOfStockProducts: (state) => state.products.filter((p) => p.stock <= 0),
-  },
+    // Actions
+    fetchAllProducts,
+    fetchProducts,
+    fetchProductById,
+    searchProducts,
+  }
 })

@@ -20,9 +20,9 @@ defineProps<{
       Reviews
     </h1>
 
-    <div class="container w-full max-w-3xl mx-auto mt-10">
+    <div class="container w-full max-w-3xl mx-auto mt-10 px-5">
       <div class="w-full flex flex-col md:flex-row justify-between items-center md:items-start">
-        <div class="flex flex-col luxurious-roman-regular">
+        <div class="flex flex-col text-black luxurious-roman-regular">
           <div class="flex items-center mt-2">
             <a href="#" class="text-sm font-medium text-fg-brand hover:underline">5 star</a>
             <div class="w-54 h-4 mx-4 bg-gray-100 rounded-base">
@@ -59,7 +59,7 @@ defineProps<{
             <span class="text-sm font-medium text-body">10%</span>
           </div>
         </div>
-        <div class="flex flex-col gap-5 mt-10 md:mt-0">
+        <div class="flex text-black flex-col gap-5 mt-10 md:mt-0">
           <div class="flex flex-col luxurious-roman-regular">
             <div class="flex text-[#280559] text-2xl">★★★★★</div>
             <p class="text-xl">5 out of 5</p>

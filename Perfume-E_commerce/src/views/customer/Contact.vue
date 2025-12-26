@@ -8,27 +8,32 @@ import Footer from '@/components/layout/Footer.vue'
     <header class="bg-white z-50">
       <Navbar />
     </header>
-    <div class="pt-24 px-6 text-sm text-gray-600 flex items-center gap-1">
-      <RouterLink to="/" class="luxurious-roman-regular text-gray-600 hover:text-[#280559] hover:underline cursor-pointer">
+    <section class="pt-24 px-6 text-sm text-gray-600 flex items-center mt-10 gap-1">
+      <RouterLink
+        to="/"
+        class="luxurious-roman-regular text-gray-600 hover:text-[#280559] hover:underline cursor-pointer"
+      >
         Home
       </RouterLink>
       <span>/</span>
       <RouterLink
-        to="/contact" class="luxurious-roman-regular text-gray-800 hover:text-[#280559] hover:underline cursor-pointer">
+        to="/contact"
+        class="luxurious-roman-regular text-gray-800 hover:text-[#280559] hover:underline cursor-pointer"
+      >
         Contact
       </RouterLink>
-    </div>
+    </section>
     <section class="w-full text-center mt-10 mb-10">
-      <h1 class="luxurious-roman-regular text-4xl lg:text-5xl text-[#000] tracking-wide">
+      <h1 class="luxurious-roman-regular text-4xl lg:text-5xl text-[#000000] tracking-wide">
         CONTACT SCENT HAVEN
       </h1>
     </section>
-    <section class="w-full flex flex-col lg:flex-row justify-center gap-12 px-6 mb-20">
-      <div class="max-w-md space-y-5 luxurious-roman-regular">
+    <section class="w-full flex flex-col lg:flex-row justify-center gap-12 px-6 mt-10 mb-20">
+      <div class="max-w-md space-y-5 luxurious-roman-regular text-black">
         <h2 class="text-2xl font-semibold">Get in Touch</h2>
         <p class="text-gray-600">
-          Have a question or feedback? We’d love to hear from you.
-          Reach out using the info below or fill out the form.
+          Have a question or feedback? We’d love to hear from you. Reach out using the info below or
+          fill out the form.
         </p>
         <div class="space-y-4 text-gray-700 luxurious-roman-regular">
           <div class="flex items-center gap-3">
@@ -44,7 +49,7 @@ import Footer from '@/components/layout/Footer.vue'
             <span>644st, Samdech Monireth Blvd(217), Phnom Penh, Cambodia</span>
           </div>
           <div class="flex items-center gap-3">
-            <img src="/Image/Contact/image 335.png" class="w-6 h-6"/>
+            <img src="/Image/Contact/image 335.png" class="w-6 h-6" />
             <span>https://t.me/+ScentHaven</span>
           </div>
         </div>
@@ -57,7 +62,7 @@ import Footer from '@/components/layout/Footer.vue'
           ></iframe>
         </div>
       </div>
-      <div class="w-full max-w-lg luxurious-roman-regular space-y-4">
+      <div class="w-full max-w-lg luxurious-roman-regular text-black space-y-5">
         <div class="flex gap-4">
           <input
             type="text"

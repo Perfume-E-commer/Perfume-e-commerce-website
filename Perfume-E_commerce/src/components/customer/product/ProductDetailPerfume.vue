@@ -1,43 +1,39 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { Heart } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+// Assuming these types exist in your project based on your code
+import type { ProductVariant, StorySection, KeyNote } from '@/types/clientProduct'
+import { useCartStore, type AddToCartPayload } from '@/stores/cartStore'
 
-interface ProductVariant {
-  id: number | string
-  size: string
-  image: string
-  price: number
-}
-
-interface StorySection {
-  title: string
-  content: string
-}
-
-interface KeyNote {
-  id: number
+// --- Types ---
+type ScentNote = {
   type: string
   scent: string
   image: string
 }
 
-interface ProductStory {
+type ProductStorysType = {
   intro: StorySection
   overture: StorySection
   keyNotes: KeyNote[]
   features: StorySection[]
+  scentNotes: ScentNote[]
 }
 
+// --- Props ---
 const props = defineProps<{
-  title: string
+  id: string | number | undefined
+  name: string
   description: string
   image: string
   price: number
+  stock: number
   variants: ProductVariant[] | string
-  story: ProductStory | string
+  story: ProductStorysType | string | null
 }>()
 
-// Parse variants if passed as JSON string
+// --- Computed ---
 const parsedVariants = computed<ProductVariant[]>(() => {
   if (!props.variants) return []
   if (typeof props.variants === 'string') {
@@ -50,7 +46,7 @@ const parsedVariants = computed<ProductVariant[]>(() => {
   return props.variants
 })
 
-const parsedStory = computed<ProductStory>(() => {
+const parsedStory = computed<ProductStorysType | null>(() => {
   if (!props.story) return null
   if (typeof props.story === 'string') {
     try {
@@ -59,26 +55,30 @@ const parsedStory = computed<ProductStory>(() => {
       return null
     }
   }
-  return props.story as ProductStory
+  return props.story as ProductStorysType
 })
 
+// --- Store & State ---
+const cartStore = useCartStore()
+const router = useRouter()
+const quantity = ref<number>(1)
 const selectedVariant = ref<ProductVariant | null>(null)
 const currentImage = ref<string>('')
 
-// Initialize logic
+// --- Methods ---
 const initialize = () => {
   if (parsedVariants.value && parsedVariants.value.length > 0) {
     selectedVariant.value = parsedVariants.value[0] as ProductVariant
-    // 2. Set the initial image to the PROP (from ProductList), not the variant
-    currentImage.value = props.image || selectedVariant.value.image
+    currentImage.value = selectedVariant.value!.imageUrl
   } else {
     selectedVariant.value = {
       id: 'default',
       size: 'Standard',
-      image: props.image || '',
+      imageUrl: selectedVariant.value ? selectedVariant.value.imageUrl : props.image,
       price: props.price || 0,
+      stock: props.stock || 0,
     }
-    currentImage.value = props.image || ''
+    currentImage.value = selectedVariant.value ? selectedVariant.value.imageUrl : props.image
   }
 }
 
@@ -86,17 +86,40 @@ const handleImagePreview = (imagePath: string) => {
   currentImage.value = imagePath
 }
 
-// 3. Create a handler to update both the selection and the image on click
 const handleVariantClick = (variant: ProductVariant) => {
   selectedVariant.value = variant
+  // Optional: Switch main image when variant is clicked
+  // currentImage.value = variant.imageUrl
 }
 
+const addToCartHandler = async () => {
+  if (!selectedVariant.value || !props.id || quantity.value < 1) {
+    console.error('Invalid variant or product ID or quantity')
+    return
+  }
+
+  const payload: AddToCartPayload = {
+    productId: props.id as string,
+    variantId: selectedVariant.value.id,
+    quantity: quantity.value,
+  }
+
+  try {
+    await cartStore.addToCart(payload)
+    console.log('Added to cart:', payload)
+    router.push('/cart')
+  } catch (error) {
+    console.error('Failed to add to cart:', error)
+  }
+}
+
+// --- Lifecycle ---
 onMounted(() => {
   initialize()
 })
 
 watch(
-  () => props.title,
+  () => props.name,
   () => {
     initialize()
   },
@@ -104,31 +127,41 @@ watch(
 </script>
 
 <template>
-  <div class="container max-w-8xl mx-auto px-4 py-10" v-if="selectedVariant">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-      <div class="flex flex-row">
-        <div class="flex flex-col gap-4">
+  <div class="container max-w-8xl mx-auto px-4 py-6 md:py-10" v-if="selectedVariant">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-16 items-start">
+      <div class="flex flex-col lg:flex-row gap-4 w-full">
+        <div
+          class="flex flex-row lg:flex-col gap-3 order-2 lg:order-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide"
+        >
           <img
             v-for="(variant, index) in parsedVariants"
             :key="index"
-            :src="variant.image"
+            :src="variant.imageUrl"
             :alt="variant.size"
-            @click="handleImagePreview(variant.image)"
-            class="w-30 h-30 object-contain transition-opacity duration-300 hover:border-2 border-[#280559] cursor-pointer"
-            :class="selectedVariant === variant ? 'border-2 border-[#280559]' : ''"
+            @click="handleImagePreview(variant.imageUrl)"
+            class="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-md border cursor-pointer shrink-0 transition-all duration-300"
+            :class="
+              currentImage === variant.imageUrl
+                ? 'border-[#280559] opacity-100 ring-1 ring-[#280559]'
+                : 'border-transparent opacity-60 hover:opacity-100'
+            "
           />
         </div>
 
-        <img
-          :src="currentImage"
-          :alt="title"
-          class="w-full max-w-[300px] lg:max-w-[400px] xl:max-w-[500px] object-contain transition-opacity duration-300"
-        />
+        <div
+          class="relative w-full order-1 lg:order-2 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center"
+        >
+          <img
+            :src="currentImage"
+            :alt="name"
+            class="w-full h-auto max-h-[500px] lg:max-h-[600px] object-contain mix-blend-multiply transition-opacity duration-300"
+          />
+        </div>
       </div>
 
       <div class="flex flex-col gap-6 text-[#280559]">
         <div class="flex flex-col gap-2 luxurious-roman-regular">
-          <h1 class="text-3xl md:text-5xl uppercase mb-4">{{ title }}</h1>
+          <h1 class="text-3xl md:text-4xl lg:text-5xl uppercase leading-tight">{{ name }}</h1>
           <p class="text-gray-600 leading-relaxed text-sm md:text-base">
             {{ description }}
           </p>
@@ -139,29 +172,36 @@ watch(
           <span class="underline text-gray-500 hover:text-black cursor-pointer">(90) Reviews</span>
         </div>
 
-        <div class="mt-4">
-          <div class="flex flex-wrap gap-6">
+        <div class="mt-2">
+          <p class="text-sm font-bold mb-3 uppercase tracking-wider text-gray-500">Select Size</p>
+          <div class="flex flex-wrap gap-4 md:gap-6">
             <div
               v-for="variant in parsedVariants"
               :key="variant.id"
               @click="handleVariantClick(variant)"
-              class="cursor-pointer group flex flex-col items-center gap-2"
+              class="cursor-pointer group flex flex-col items-center gap-2 transition-all duration-200"
+              :class="
+                selectedVariant?.id === variant.id ? 'opacity-100' : 'opacity-60 hover:opacity-100'
+              "
             >
-              <div class="relative">
+              <div
+                class="relative p-2 rounded-lg"
+                :class="selectedVariant?.id === variant.id ? 'bg-gray-100' : ''"
+              >
                 <img
-                  :src="variant.image"
+                  :src="variant.imageUrl"
                   :alt="variant.size"
-                  class="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-110"
+                  class="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 group-hover:scale-105"
                 />
-                <div
-                  v-if="selectedVariant?.id === variant.id"
-                  class="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#280559]"
-                ></div>
               </div>
 
               <span
-                class="text-sm font-medium"
-                :class="selectedVariant?.id === variant.id ? 'text-[#280559]' : 'text-gray-400'"
+                class="text-xs md:text-sm font-medium border-b-2 transition-colors duration-200"
+                :class="
+                  selectedVariant?.id === variant.id
+                    ? 'border-[#280559] text-[#280559]'
+                    : 'border-transparent text-gray-500'
+                "
               >
                 {{ variant.size }}
               </span>
@@ -169,43 +209,70 @@ watch(
           </div>
         </div>
 
-        <div class="text-2xl luxurious-roman-regular text-[#280559] mt-2">
+        <div class="text-3xl luxurious-roman-regular text-[#280559] mt-2">
           $ {{ selectedVariant?.price.toFixed(2) }}
         </div>
 
-        <div class="flex flex-col gap-3 max-w-sm mt-4">
+        <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full lg:max-w-md">
           <button
-            class="border border-[#280559] py-3 text-[#280559] hover:bg-gray-50 uppercase tracking-widest text-sm rounded-[10px] luxurious-roman-regular transition"
+            @click="addToCartHandler"
+            class="flex-1 border border-[#280559] py-3.5 text-[#280559] hover:bg-[#280559] hover:text-white uppercase tracking-widest text-sm rounded-lg luxurious-roman-regular transition-all duration-300"
           >
             Add to Bag
           </button>
           <button
-            class="bg-[#280559] text-white py-3 hover:bg-opacity-90 flex justify-center items-center gap-2 uppercase rounded-[10px] luxurious-roman-regular tracking-widest text-sm transition"
+            class="flex-1 bg-[#280559] text-white py-3.5 hover:bg-opacity-90 flex justify-center items-center gap-2 uppercase rounded-lg luxurious-roman-regular tracking-widest text-sm transition-all duration-300 shadow-md"
           >
-            Wish List <Heart class="w-5 h-5" stroke-width="1.5" />
+            Wish List <Heart class="w-4 h-4" />
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="parsedStory" class="flex flex-col gap-16 mt-20">
-      <div v-if="parsedStory.intro">
-        <h2 class="luxurious-roman-regular text-3xl text-[#280559] mb-4">
+    <div v-if="parsedStory" class="flex flex-col gap-16 mt-20 md:mt-32">
+      <div v-if="parsedStory.intro" class="w-full mx-auto text-center md:text-left">
+        <h2 class="luxurious-roman-regular text-2xl md:text-3xl text-[#280559] mb-4">
           {{ parsedStory.intro.title }}
         </h2>
-        <p class="text-gray-600 leading-relaxed text-lg">{{ parsedStory.intro.content }}</p>
+        <p class="text-gray-600 luxurious-roman-regular leading-relaxed text-base md:text-lg">
+          {{ parsedStory.intro.content }}
+        </p>
       </div>
 
-      <div v-if="parsedStory.overture">
-        <h2 class="luxurious-roman-regular text-3xl text-[#280559] mb-4">
+      <div v-if="parsedStory.overture" class="w-full mx-auto text-center md:text-left">
+        <h2 class="luxurious-roman-regular text-2xl md:text-3xl text-[#280559] mb-4">
           {{ parsedStory.overture.title }}
         </h2>
-        <p class="text-gray-600 leading-relaxed text-lg">{{ parsedStory.overture.content }}</p>
+        <p class="text-gray-600 luxurious-roman-regular leading-relaxed text-base md:text-lg">
+          {{ parsedStory.overture.content }}
+        </p>
       </div>
 
-      <div v-if="parsedStory.keyNotes && parsedStory.keyNotes.length" class="my-10">
+      <div v-if="parsedStory.scentNotes && parsedStory.scentNotes.length" class="my-6 md:my-10">
+        <h2 class="luxurious-roman-regular text-3xl text-[#280559] mb-10 text-center">
+          Scent Notes
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10 text-center">
+          <div
+            v-for="note in parsedStory.scentNotes"
+            :key="note.type"
+            class="flex flex-col items-center gap-4"
+          >
+            <div class="luxurious-roman-regular text-[#280559]">
+              <h3 class="text-xl font-bold">{{ note.type }}</h3>
+              <p class="text-md italic">{{ note.scent }}</p>
+            </div>
+            <img
+              :src="note.image"
+              class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover shadow-lg border-4 border-white"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div v-if="parsedStory.keyNotes && parsedStory.keyNotes.length" class="my-6 md:my-10">
         <h2 class="luxurious-roman-regular text-3xl text-[#280559] mb-10 text-center">Key Notes</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10 text-center">
           <div
             v-for="note in parsedStory.keyNotes"
             :key="note.id"
@@ -217,16 +284,31 @@ watch(
             </div>
             <img
               :src="note.image"
-              class="w-48 h-48 rounded-full object-cover shadow-lg border-4 border-white"
+              class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover shadow-lg border-4 border-white"
             />
           </div>
         </div>
       </div>
 
-      <div v-for="(feature, idx) in parsedStory.features" :key="idx">
-        <h2 class="luxurious-roman-regular text-3xl text-[#280559] mb-4">{{ feature.title }}</h2>
-        <p class="text-gray-600 leading-relaxed text-lg">{{ feature.content }}</p>
+      <div v-for="(feature, idx) in parsedStory.features" :key="idx" class="w-full mx-auto">
+        <h2 class="luxurious-roman-regular text-2xl md:text-3xl text-[#280559] mb-4">
+          {{ feature.title }}
+        </h2>
+        <p class="text-gray-600 luxurious-roman-regular leading-relaxed text-base md:text-lg">
+          {{ feature.content }}
+        </p>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Utility to hide scrollbar for clean horizontal scrolling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

@@ -1,3 +1,4 @@
+// assign for admin plate form
 export interface Product {
   id?: string
   name: string

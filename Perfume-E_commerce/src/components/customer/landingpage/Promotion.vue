@@ -12,14 +12,16 @@ defineProps<{
       <div class="w-full flex flex-col gap-10 z-10">
         <div class="flex flex-col gap-2">
           <h1
-            class="luxurious-roman-regular text-2xl md:text-3xl xl:text-5xl font-medium max-w-sm xl:max-w-xl"
+            class="luxurious-roman-regular text-black dark:text-black text-2xl md:text-3xl xl:text-5xl font-medium max-w-sm xl:max-w-xl"
           >
             {{ title }}
           </h1>
-          <p class="luxurious-roman-regular font-extralight max-w-sm">{{ description }}</p>
+          <p class="luxurious-roman-regular text-black dark:text-black font-extralight max-w-sm">
+            {{ description }}
+          </p>
         </div>
         <button
-          class="w-fit luxurious-roman-regular font-medium text-white bg-[#280559] px-10 py-3 rounded-[14px]"
+          class="w-fit luxurious-roman-regular font-medium text-white dark:text-white bg-[#280559] px-10 py-3 rounded-[14px]"
         >
           Shop Now
         </button>

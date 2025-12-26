@@ -36,4 +36,9 @@ export default {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
   },
+
+  isAuthenticated() {
+    const token = localStorage.getItem('token')
+    return !!token
+  },
 }

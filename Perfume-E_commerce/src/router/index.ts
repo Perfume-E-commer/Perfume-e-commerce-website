@@ -1,15 +1,10 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import authService from '@/Services/authService'
 const routes: RouteRecordRaw[] = [
-  // error pages
-  // {
-  //   path: '/:CatchAll(.*)',
-  //   name: 'NotFound',
-  //   component: NotFound,
-  // },
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    redirect: '/NotFound',
+    name: '404',
+    redirect: '/404',
   },
   {
     path: '/404',
@@ -35,22 +30,56 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/contact',
     name: 'contact',
-    component: () => import('@/views/customer/OurService.vue'),
+    component: () => import('@/views/customer/Contact.vue'),
   },
   {
     path: '/productlist',
     name: 'productlist',
     component: () => import('@/views/customer/ProductList.vue'),
   },
-  {
-    path: '/productlist/:id',
-    name: 'productdetail',
-    component: () => import('@/views/customer/ProductDetail.vue'),
-  },
+  // {
+  //   path: '/productlist/:id',
+  //   name: 'productdetail',
+  //   component: () => import('@/views/customer/ProductDetail.vue'),
+  // },
   {
     path: '/productdetail/:id',
     name: 'ProductDetail',
     component: () => import('@/views/customer/ProductDetail.vue'),
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: '/cart',
+    name: 'cart',
+    component: () => import('@/views/customer/CartView.vue'),
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: '/checkout',
+    name: 'checkout',
+    component: () => import('@/views/customer/CheckOut.vue'),
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: '/successful',
+    name: 'successful',
+    component: () => import('@/views/customer/SuccessfullOrder.vue'),
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: '/verify',
+    name: 'verify',
+    component: () => import('@/views/auth/VerifyEmail.vue'),
+  },
+  {
+    path: '/account',
+    name: 'account',
+    component: () => import('@/views/customer/UserProfile.vue'),
+    meta: { requiresAuth: true },
   },
 
   // auth
@@ -64,6 +93,8 @@ const routes: RouteRecordRaw[] = [
     name: 'register',
     component: () => import('@/views/auth/RegisterAuth.vue'),
   },
+
+  // admin
   {
     path: '/create-admin',
     name: 'createadmin',
@@ -146,26 +177,25 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
-  {
-    path: '/cart',
-    name: 'cart',
-    component: () => import('@/views/customer/CartView.vue'),
-  },
-  {
-    path: '/verify',
-    name: 'verify',
-    component: () => import('@/views/auth/VerifyEmail.vue'),
-  },
-  {
-    path: '/account',
-    name: 'account',
-    component: () => import('@/views/customer/UserProfile.vue'),
-    meta: { requiresAuth: true },
-  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = authService.isAuthenticated()
+  const requiresAuth = to.meta.requiresAuth
+  const isLoginPage = to.name === 'login'
+
+  if (isAuthenticated && isLoginPage) {
+    next({ name: 'admindashboard' })
+  } else if (requiresAuth && !isAuthenticated) {
+    next({ name: 'login' })
+  } else {
+    next()
+  }
+})
+
 export default router

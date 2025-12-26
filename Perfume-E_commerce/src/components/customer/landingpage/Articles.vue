@@ -25,7 +25,7 @@ defineProps<{
       >
         <img :src="article.image" :alt="article.title" class="w-full h-3/4 object-cover" />
         <div class="flex flex-col gap-1 mt-2">
-          <h2 class="text-xl luxurious-roman-regular font-semibold mb-2">
+          <h2 class="text-xl text-black dark:text-black luxurious-roman-regular font-semibold mb-2">
             {{ article.title }}
           </h2>
           <p class="text-gray-600 text-sm luxurious-roman-regular">

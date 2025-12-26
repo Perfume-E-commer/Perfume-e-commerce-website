@@ -1,7 +1,7 @@
 // services/api.js
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
-import type { Product } from '@/types/Product'
+import type { Product } from '@/types/adminProduct'
 
 const API_BASE_URL = 'http://localhost:8080/api'
 
@@ -26,6 +26,9 @@ export const productService = {
     return api.get('/products')
   },
 
+  getPaginationProducts(page: number, limit: number) {
+    return api.get(`/products?page=${page}&limit=${limit}`)
+  },
   // Get product by ID
   getProductById(id: string) {
     return api.get(`/products/${id}`)

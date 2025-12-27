@@ -79,6 +79,7 @@
               { name: ' Customers', link: '/mainDashboard/dashboardcustomer' },
               { name: ' Categories', link: '/mainDashboard/dashboardcategories' },
               { name: ' Transaction', link: '/mainDashboard/dashboardtransaction' },
+              { name: ' Warehouse', link: '/mainDashboard/dashboardwarehouse' },
             ]"
             @item-click="handleItemClick"
           />

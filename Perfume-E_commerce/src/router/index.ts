@@ -144,6 +144,11 @@ const routes: RouteRecordRaw[] = [
         name: 'dashboardeditproduct',
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
+      {
+        path: 'dashboardwarehouse',
+        name: 'dashboardwarehouse',
+        component: () => import('@/views/admin/DashboardWarehouse.vue'),
+      },
     ],
   },
   {

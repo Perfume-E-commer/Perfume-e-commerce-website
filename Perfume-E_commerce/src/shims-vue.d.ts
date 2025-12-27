@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 /* eslint-disable */
+=======
+>>>>>>> 049d52c93da4e18fac6ad9aab97f13e48187030d
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<{}, {}, any>
   export default component
+<<<<<<< HEAD
 }
 
 declare module '@/views/admin/MainDashboard.vue' {
@@ -58,3 +62,6 @@ declare module '@/views/customer/UserProfile.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
+=======
+}
+>>>>>>> 049d52c93da4e18fac6ad9aab97f13e48187030d

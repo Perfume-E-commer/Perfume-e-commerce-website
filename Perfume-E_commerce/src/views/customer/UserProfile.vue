@@ -478,6 +478,6 @@ const handleChangePassword = () => {
 
 const handleLogout = () => {
   authStore.logout()
-  router.push('/login')
+  router.push('/')
 }
 </script>

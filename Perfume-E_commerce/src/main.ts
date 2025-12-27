@@ -11,9 +11,6 @@ import VueApexCharts from 'vue3-apexcharts'
 import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 
-// import Datepicker from 'flowbite-datepicker'
-// import { initFlowbite } from 'flowbite'
-
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
@@ -24,5 +21,4 @@ app.use(PrimeVue, {
   },
 })
 
-// initFlowbite()
 app.mount('#app')

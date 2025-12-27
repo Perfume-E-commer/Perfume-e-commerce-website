@@ -12,13 +12,13 @@ defineProps<{
     <div class="flex flex-col gap-5 lg:gap-20 xl:gap-30 mt-10 md:mt-0">
       <div class="flex flex-col space-y-2 md:space-y-10 max-w-3xl xl:max-w-5xl">
         <h1
-          class="luxurious-roman-regular font-medium text-3xl lg:text-4xl xl:text-7xl leading-tight"
+          class="luxurious-roman-regular text-black font-medium text-3xl lg:text-4xl xl:text-7xl leading-tight"
         >
           {{ title }}
         </h1>
 
         <p
-          class="luxurious-roman-regular font-extralight text-base lg:text-xl xl:text-2xl leading-tight"
+          class="luxurious-roman-regular text-black font-extralight text-base lg:text-xl xl:text-2xl leading-tight"
         >
           {{ text }}
         </p>

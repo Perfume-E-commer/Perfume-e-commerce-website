@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import authService from '@/Services/authService'
+import authService from '@/services/authService'
 const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
@@ -49,7 +49,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
 
-<<<<<<< HEAD
   // auth
   {
     path: '/login',
@@ -71,11 +70,11 @@ const routes: RouteRecordRaw[] = [
     name: 'verify',
     component: () => import('@/views/auth/VerifyEmail.vue'),
   },
-  {
-    path: '/dashboardcategories',
-    name: 'dashboardcategories',
-    component: () => import('@/views/admin/DashboardCategories.vue'),
-  },
+  // {
+  //   path: '/dashboardcategories',
+  //   name: 'dashboardcategories',
+  //   component: () => import('@/views/admin/DashboardCategories.vue'),
+  // },
   {
     path: '/dashboardcustomer',
     name: 'dashboardcustomer',
@@ -114,18 +113,18 @@ const routes: RouteRecordRaw[] = [
         name: 'dashboardcustomer',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },
-      {
-        path: 'dashboardcategories',
-        name: 'dashboardcategories',
-        component: () => import('@/views/admin/DashboardCategories.vue'),
-        children: [
-          {
-            path: 'updatecategory/:id',
-            name: 'updatecategory',
-            component: () => import('@/views/admin/UpdateCategory.vue'),
-          },
-        ],
-      },
+      // {
+      //   path: 'dashboardcategories',
+      //   name: 'dashboardcategories',
+      //   component: () => import('@/views/admin/DashboardCategories.vue'),
+      //   children: [
+      //     {
+      //       path: 'updatecategory/:id',
+      //       name: 'updatecategory',
+      //       component: () => import('@/views/admin/UpdateCategory.vue'),
+      //     },
+      //   ],
+      // },
       {
         path: 'dashboardtransaction',
         name: 'dashboardtransaction',
@@ -148,8 +147,6 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
-=======
->>>>>>> 049d52c93da4e18fac6ad9aab97f13e48187030d
   {
     path: '/cart',
     name: 'cart',
@@ -294,6 +291,11 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboardtransaction',
         name: 'dashboardtransaction',
         component: () => import('@/views/admin/DashboardTransaction.vue'),
+      },
+      {
+        path: 'dashboardwarehouse',
+        name: 'dashboardwarehouse',
+        component: () => import('@/views/admin/DashboardWarehouse.vue'),
       },
       // {
       //   path: 'dashboard-addproduct',

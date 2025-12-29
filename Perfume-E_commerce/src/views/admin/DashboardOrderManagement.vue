@@ -66,6 +66,7 @@
       <Total_inOrder total_name="Total Orders" total_value="1,240" rate_fluctuation="↑ 14.4%" />
     </div>
   </div>
+
   <div class="bg-white rounded-lg shadow-md p-6 space-y-6">
     <div>
       <NavFilter />
@@ -82,22 +83,22 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr v-for="order in orders" :key="order.id">
               <th
                 scope="row"
                 class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
               >
                 <div>
                   <img
-                    src="/Image/HomePage/BlueChanel.png"
+                    :src="order.image || '/Image/HomePage/BlueChanel.png'"
                     class="h-10 w-9 rounded-lg bg-gray-400"
                     alt=""
                   />
                 </div>
-                <div>Apple MacBook Pro 17</div>
+                <div>{{ order.name }}</div>
               </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#21C45D]">
+              <td class="px-6 py-4">{{ order.total_order }}</td>
+              <td class="px-6 py-4 bg-neutral-secondary-soft">
                 <div class="flex items-center space-x-2">
                   <svg
                     width="8"
@@ -106,167 +107,15 @@
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
+                    <circle :fill="order.status === 'Stock' ? '#21C45D' : '#F87171'" cx="4" cy="4" r="4" />
                   </svg>
-                  <div>Stock</div>
+                  <select v-model="order.status" @change="updateStatus(order)" class="bg-transparent border-none text-sm">
+                    <option value="Stock">Stock</option>
+                    <option value="Stock out">Stock out</option>
+                  </select>
                 </div>
               </td>
-              <td class="px-6 py-4">$2999</td>
-            </tr>
-            <tr>
-              <th
-                scope="row"
-                class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
-              >
-                <div>
-                  <img
-                    src="/Image/HomePage/BlueChanel.png"
-                    class="h-10 w-9 rounded-lg bg-gray-400"
-                    alt=""
-                  />
-                </div>
-                <div>Apple MacBook Pro 17</div>
-              </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#F87171]">
-                <div class="flex items-center space-x-2">
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#F87171" />
-                  </svg>
-                  <div>Stock out</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">$2999</td>
-            </tr>
-            <tr>
-              <th
-                scope="row"
-                class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
-              >
-                <div>
-                  <img
-                    src="/Image/HomePage/BlueChanel.png"
-                    class="h-10 w-9 rounded-lg bg-gray-400"
-                    alt=""
-                  />
-                </div>
-                <div>Apple MacBook Pro 17</div>
-              </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#21C45D]">
-                <div class="flex items-center space-x-2">
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
-                  </svg>
-                  <div>Stock</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">$2999</td>
-            </tr>
-            <tr>
-              <th
-                scope="row"
-                class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
-              >
-                <div>
-                  <img
-                    src="/Image/HomePage/BlueChanel.png"
-                    class="h-10 w-9 rounded-lg bg-gray-400"
-                    alt=""
-                  />
-                </div>
-                <div>Apple MacBook Pro 17</div>
-              </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#21C45D]">
-                <div class="flex items-center space-x-2">
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
-                  </svg>
-                  <div>Stock</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">$2999</td>
-            </tr>
-            <tr>
-              <th
-                scope="row"
-                class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
-              >
-                <div>
-                  <img
-                    src="/Image/HomePage/BlueChanel.png"
-                    class="h-10 w-9 rounded-lg bg-gray-400"
-                    alt=""
-                  />
-                </div>
-                <div>Apple MacBook Pro 17</div>
-              </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#21C45D]">
-                <div class="flex items-center space-x-2">
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
-                  </svg>
-                  <div>Stock</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">$2999</td>
-            </tr>
-            <tr>
-              <th
-                scope="row"
-                class="px-6 py-4 space-x-2 flex items-center font-medium text-heading whitespace-nowrap bg-neutral-secondary-soft"
-              >
-                <div>
-                  <img
-                    src="/Image/HomePage/BlueChanel.png"
-                    class="h-10 w-9 rounded-lg bg-gray-400"
-                    alt=""
-                  />
-                </div>
-                <div>Apple MacBook Pro 17</div>
-              </th>
-              <td class="px-6 py-4">101</td>
-              <td class="px-6 py-4 bg-neutral-secondary-soft text-[#21C45D]">
-                <div class="flex items-center space-x-2">
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 8 8"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle cx="4" cy="4" r="4" fill="#21C45D" />
-                  </svg>
-                  <div>Stock</div>
-                </div>
-              </td>
-              <td class="px-6 py-4">$2999</td>
+              <td class="px-6 py-4">${{ order.price }}</td>
             </tr>
           </tbody>
         </table>
@@ -274,17 +123,43 @@
     </div>
   </div>
 </template>
+
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import ButtonRectangle from '@/views/components/ButtonRectangle.vue'
 import Total_inOrder from '../components/Total_inOrder.vue'
 import NavFilter from '../components/NavFilter.vue'
+import orderService from '@/services/orderService'
+
 export default defineComponent({
   name: 'DashboardOrderManagement',
   components: {
     ButtonRectangle,
     Total_inOrder,
     NavFilter,
+  },
+  setup() {
+    const orders = ref<Array<any>>([])
+
+    onMounted(async () => {
+      try {
+        const res = await orderService.getAllOrders()
+        orders.value = res.data
+      } catch (error) {
+        console.error('Failed to fetch orders', error)
+      }
+    })
+
+    const updateStatus = async (order: any) => {
+      try {
+        await orderService.updateOrderStatus(order.id, order.status)
+        alert('Order status updated!')
+      } catch (error) {
+        alert('Failed to update order status')
+      }
+    }
+
+    return { orders, updateStatus }
   },
 })
 </script>

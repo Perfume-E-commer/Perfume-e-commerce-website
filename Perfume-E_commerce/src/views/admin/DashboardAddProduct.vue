@@ -168,7 +168,6 @@ onMounted(async () => {
       // Map backend response to frontend form
       formData.value = {
         ...res.data,
-        // Ensure arrays are initialized
         variants: res.data.variants || [],
         images: res.data.images || [],
         features: res.data.features || [],

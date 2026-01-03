@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import authService from '@/Services/authService'
+import authService from '@/services/authService'
 const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',

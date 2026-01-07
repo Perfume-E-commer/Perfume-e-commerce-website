@@ -50,6 +50,16 @@
 
       <NavFilter />
 
+      <div class="mt-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <input
+          v-model="searchQuery"
+          @input="handleSearch"
+          type="text"
+          placeholder="Search Transaction (Order ID) or Email..."
+          class="w-full sm:max-w-md px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+        />
+      </div>
+
       <div class="bg-white rounded-lg shadow-md overflow-hidden mt-6">
         <div class="overflow-x-auto">
           <table class="w-full text-sm text-left text-gray-500">
@@ -72,16 +82,16 @@
               </tr>
 
               <tr v-for="record in records" :key="record.orderId" class="bg-white border-b hover:bg-gray-50">
-                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                   #{{ record.orderId.substring(record.orderId.length - 8).toUpperCase() }}
+                <!-- START UPDATE: Safe ID display with fallback -->
+                <td class="px-6 py-4 font-medium text-indigo-600">
+                  #{{ (record.orderNumber || record.id || '').toString().slice(-8).toUpperCase() }}
                 </td>
+                <!-- END UPDATE -->
 
-                <!-- ✨ UPDATED: Changed from userEmail to customerEmail -->
                 <td class="px-6 py-4">
                   {{ record.customerEmail || 'Guest User' }}
                 </td>
 
-                <!-- ✨ UPDATED: Changed from transactionDate to date -->
                 <td class="px-6 py-4">
                   {{ formatDate(record.date) }}
                 </td>
@@ -111,22 +121,21 @@ import Total_inOrder from '@/views/components/Total_inOrder.vue';
 import ApexCharts from '@/views/components/ApexCharts.vue';
 import NavFilter from '@/views/components/NavFilter.vue';
 
-// State
-const records = ref<BillingRecord[]>([]);
+const records = ref<any[]>([]); 
 const isLoading = ref(false);
+const searchQuery = ref('');
+const currentPage = ref(0);
+const pageSize = ref(10);
 
-// ✨ UPDATED: Stats Calculation (Computed from the records list)
 const stats = computed(() => {
   const totalRevenue = records.value.reduce((sum, r) => sum + (r.totalAmount || 0), 0);
   const completedCount = records.value.filter(r => r.paymentStatus === 'PAID').length;
   const pendingCount = records.value.filter(r => r.paymentStatus === 'PENDING').length;
-  // Since we mock payments, let's assume all non-cancelled orders count as revenue or pending
   const cancelledCount = records.value.length - (completedCount + pendingCount);
 
   return { totalRevenue, completedCount, pendingCount, cancelledCount };
 });
 
-// Formatters
 const formatCurrency = (val: number) => 
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
@@ -144,20 +153,36 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// Action
 const loadBillingData = async () => {
   isLoading.value = true;
   try {
-    const response = await adminService.getBillingRecords();
-    records.value = response.data.reverse(); // Newest first
+    const response = await adminService.getAllOrders({
+        page: currentPage.value,
+        size: pageSize.value,
+        search: searchQuery.value
+    });
+
+    if (response.data && response.data.content) {
+      records.value = response.data.content;
+    } else {
+      records.value = response.data || [];
+    }
   } catch (error) {
-    console.error("Failed to load billing records", error);
+    console.error("Failed to load transactions", error);
   } finally {
     isLoading.value = false;
   }
 };
 
-// Init
+let searchTimeout: any;
+const handleSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 0;
+    loadBillingData();
+  }, 500);
+};
+
 onMounted(() => {
   loadBillingData();
 });

@@ -294,7 +294,6 @@ const totalPages = ref(0)
 const searchQuery = ref('')
 const totalElements = ref(0)
 
-// ✨ ADDED: Low stock filter
 const showLowStockOnly = ref(false)
 
 onMounted(async () => {
@@ -310,7 +309,6 @@ const handleSearch = (event?: Event) => {
   }, 300) 
 }
 
-// ✨ ADDED: Filter for low stock items (client-side)
 const displayedProducts = computed(() => {
   if (showLowStockOnly.value) {
     return products.value.filter(product => product.stock < 10)
@@ -331,22 +329,23 @@ const loadProducts = async () => {
     
     const response = await productService.getAllProducts(params)
     
-    // ✨ FIXED: Handle both old and new (VIA_DTO) response structures
-    products.value = response.data.content 
-    
-    // Check for new VIA_DTO structure first, fall back to old structure
-    if (response.data.totalElements !== undefined) {
-      // Old structure: totalElements and totalPages are directly on response.data
-      totalElements.value = response.data.totalElements
-      totalPages.value = response.data.totalPages
-    } else if (response.data.page?.totalElements !== undefined) {
-      // New VIA_DTO structure: pagination data is nested under "page"
-      totalElements.value = response.data.page.totalElements
-      totalPages.value = response.data.page.totalPages
-    } else {
-      // Fallback: try to get from other possible locations
+    // 1. Handle Content
+    // Check if content is directly in data or inside content property
+    products.value = Array.isArray(response.data) ? response.data : (response.data.content || [])
+
+    // 2. Handle Pagination (Fixing the NaN issue)
+    if (response.data.page) {
+      // New Spring Boot 3 VIA_DTO format
+      totalElements.value = response.data.page.totalElements || 0
+      totalPages.value = response.data.page.totalPages || 0
+    } else if (response.data.totalElements !== undefined) {
+      // Old format
       totalElements.value = response.data.totalElements || 0
       totalPages.value = response.data.totalPages || 0
+    } else {
+      // Fallback if no pagination info is found
+      totalElements.value = products.value.length
+      totalPages.value = 1
     }
     
   } catch (error: any) {
@@ -364,7 +363,6 @@ const changePage = (newPage: number) => {
   }
 }
 
-// ✨ ADDED: Toggle low stock filter
 const toggleLowStockFilter = () => {
   showLowStockOnly.value = !showLowStockOnly.value
 }

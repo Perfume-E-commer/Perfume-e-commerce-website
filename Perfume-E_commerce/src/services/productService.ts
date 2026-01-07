@@ -21,8 +21,14 @@ api.interceptors.request.use((config) => {
 })
 
 export const productService = {
-  getAllProducts(params: { page?: number; size?: number; search?: string } = {}) {
-    return api.get('/products', { params })
+  getAllProducts(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {
+    return api.get('/products', {
+      params: {
+        page: params.page,
+        size: params.size,
+        search: params.search 
+      }
+    });
   },
 
   getPaginationProducts(page: number, limit: number) {

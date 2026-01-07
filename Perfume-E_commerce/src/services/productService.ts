@@ -21,43 +21,37 @@ api.interceptors.request.use((config) => {
 })
 
 export const productService = {
-  // Get all products
-  getAllProducts() {
-    return api.get('/products')
+  getAllProducts(params: { page?: number; size?: number; search?: string } = {}) {
+    return api.get('/products', { params })
   },
 
   getPaginationProducts(page: number, limit: number) {
     return api.get(`/products?page=${page}&limit=${limit}`)
   },
-  // Get product by ID
+
   getProductById(id: string) {
     return api.get(`/products/${id}`)
   },
 
-  // Create new product
   createProduct(productData: Product) {
     return api.post('/products', productData)
   },
 
-  // Update product
   updateProduct(id: string, productData: Product) {
     return api.put(`/products/${id}`, productData)
   },
 
-  // Delete product
   deleteProduct(id: string) {
     return api.delete(`/products/${id}`)
   },
 
-  // Search products
   searchProducts(query: string) {
     return api.get(`/products/search?q=${query}`)
   },
 
-  // Get products by category
   getProductsByCategory(category: string) {
     return api.get(`/products/category/${category}`)
   },
 }
 
-export default api
+export default productService

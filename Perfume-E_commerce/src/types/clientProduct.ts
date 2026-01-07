@@ -25,7 +25,7 @@ export interface ProductVariant {
 }
 
 export interface Product {
-  id?: string | number // Added ID as it is usually needed
+  id?: string | number 
   name: string
   price: number
   image: string

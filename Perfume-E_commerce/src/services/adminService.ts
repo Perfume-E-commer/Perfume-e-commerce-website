@@ -34,8 +34,14 @@ export const adminService = {
     return api.get<DashboardStats>('/admin/dashboard-stats');
   },
 
-  getAllOrders() {
-    return api.get('/admin/orders'); 
+  getAllOrders(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {
+    return api.get<any>('/orders', { 
+      params: {
+        page: params.page,
+        size: params.size,
+        search: params.search
+      }
+    });
   },
 
   updateOrderStatus(orderId: string, status: string) {
@@ -46,7 +52,9 @@ export const adminService = {
 
   getBillingRecords() {
     return api.get<BillingRecord[]>('/admin/billing');
-  }
+  },
+
+  
 }
 
 export default adminService;

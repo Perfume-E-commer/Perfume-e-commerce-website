@@ -5,32 +5,33 @@ export interface Promotion {
   code: string;
   description: string;
   discountPercent: number;
-  validUntil: string; // Date string
+  validUntil: string; 
   isActive?: boolean;
 }
 
 export const promotionService = {
-  // Get All Promotions
-  getAllPromotions() {
-    return api.get<Promotion[]>('/promotions/admin');
+  getAllPromotions(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {
+    return api.get('/promotions', { 
+      params: {
+        page: params.page,
+        size: params.size,
+        search: params.search
+      }
+    });
   },
 
-  // Create Promotion
   createPromotion(data: Promotion) {
     return api.post('/promotions', data);
   },
 
-  // Update Promotion
   updatePromotion(id: string, data: Promotion) {
     return api.put(`/promotions/${id}`, data);
   },
 
-  // Toggle Active Status
   togglePromotion(id: string) {
     return api.patch(`/promotions/${id}/toggle`);
   },
 
-  // Delete (Soft Delete)
   deletePromotion(id: string) {
     return api.delete(`/promotions/${id}`);
   }

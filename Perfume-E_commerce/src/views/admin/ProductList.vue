@@ -56,8 +56,8 @@
       </div>
     </div>
 
-    <!-- ✨ UPDATED: Added Search Bar -->
-    <div class="mb-6">
+    <!-- ✨ UPDATED: Added Search Bar with Low Stock Filter Button -->
+    <div class="mb-6 flex flex-col sm:flex-row gap-4">
       <div class="relative max-w-md">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,6 +71,16 @@
           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
           placeholder="Search products by name..."
         />
+      </div>
+      
+      <div class="flex gap-2">
+        <button 
+          @click="toggleLowStockFilter"
+          :class="showLowStockOnly ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-700 border-gray-300'"
+          class="px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none transition-colors"
+        >
+          ⚠️ Low Stock Only
+        </button>
       </div>
     </div>
 
@@ -142,12 +152,12 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-if="products.length === 0">
+            <tr v-if="displayedProducts.length === 0">
               <td colspan="8" class="px-6 py-4 text-center text-gray-500">
-                No products found. Click "Add New Product" to create one.
+                No products found. {{ showLowStockOnly ? 'Try turning off "Low Stock Only" filter.' : 'Click "Add New Product" to create one.' }}
               </td>
             </tr>
-            <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50">
+            <tr v-for="product in displayedProducts" :key="product.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img
                   :src="product.imageUrl || 'https://via.placeholder.com/50'"
@@ -171,8 +181,20 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">${{ product.price }}</div>
               </td>
+              <!-- ✨ UPDATED: Stock cell with low stock warning -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ product.stock }}</div>
+                <div class="flex items-center">
+                  <span :class="{'text-red-600 font-bold': product.stock < 10, 'text-gray-900': product.stock >= 10}">
+                    {{ product.stock }}
+                  </span>
+                  
+                  <span 
+                    v-if="product.stock < 10" 
+                    class="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded-full"
+                  >
+                    Low
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
@@ -253,7 +275,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
 import { productService } from '../../services/apiProduct'
@@ -272,6 +294,9 @@ const totalPages = ref(0)
 const searchQuery = ref('')
 const totalElements = ref(0)
 
+// ✨ ADDED: Low stock filter
+const showLowStockOnly = ref(false)
+
 onMounted(async () => {
   await loadProducts()
 })
@@ -284,6 +309,14 @@ const handleSearch = (event?: Event) => {
     loadProducts()
   }, 300) 
 }
+
+// ✨ ADDED: Filter for low stock items (client-side)
+const displayedProducts = computed(() => {
+  if (showLowStockOnly.value) {
+    return products.value.filter(product => product.stock < 10)
+  }
+  return products.value
+})
 
 const loadProducts = async () => {
   try {
@@ -298,9 +331,23 @@ const loadProducts = async () => {
     
     const response = await productService.getAllProducts(params)
     
+    // ✨ FIXED: Handle both old and new (VIA_DTO) response structures
     products.value = response.data.content 
-    totalPages.value = response.data.totalPages
-    totalElements.value = response.data.totalElements
+    
+    // Check for new VIA_DTO structure first, fall back to old structure
+    if (response.data.totalElements !== undefined) {
+      // Old structure: totalElements and totalPages are directly on response.data
+      totalElements.value = response.data.totalElements
+      totalPages.value = response.data.totalPages
+    } else if (response.data.page?.totalElements !== undefined) {
+      // New VIA_DTO structure: pagination data is nested under "page"
+      totalElements.value = response.data.page.totalElements
+      totalPages.value = response.data.page.totalPages
+    } else {
+      // Fallback: try to get from other possible locations
+      totalElements.value = response.data.totalElements || 0
+      totalPages.value = response.data.totalPages || 0
+    }
     
   } catch (error: any) {
     errorMessage.value = error.response?.data?.message || 'Failed to load products'
@@ -315,6 +362,11 @@ const changePage = (newPage: number) => {
     currentPage.value = newPage
     loadProducts()
   }
+}
+
+// ✨ ADDED: Toggle low stock filter
+const toggleLowStockFilter = () => {
+  showLowStockOnly.value = !showLowStockOnly.value
 }
 
 const editProduct = (id: string | undefined) => {

@@ -76,12 +76,14 @@
                    #{{ record.orderId.substring(record.orderId.length - 8).toUpperCase() }}
                 </td>
 
+                <!-- ✨ UPDATED: Changed from userEmail to customerEmail -->
                 <td class="px-6 py-4">
-                  {{ record.userEmail || 'Guest User' }}
+                  {{ record.customerEmail || 'Guest User' }}
                 </td>
 
+                <!-- ✨ UPDATED: Changed from transactionDate to date -->
                 <td class="px-6 py-4">
-                  {{ formatDate(record.transactionDate) }}
+                  {{ formatDate(record.date) }}
                 </td>
 
                 <td class="px-6 py-4 font-bold text-gray-900">
@@ -113,7 +115,7 @@ import NavFilter from '@/views/components/NavFilter.vue';
 const records = ref<BillingRecord[]>([]);
 const isLoading = ref(false);
 
-// Stats Calculation (Computed from the records list)
+// ✨ UPDATED: Stats Calculation (Computed from the records list)
 const stats = computed(() => {
   const totalRevenue = records.value.reduce((sum, r) => sum + (r.totalAmount || 0), 0);
   const completedCount = records.value.filter(r => r.paymentStatus === 'PAID').length;

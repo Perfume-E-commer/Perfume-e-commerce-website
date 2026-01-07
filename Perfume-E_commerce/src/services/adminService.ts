@@ -22,11 +22,11 @@ export interface AdminOrder {
 
 export interface BillingRecord {
   orderId: string;
-  userEmail: string; 
+  orderNumber: string;
+  customerEmail: string; 
   totalAmount: number;
-  paymentMethod: string;
   paymentStatus: string;
-  transactionDate: string; 
+  date: string; 
 }
 
 export const adminService = {

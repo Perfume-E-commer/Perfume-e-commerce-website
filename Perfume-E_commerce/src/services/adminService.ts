@@ -20,6 +20,15 @@ export interface AdminOrder {
   shippingAddress?: { fullName: string };
 }
 
+export interface BillingRecord {
+  orderId: string;
+  userEmail: string; 
+  totalAmount: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  transactionDate: string; 
+}
+
 export const adminService = {
   getDashboardStats() {
     return api.get<DashboardStats>('/admin/dashboard-stats');
@@ -33,6 +42,10 @@ export const adminService = {
     return api.put(`/admin/orders/${orderId}/status`, null, {
       params: { status }
     });
+  },
+
+  getBillingRecords() {
+    return api.get<BillingRecord[]>('/admin/billing');
   }
 }
 

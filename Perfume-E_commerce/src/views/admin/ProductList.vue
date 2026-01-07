@@ -56,6 +56,24 @@
       </div>
     </div>
 
+    <!-- ✨ UPDATED: Added Search Bar -->
+    <div class="mb-6">
+      <div class="relative max-w-md">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <input
+          v-model="searchQuery"
+          @input="handleSearch"
+          type="text"
+          class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+          placeholder="Search products by name..."
+        />
+      </div>
+    </div>
+
     <!-- Success/Error Messages -->
     <div
       v-if="successMessage"
@@ -183,6 +201,52 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- ✨ UPDATED: Added Pagination Footer -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700">
+                Showing
+                <span class="font-medium">{{ currentPage * pageSize + 1 }}</span>
+                to
+                <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span>
+                of
+                <span class="font-medium">{{ totalElements }}</span>
+                results
+              </p>
+            </div>
+            <div>
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  @click="changePage(currentPage - 1)"
+                  :disabled="currentPage === 0"
+                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span class="sr-only">Previous</span>
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                  Page {{ currentPage + 1 }} of {{ totalPages }}
+                </span>
+
+                <button
+                  @click="changePage(currentPage + 1)"
+                  :disabled="currentPage >= totalPages - 1"
+                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span class="sr-only">Next</span>
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -202,16 +266,42 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
+const currentPage = ref(0)
+const pageSize = ref(10)
+const totalPages = ref(0)
+const searchQuery = ref('')
+const totalElements = ref(0)
+
 onMounted(async () => {
   await loadProducts()
 })
+
+let searchTimeout: ReturnType<typeof setTimeout>
+const handleSearch = (event?: Event) => {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 0 
+    loadProducts()
+  }, 300) 
+}
 
 const loadProducts = async () => {
   try {
     isLoading.value = true
     errorMessage.value = ''
-    const response = await productService.getAllProducts()
-    products.value = response.data
+    
+    const params: { page?: number; size?: number; search?: string } = {
+      page: currentPage.value,
+      size: pageSize.value,
+      search: searchQuery.value
+    }
+    
+    const response = await productService.getAllProducts(params)
+    
+    products.value = response.data.content 
+    totalPages.value = response.data.totalPages
+    totalElements.value = response.data.totalElements
+    
   } catch (error: any) {
     errorMessage.value = error.response?.data?.message || 'Failed to load products'
     console.error('Error loading products:', error)
@@ -220,13 +310,25 @@ const loadProducts = async () => {
   }
 }
 
-const editProduct = (id: string) => {
-  if (id) {
-    router.push(`/maindashboard/product/edit/${id}`)
+// ✨ UPDATED: Added pagination controls
+const changePage = (newPage: number) => {
+  if (newPage >= 0 && newPage < totalPages.value) {
+    currentPage.value = newPage
+    loadProducts()
   }
 }
 
-const confirmDelete = async (id: string) => {
+const editProduct = (id: string | undefined) => {
+  if (!id) {
+    console.error("Product ID is missing");
+    return;
+  }
+  router.push(`/maindashboard/product/edit/${id}`)
+}
+
+const confirmDelete = async (id: string | undefined) => {
+  if (!id) return; 
+
   if (!confirm('Are you sure you want to delete this product?')) {
     return
   }

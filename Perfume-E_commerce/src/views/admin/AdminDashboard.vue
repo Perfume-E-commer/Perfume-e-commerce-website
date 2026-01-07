@@ -5,7 +5,7 @@
       <!-- Total Sales Card -->
       <TotalSaleOrder
         total_name="Total Sales"
-        total_value="$25.6K"
+        :total_value="formatCurrency(stats.totalSales)"
         total_text="Sales"
         rate_fluctuation="↑ 12.3%"
         previous_value="$22.8K"
@@ -15,13 +15,14 @@
       <!-- Total Orders Card -->
       <TotalSaleOrder
         total_name="Total Orders"
-        total_value="1.2K"
+        :total_value="stats.totalOrders.toString()"
         total_text="Orders"
         rate_fluctuation="↑ 6.7%"
         previous_value="1.1K"
         :detailLink="'/dashboardaddproduct'"
       />
-      <!-- Total Customers Card -->
+      
+      <!-- Total Customers Card (commented out) -->
       <!-- <TotalSaleOrder
           total_name="Total Customers"
           total_value="8.4K"
@@ -34,9 +35,9 @@
       <!-- Pending & Canceled Card -->
       <PendingCanceled
         total_name="Pending & Canceled"
-        :pending_count="423"
-        :pending_users="120"
-        :canceled_count="76"
+        :pending_count="stats.pendingOrders"
+        :pending_users="0"
+        :canceled_count="stats.canceledOrders"
         canceled_percentage="↓ 5.4%"
         :detailLink="'/dashboardaddproduct'"
       />
@@ -64,11 +65,11 @@
           <div class="mb-6">
             <ValueBoxReportWeek
               :items="[
-                { name: 'Sales Overview', value: '54k' },
+                { name: 'Sales Overview', value: formatCompactNumber(stats.totalSales) },
                 { name: 'Total Products', value: '12.4k' },
                 { name: 'Stock Products', value: '8.4k' },
                 { name: 'Out of Stock', value: '32.5k' },
-                { name: 'Revenue', value: '32.5k' },
+                { name: 'Revenue', value: formatCompactNumber(stats.totalSales) },
               ]"
             />
           </div>
@@ -204,6 +205,7 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
 import TotalSaleOrder from '../components/TotalSale&Order.vue'
 import PendingCanceled from '../components/Pending&Canceled.vue'
@@ -214,11 +216,36 @@ import viewTableBestSelling from '../components/viewTableBestSelling.vue'
 import viewTranslation from '../components/viewTranslation.vue'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
 import ButtonDetail from '../components/ButtonDetail.vue'
-import { getHoverColor } from 'chart.js/helpers'
-import { ref } from 'vue'
+// ✨ UPDATED: Added adminService import
+import adminService from '@/services/adminService';
+import { ref, onMounted } from 'vue'
 
 const selectedFilter = ref('')
 const filters = ['Product', 'Today', 'This Week', 'This Month', 'This Year']
+
+// ✨ UPDATED: Create reactive state with default "0" values
+const stats = ref({
+  totalSales: 0,
+  totalOrders: 0,
+  pendingOrders: 0,
+  canceledOrders: 0
+});
+
+// ✨ UPDATED: Helper to format money (e.g., 2500 -> $2,500.00)
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+};
+
+// ✨ UPDATED: Helper to format compact numbers (e.g., 2500 -> 2.5k)
+const formatCompactNumber = (value: number) => {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  } else if (value >= 1000) {
+    return `$${(value / 1000).toFixed(1)}k`;
+  }
+  return `$${value}`;
+};
+
 function toggleDropdown() {
   if (selectedFilter.value) {
     selectedFilter.value = ''
@@ -226,12 +253,21 @@ function toggleDropdown() {
     selectedFilter.value = 'This Week' // Default selection when opening
   }
 }
-// const filters = ['Today', 'This Week', 'This Month', 'This Year']
-// const selectedFilter = ref('This Week')
+
 function selectFilter(filter: string) {
   selectedFilter.value = filter
   // Implement filtering logic here
 }
 
 const detailLink = '/dashboardaddproduct'
+
+// ✨ UPDATED: Fetch data when page loads
+onMounted(async () => {
+  try {
+    const response = await adminService.getDashboardStats();
+    stats.value = response.data;
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+  }
+});
 </script>

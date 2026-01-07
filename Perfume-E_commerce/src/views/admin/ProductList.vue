@@ -267,7 +267,7 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const currentPage = ref(0)
-const pageSize = ref(10)
+const pageSize = ref(2)
 const totalPages = ref(0)
 const searchQuery = ref('')
 const totalElements = ref(0)
@@ -310,7 +310,6 @@ const loadProducts = async () => {
   }
 }
 
-// ✨ UPDATED: Added pagination controls
 const changePage = (newPage: number) => {
   if (newPage >= 0 && newPage < totalPages.value) {
     currentPage.value = newPage

@@ -74,11 +74,34 @@
           <div class="text-gray-400 text-sm uppercase font-semibold mb-2">Main menu</div>
           <ListSidebar
             :menuItems="[
-              { name: ' Dashboard', link: '/mainDashboard/admindashboard' },
-              { name: ' Order Management', link: '/mainDashboard/dashboardordermanagement' },
-              { name: ' Customers', link: '/mainDashboard/dashboardcustomer' },
-              { name: ' Categories', link: '/mainDashboard/dashboardcategories' },
-              { name: ' Transaction', link: '/mainDashboard/dashboardtransaction' },
+              {
+                name: 'Dashboard',
+                link: '/mainDashboard/admindashboard',
+              },
+              {
+                name: 'Products',
+                link: '/mainDashboard/products', 
+              },
+              {
+                name: 'Order Management',
+                link: '/mainDashboard/dashboardordermanagement',
+              },
+              {
+                name: 'Transactions',
+                link: '/mainDashboard/dashboardtransaction',
+              },
+              {
+                name: 'Promotions',
+                link: '/mainDashboard/dashboardpromotion', 
+              },
+              {
+                name: 'Customers',
+                link: '/mainDashboard/dashboardcustomer',
+              },
+              {
+                name: 'Profile',
+                link: '/mainDashboard/adminprofile',
+              },
             ]"
             @item-click="handleItemClick"
           />

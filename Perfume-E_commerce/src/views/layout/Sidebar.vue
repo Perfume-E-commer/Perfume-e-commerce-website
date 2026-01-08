@@ -83,6 +83,10 @@
                 link: '/mainDashboard/products', 
               },
               {
+                name: 'Inventory',
+                link: '/mainDashboard/inventory', 
+              },
+              {
                 name: 'Order Management',
                 link: '/mainDashboard/dashboardordermanagement',
               },

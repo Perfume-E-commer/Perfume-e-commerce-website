@@ -141,6 +141,11 @@ const routes: RouteRecordRaw[] = [
     redirect: '/mainDashboard/admindashboard',
     children: [
       {
+        path: 'inventory',
+        name: 'inventory',
+        component: () => import('@/views/admin/InventoryView.vue'), 
+      },
+      {
         path: 'admindashboard',
         name: 'admindashboard',
         component: () => import('@/views/admin/AdminDashboard.vue'),

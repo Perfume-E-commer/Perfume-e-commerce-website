@@ -84,7 +84,7 @@
               <tr v-for="record in records" :key="record.orderId" class="bg-white border-b hover:bg-gray-50">
                 <!-- START UPDATE: Safe ID display with fallback -->
                 <td class="px-6 py-4 font-medium text-indigo-600">
-                  #{{ (record.orderNumber || record.id || '').toString().slice(-8).toUpperCase() }}
+                  #{{ (record.orderId || record.id || '').toString().slice(-8).toUpperCase() }}
                 </td>
                 <!-- END UPDATE -->
 

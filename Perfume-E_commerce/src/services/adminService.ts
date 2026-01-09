@@ -54,6 +54,12 @@ export const adminService = {
     return api.get<BillingRecord[]>('/admin/billing');
   },
 
+  updatePaymentStatus(orderId: string, paymentStatus: string) {
+    return api.put(`/admin/orders/${orderId}/payment-status`, null, {
+      params: { status: paymentStatus }
+    });
+  },
+
   async uploadImage(file: File) {
     const formData = new FormData();
     formData.append('file', file);

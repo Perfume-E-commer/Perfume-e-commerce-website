@@ -67,7 +67,7 @@
                     : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                 ]"
               >
-                {{ promo.isActive ? 'Active' : 'Inactive' }}
+                {{ promo.active ? 'Active' : 'Inactive' }}
               </button>
             </td>
 

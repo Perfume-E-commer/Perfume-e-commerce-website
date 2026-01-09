@@ -1,201 +1,166 @@
 <template>
-  <div class="p-6 space-y-8 min-h-screen bg-gray-50/50">
+  <div class="p-6 space-y-6 min-h-screen bg-gray-50/50">
+    
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Financial Overview</h1>
-        <p class="text-sm text-gray-500">Track revenue and transaction statuses.</p>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Financial Overview</h1>
+        <p class="text-sm text-gray-500 mt-1">Track revenue, transactions, and download invoices.</p>
       </div>
       <button 
-        @click="loadBillingData" 
-        class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center shadow-sm"
+        @click="loadData" 
+        class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center shadow-sm text-sm font-medium"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         Refresh Data
       </button>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Total_inOrder 
-          total_name="Total Revenue" 
-          :total_value="formatCurrency(stats.totalRevenue)" 
-          rate_fluctuation="Lifetime" 
-          sub_text="Calculated from all time orders"
-        />
-        
-        <Total_inOrder
-          total_name="Successful Orders"
-          :total_value="stats.completedCount.toString()"
-          rate_fluctuation="Paid status"
-        />
-        
-        <Total_inOrder
-          total_name="Pending Payments"
-          :total_value="stats.pendingCount.toString()"
-          rate_fluctuation="Action needed"
-          sub_text="Requires admin verification"
-        />
-        
-        <Total_inOrder
-          total_name="Cancelled / Void"
-          :total_value="stats.cancelledCount.toString()"
-          rate_fluctuation="Lost revenue"
-        />
-      </div>
+    <TransactionStats :stats="computedStats" />
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-gray-900 font-medium mb-4">Transaction Status</h3>
-        <TransactionChart :stats="stats" />
-      </div>
-    </div>
+    <TransactionFilters 
+      v-model:filters="filters" 
+      @reset="resetFilters"
+    />
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-        <h3 class="text-lg font-bold text-gray-900">Recent Transactions</h3>
-        
-        <div class="relative">
-          <input
-            v-model="searchQuery"
-            @input="handleSearch"
-            type="text"
-            placeholder="Search Order ID..."
-            class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-64"
-          />
-          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </div>
-      </div>
+    <TransactionTable 
+      :transactions="filteredTransactions" 
+      :is-loading="isLoading"
+      @view="openDetails"
+    />
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left">
-          <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
-            <tr>
-              <th class="px-6 py-4">Transaction ID</th>
-              <th class="px-6 py-4">Customer</th>
-              <th class="px-6 py-4">Date</th>
-              <th class="px-6 py-4">Method</th>
-              <th class="px-6 py-4">Amount</th>
-              <th class="px-6 py-4">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <tr v-if="isLoading">
-              <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading transactions...</td>
-            </tr>
-            <tr v-else-if="records.length === 0">
-              <td colspan="6" class="px-6 py-8 text-center text-gray-500">No transactions found.</td>
-            </tr>
+    <OrderDetailsModal 
+      :isOpen="showModal" 
+      :order="selectedTransaction" 
+      @close="closeModal"
+    />
 
-            <tr v-for="record in records" :key="record.id" class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4 font-mono text-indigo-600 font-medium">
-                #{{ (record.orderNumber || record.id).slice(-8).toUpperCase() }}
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex flex-col">
-                  <span class="text-gray-900">{{ record.customerEmail || 'Guest' }}</span>
-                </div>
-              </td>
-              <td class="px-6 py-4 text-gray-500">
-                {{ formatDate(record.createdAt || record.date) }}
-              </td>
-              <td class="px-6 py-4 text-gray-500">
-                 Credit Card
-              </td>
-              <td class="px-6 py-4 font-bold text-gray-900">
-                {{ formatCurrency(record.totalAmount) }}
-              </td>
-              <td class="px-6 py-4">
-                <span :class="getStatusClasses(record.paymentStatus)">
-                  {{ record.paymentStatus || 'PENDING' }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
-        <span class="text-xs text-gray-500 self-center mr-4">Showing recent 10 transactions</span>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import adminService from '@/services/adminService';
-import Total_inOrder from '@/views/components/Total_inOrder.vue';
-import TransactionChart from '@/views/components/TransactionChart.vue';
+import { ref, computed, onMounted } from 'vue'
+import adminService from '../../services/adminService'
 
-// State
-const records = ref<any[]>([]); 
-const isLoading = ref(false);
-const searchQuery = ref('');
+// Import the components we built
+import TransactionStats from './financial/TransactionStats.vue'
+import TransactionFilters from './financial/TransactionFilters.vue'
+import TransactionTable from './financial/TransactionTable.vue'
+// Reuse the modal from Order Management
+import OrderDetailsModal from './orders/OrderDetailsModal.vue'
 
-// Computed Stats
-const stats = computed(() => {
-  const totalRevenue = records.value.reduce((sum, r) => sum + (r.totalAmount || 0), 0);
-  const completedCount = records.value.filter(r => r.paymentStatus === 'PAID').length;
-  // If paymentStatus is null/undefined, treat as PENDING for now
-  const pendingCount = records.value.filter(r => !r.paymentStatus || r.paymentStatus === 'PENDING').length; 
-  const cancelledCount = records.value.filter(r => r.status === 'CANCELLED').length; // Check Order Status too
+// --- State ---
+const rawTransactions = ref<any[]>([]) // Holds all data fetched from API
+const isLoading = ref(false)
+const showModal = ref(false)
+const selectedTransaction = ref(null)
 
-  return { totalRevenue, completedCount, pendingCount, cancelledCount };
-});
+// Filters State
+const filters = ref({
+  search: '',
+  startDate: '',
+  endDate: '',
+  paymentMethod: '',
+  status: ''
+})
 
-// Formatters
-const formatCurrency = (val: number) => 
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+// --- Logic ---
 
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-};
-
-const getStatusClasses = (status: string) => {
-  const base = "px-2.5 py-1 rounded-full text-xs font-semibold border ";
-  switch (status) {
-    case 'PAID': return base + "bg-emerald-50 text-emerald-700 border-emerald-100";
-    case 'PENDING': return base + "bg-amber-50 text-amber-700 border-amber-100";
-    case 'FAILED': 
-    case 'CANCELLED': return base + "bg-red-50 text-red-700 border-red-100";
-    default: return base + "bg-gray-100 text-gray-600 border-gray-200";
-  }
-};
-
-// API Call
-const loadBillingData = async () => {
-  isLoading.value = true;
+// 1. Fetch Data
+const loadData = async () => {
+  isLoading.value = true
   try {
-    // We reuse getAllOrders because "Billing" is just a view of Orders
-    const response = await adminService.getAllOrders({
-        page: 0,
-        size: 50, // Fetch more to calculate stats client-side for MVP
-        search: searchQuery.value
-    });
-
-    if (response.data && response.data.content) {
-      records.value = response.data.content;
-    } else {
-      records.value = response.data || [];
-    }
+    // We fetch a larger page size to perform client-side filtering/stats for the Financial Overview
+    // In a real large-scale app, you'd move these filters to the backend API parameters.
+    const response = await adminService.getAllOrders({ page: 0, size: 200, search: '' })
+    const content = response.data.content || response.data
+    rawTransactions.value = content
   } catch (error) {
-    console.error("Failed to load transactions", error);
+    console.error("Failed to load transactions", error)
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 
-let searchTimeout: any;
-const handleSearch = () => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    loadBillingData();
-  }, 500);
-};
+// 2. Filtering Logic (Computed)
+const filteredTransactions = computed(() => {
+  return rawTransactions.value.filter(tx => {
+    // Search (Name or Email)
+    const searchLower = filters.value.search.toLowerCase()
+    const name = `${tx.user?.firstName || ''} ${tx.user?.lastName || ''}`.toLowerCase()
+    const email = (tx.email || tx.user?.email || '').toLowerCase()
+    const matchesSearch = !searchLower || name.includes(searchLower) || email.includes(searchLower)
 
+    // Status
+    const matchesStatus = !filters.value.status || tx.status === filters.value.status
+
+    // Payment Method (Mocking checks if backend doesn't send it yet)
+    // Assuming backend might send 'paymentMethod' field, or we default to 'Credit Card' for now
+    const txMethod = tx.paymentMethod || 'Credit Card'
+    const matchesPayment = !filters.value.paymentMethod || txMethod === filters.value.paymentMethod
+
+    // Date Range
+    let matchesDate = true
+    if (filters.value.startDate || filters.value.endDate) {
+      const txDate = new Date(tx.createdAt).getTime()
+      if (filters.value.startDate) {
+        matchesDate = matchesDate && txDate >= new Date(filters.value.startDate).getTime()
+      }
+      if (filters.value.endDate) {
+        // Add one day to include the end date fully
+        const end = new Date(filters.value.endDate)
+        end.setHours(23, 59, 59, 999)
+        matchesDate = matchesDate && txDate <= end.getTime()
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesPayment && matchesDate
+  })
+})
+
+// 3. Stats Calculation (Computed based on Filters)
+const computedStats = computed(() => {
+  const data = filteredTransactions.value
+  
+  const totalRevenue = data.reduce((sum, tx) => sum + (tx.totalAmount || 0), 0)
+  const totalOrders = data.length
+  
+  // Count unique emails
+  const uniqueEmails = new Set(data.map(tx => tx.email || tx.user?.email || 'guest')).size
+  
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+
+  return {
+    totalRevenue,
+    totalOrders,
+    uniqueCustomers: uniqueEmails,
+    avgOrderValue
+  }
+})
+
+// --- Actions ---
+
+const resetFilters = () => {
+  filters.value = {
+    search: '',
+    startDate: '',
+    endDate: '',
+    paymentMethod: '',
+    status: ''
+  }
+}
+
+const openDetails = (tx: any) => {
+  selectedTransaction.value = tx
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  selectedTransaction.value = null
+}
+
+// --- Lifecycle ---
 onMounted(() => {
-  loadBillingData();
-});
+  loadData()
+})
 </script>

@@ -62,7 +62,7 @@
                 @click="$emit('toggle-status', promo)"
                 :class="[
                   'px-3 py-1 rounded-full text-xs font-bold border transition-all duration-200',
-                  promo.isActive 
+                  promo.active 
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
                     : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                 ]"
@@ -80,10 +80,12 @@
                   Edit
                 </button>
                 <button 
-                  @click="$emit('delete', promo)"
+                  @click="$emit('delete', promo.id)"
                   class="text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1.5 rounded hover:bg-red-50 transition"
                 >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
               </div>
             </td>
@@ -103,7 +105,7 @@ const props = defineProps<{
 
 defineEmits(['toggle-status', 'edit', 'delete']);
 
-// Helpers
+// Helpers for presentation logic
 const formatDate = (dateStr: string) => {
   if (!dateStr) return 'N/A';
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -111,7 +113,6 @@ const formatDate = (dateStr: string) => {
 
 const isExpired = (dateStr: string) => {
   if (!dateStr) return false;
-  // Compare timestamps (ignoring time of day for simple expiry checks)
   const expiry = new Date(dateStr).setHours(23, 59, 59, 999);
   const now = new Date().getTime();
   return now > expiry;

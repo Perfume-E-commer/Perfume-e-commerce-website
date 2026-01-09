@@ -102,10 +102,6 @@
                 name: 'Customers',
                 link: '/mainDashboard/dashboardcustomer',
               },
-              {
-                name: 'Profile',
-                link: '/mainDashboard/adminprofile',
-              },
             ]"
             @item-click="handleItemClick"
           />

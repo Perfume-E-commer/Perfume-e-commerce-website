@@ -1,114 +1,122 @@
 <template>
-  <div class="p-2 space-y-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+  <div class="p-6 space-y-8 min-h-screen bg-gray-50/50">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Financial Overview</h1>
+        <p class="text-sm text-gray-500">Track revenue and transaction statuses.</p>
+      </div>
+      <button 
+        @click="loadBillingData" 
+        class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition flex items-center shadow-sm"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh Data
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Total_inOrder 
           total_name="Total Revenue" 
           :total_value="formatCurrency(stats.totalRevenue)" 
-          rate_fluctuation="From all orders" 
+          rate_fluctuation="Lifetime" 
+          sub_text="Calculated from all time orders"
         />
         
         <Total_inOrder
-          total_name="Completed Transactions"
+          total_name="Successful Orders"
           :total_value="stats.completedCount.toString()"
-          rate_fluctuation="Paid Orders"
+          rate_fluctuation="Paid status"
         />
         
         <Total_inOrder
-          total_name="Pending Transactions"
+          total_name="Pending Payments"
           :total_value="stats.pendingCount.toString()"
-          rate_fluctuation="Unpaid/Pending"
+          rate_fluctuation="Action needed"
+          sub_text="Requires admin verification"
         />
         
         <Total_inOrder
-          total_name="Cancelled Transactions"
+          total_name="Cancelled / Void"
           :total_value="stats.cancelledCount.toString()"
-          rate_fluctuation="Refunded/Void"
+          rate_fluctuation="Lost revenue"
         />
       </div>
 
-      <div class="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-        <h3 class="text-gray-900 text-xl font-medium mb-2">Payment Method</h3>
-        <div class="flex flex-col items-center justify-center h-full">
-           <ApexCharts />
-        </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-gray-900 font-medium mb-4">Transaction Status</h3>
+        <TransactionChart :stats="stats" />
       </div>
     </div>
 
-    <div class="w-full">
-      <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Transaction History</h1>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-gray-900">Recent Transactions</h3>
         
-        <button 
-          @click="loadBillingData" 
-          class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-        >
-          Refresh Data
-        </button>
-      </div>
-
-      <NavFilter />
-
-      <div class="mt-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <input
-          v-model="searchQuery"
-          @input="handleSearch"
-          type="text"
-          placeholder="Search Transaction (Order ID) or Email..."
-          class="w-full sm:max-w-md px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-        />
-      </div>
-
-      <div class="bg-white rounded-lg shadow-md overflow-hidden mt-6">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left text-gray-500">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-              <tr>
-                <th scope="col" class="px-6 py-3">Transaction ID (Order)</th>
-                <th scope="col" class="px-6 py-3">User</th>
-                <th scope="col" class="px-6 py-3">Date</th>
-                <th scope="col" class="px-6 py-3">Amount</th>
-                <th scope="col" class="px-6 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="isLoading">
-                <td colspan="5" class="px-6 py-4 text-center">Loading transactions...</td>
-              </tr>
-              
-              <tr v-else-if="records.length === 0">
-                <td colspan="5" class="px-6 py-4 text-center">No transaction records found.</td>
-              </tr>
-
-              <tr v-for="record in records" :key="record.orderId" class="bg-white border-b hover:bg-gray-50">
-                <!-- START UPDATE: Safe ID display with fallback -->
-                <td class="px-6 py-4 font-medium text-indigo-600">
-                  #{{ (record.orderId || record.id || '').toString().slice(-8).toUpperCase() }}
-                </td>
-                <!-- END UPDATE -->
-
-                <td class="px-6 py-4">
-                  {{ record.customerEmail || 'Guest User' }}
-                </td>
-
-                <td class="px-6 py-4">
-                  {{ formatDate(record.date) }}
-                </td>
-
-                <td class="px-6 py-4 font-bold text-gray-900">
-                  {{ formatCurrency(record.totalAmount) }}
-                </td>
-
-                <td class="px-6 py-4">
-                  <span :class="getStatusColor(record.paymentStatus)" class="px-2 py-1 rounded-full text-xs font-semibold">
-                    {{ record.paymentStatus || 'PAID' }} 
-                    </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            type="text"
+            placeholder="Search Order ID..."
+            class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-64"
+          />
+          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
+            <tr>
+              <th class="px-6 py-4">Transaction ID</th>
+              <th class="px-6 py-4">Customer</th>
+              <th class="px-6 py-4">Date</th>
+              <th class="px-6 py-4">Method</th>
+              <th class="px-6 py-4">Amount</th>
+              <th class="px-6 py-4">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr v-if="isLoading">
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading transactions...</td>
+            </tr>
+            <tr v-else-if="records.length === 0">
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">No transactions found.</td>
+            </tr>
+
+            <tr v-for="record in records" :key="record.id" class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 font-mono text-indigo-600 font-medium">
+                #{{ (record.orderNumber || record.id).slice(-8).toUpperCase() }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex flex-col">
+                  <span class="text-gray-900">{{ record.customerEmail || 'Guest' }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-gray-500">
+                {{ formatDate(record.createdAt || record.date) }}
+              </td>
+              <td class="px-6 py-4 text-gray-500">
+                 Credit Card
+              </td>
+              <td class="px-6 py-4 font-bold text-gray-900">
+                {{ formatCurrency(record.totalAmount) }}
+              </td>
+              <td class="px-6 py-4">
+                <span :class="getStatusClasses(record.paymentStatus)">
+                  {{ record.paymentStatus || 'PENDING' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+        <span class="text-xs text-gray-500 self-center mr-4">Showing recent 10 transactions</span>
       </div>
     </div>
   </div>
@@ -116,49 +124,54 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import adminService, { type BillingRecord } from '@/services/adminService';
+import adminService from '@/services/adminService';
 import Total_inOrder from '@/views/components/Total_inOrder.vue';
-import ApexCharts from '@/views/components/ApexCharts.vue';
-import NavFilter from '@/views/components/NavFilter.vue';
+import TransactionChart from '@/views/components/TransactionChart.vue';
 
+// State
 const records = ref<any[]>([]); 
 const isLoading = ref(false);
 const searchQuery = ref('');
-const currentPage = ref(0);
-const pageSize = ref(10);
 
+// Computed Stats
 const stats = computed(() => {
   const totalRevenue = records.value.reduce((sum, r) => sum + (r.totalAmount || 0), 0);
   const completedCount = records.value.filter(r => r.paymentStatus === 'PAID').length;
-  const pendingCount = records.value.filter(r => r.paymentStatus === 'PENDING').length;
-  const cancelledCount = records.value.length - (completedCount + pendingCount);
+  // If paymentStatus is null/undefined, treat as PENDING for now
+  const pendingCount = records.value.filter(r => !r.paymentStatus || r.paymentStatus === 'PENDING').length; 
+  const cancelledCount = records.value.filter(r => r.status === 'CANCELLED').length; // Check Order Status too
 
   return { totalRevenue, completedCount, pendingCount, cancelledCount };
 });
 
+// Formatters
 const formatCurrency = (val: number) => 
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-';
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
-const getStatusColor = (status: string) => {
+const getStatusClasses = (status: string) => {
+  const base = "px-2.5 py-1 rounded-full text-xs font-semibold border ";
   switch (status) {
-    case 'PAID': return 'bg-green-100 text-green-800';
-    case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-    case 'FAILED': return 'bg-red-100 text-red-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'PAID': return base + "bg-emerald-50 text-emerald-700 border-emerald-100";
+    case 'PENDING': return base + "bg-amber-50 text-amber-700 border-amber-100";
+    case 'FAILED': 
+    case 'CANCELLED': return base + "bg-red-50 text-red-700 border-red-100";
+    default: return base + "bg-gray-100 text-gray-600 border-gray-200";
   }
 };
 
+// API Call
 const loadBillingData = async () => {
   isLoading.value = true;
   try {
+    // We reuse getAllOrders because "Billing" is just a view of Orders
     const response = await adminService.getAllOrders({
-        page: currentPage.value,
-        size: pageSize.value,
+        page: 0,
+        size: 50, // Fetch more to calculate stats client-side for MVP
         search: searchQuery.value
     });
 
@@ -178,7 +191,6 @@ let searchTimeout: any;
 const handleSearch = () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    currentPage.value = 0;
     loadBillingData();
   }, 500);
 };

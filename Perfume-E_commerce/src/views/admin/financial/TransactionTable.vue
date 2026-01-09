@@ -24,7 +24,7 @@
 
           <tr v-for="tx in transactions" :key="tx.id" class="hover:bg-gray-50 transition group">
             <td class="px-6 py-4 font-mono text-indigo-600 font-medium">
-              #{{ tx.id.slice(-6).toUpperCase() }}
+              #{{ tx.id ? tx.id.slice(-6).toUpperCase() : '---' }}
             </td>
             <td class="px-6 py-4">
               <div class="flex flex-col">
@@ -40,9 +40,11 @@
               {{ formatDate(tx.createdAt) }}
             </td>
             <td class="px-6 py-4 text-gray-500 max-w-xs truncate">
-              <span v-if="tx.orderItems?.length > 0">
-                {{ tx.orderItems[0].productName }}
-                <span v-if="tx.orderItems.length > 1" class="text-xs bg-gray-100 rounded px-1 ml-1">+{{ tx.orderItems.length - 1 }} more</span>
+              <span v-if="getItems(tx).length > 0">
+                {{ getItems(tx)[0].productName || getItems(tx)[0].name || 'Product' }}
+                <span v-if="getItems(tx).length > 1" class="text-xs bg-gray-100 rounded px-1 ml-1">
+                  +{{ getItems(tx).length - 1 }} more
+                </span>
               </span>
               <span v-else>-</span>
             </td>
@@ -94,27 +96,31 @@ const props = defineProps<{
 
 defineEmits(['view']);
 
-// --- Helpers for Display & Safety ---
+// --- Helpers ---
 
-// 1. Robust Name Finder
+// 1. Get Items Helper (Checks multiple fields)
+const getItems = (tx: any) => {
+  return tx.orderItems || tx.items || [];
+};
+
+// 2. Name Helper
 const getCustomerName = (tx: any) => {
-  // Try User Object first
   if (tx.user && tx.user.firstName) {
     return `${tx.user.firstName} ${tx.user.lastName || ''}`.trim();
   }
-  // Try Shipping Address Name
   if (tx.shippingAddress && tx.shippingAddress.fullName) {
     return tx.shippingAddress.fullName;
   }
-  // Fallback
   return 'Guest Customer';
 };
 
-// 2. Robust Email Finder
+// 3. Email Helper (Now checks EVERYTHING)
 const getCustomerEmail = (tx: any) => {
   if (tx.email) return tx.email;
+  if (tx.userEmail) return tx.userEmail; // Common flat field
   if (tx.user && tx.user.email) return tx.user.email;
-  return 'No Email'; // Or return '' to hide
+  if (tx.user && tx.user.username && tx.user.username.includes('@')) return tx.user.username; // Sometimes username is email
+  return 'No Email'; 
 };
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
@@ -134,10 +140,11 @@ const getStatusClasses = (status: string) => {
   }
 };
 
-// --- PDF Logic (Crash Proof) ---
+// --- PDF Logic ---
 const generateInvoice = (tx: any) => {
   try {
     const doc = new jsPDF();
+    const items = getItems(tx); // Use helper
 
     // Branding
     doc.setFontSize(22);
@@ -155,35 +162,31 @@ const generateInvoice = (tx: any) => {
     doc.text("INVOICE", 140, 20);
     
     doc.setFontSize(10);
-    doc.text(`Invoice #: ${tx.id ? tx.id.slice(-8).toUpperCase() : 'UNKNOWN'}`, 140, 28);
+    doc.text(`Invoice #: ${tx.id ? tx.id.slice(-8).toUpperCase() : '---'}`, 140, 28);
     doc.text(`Date: ${formatDate(tx.createdAt)}`, 140, 33);
     doc.text(`Status: ${tx.status || 'N/A'}`, 140, 38);
 
-    // Bill To (Using Safe Helpers)
+    // Bill To
     doc.text("Bill To:", 14, 45);
     doc.setFontSize(11);
     doc.setTextColor(0);
     doc.text(getCustomerName(tx), 14, 51);
-    
     doc.setFontSize(10);
     doc.setTextColor(100);
-    // Safety check for shipping address
+    doc.text(getCustomerEmail(tx), 14, 56); // Added Email to PDF
+
     if (tx.shippingAddress) {
       const line1 = tx.shippingAddress.addressLine1 || '';
       const city = tx.shippingAddress.city || '';
-      const country = tx.shippingAddress.country || '';
-      doc.text(`${line1}, ${city}`, 14, 56);
-      doc.text(country, 14, 61);
-    } else {
-      doc.text("No shipping address provided", 14, 56);
+      doc.text(`${line1}, ${city}`, 14, 61);
     }
 
     // Items Table
-    const tableBody = (tx.orderItems || []).map((item: any) => [
-      item.productName || 'Unknown Item',
-      item.quantity || 0,
-      formatCurrency(item.price),
-      formatCurrency((item.price || 0) * (item.quantity || 0))
+    const tableBody = items.map((item: any) => [
+      item.productName || item.name || 'Product',
+      item.quantity || 1,
+      formatCurrency(item.price || 0),
+      formatCurrency((item.price || 0) * (item.quantity || 1))
     ]);
 
     autoTable(doc, {
@@ -201,13 +204,10 @@ const generateInvoice = (tx: any) => {
 
     // Totals
     const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.text(`Subtotal:`, 140, finalY);
-    doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY, { align: 'right' });
-    
+    doc.text(`Total Due:`, 140, finalY);
     doc.setFontSize(12);
     doc.setTextColor(40, 5, 89);
-    doc.text(`Total Due:`, 140, finalY + 10);
-    doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY + 10, { align: 'right' });
+    doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY, { align: 'right' });
 
     // Footer
     doc.setFontSize(10);
@@ -219,8 +219,8 @@ const generateInvoice = (tx: any) => {
     doc.save(`Invoice_${safeId}.pdf`);
   
   } catch (err) {
-    console.error("PDF Generation Error:", err);
-    alert("Could not generate PDF. Missing order data.");
+    console.error("PDF Error:", err);
+    alert("Could not generate PDF. Missing data.");
   }
 };
 </script>

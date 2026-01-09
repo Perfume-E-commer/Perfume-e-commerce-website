@@ -6,7 +6,7 @@ export interface Promotion {
   description: string;
   discountPercent: number;
   validUntil: string; 
-  isActive?: boolean;
+  active?: boolean;
 }
 
 export const promotionService = {

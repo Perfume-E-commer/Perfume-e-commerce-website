@@ -20,7 +20,7 @@
       :promotions="activePromotions"
       @toggle-status="handleToggleStatus"
       @edit="openEditModal"
-      @delete="handleDelete"
+      @delete="deletePromo"
     />
 
     <PromotionTable 
@@ -28,7 +28,7 @@
       :promotions="pastPromotions"
       @toggle-status="handleToggleStatus"
       @edit="openEditModal"
-      @delete="handleDelete"
+      @delete="deletePromo"
     />
 
     <PromotionModal 
@@ -67,7 +67,7 @@ const activePromotions = computed(() => {
   const now = new Date().getTime();
   return promotions.value.filter(p => {
     const expiry = new Date(p.validUntil).getTime();
-    return p.active === true && expiry >= now;
+    return p.active && expiry >= now;
   });
 });
 
@@ -75,7 +75,7 @@ const pastPromotions = computed(() => {
   const now = new Date().getTime();
   return promotions.value.filter(p => {
     const expiry = new Date(p.validUntil).getTime();
-    return p.active === false || expiry < now;
+    return !p.active || expiry < now;
   });
 });
 
@@ -96,7 +96,7 @@ const openCreateModal = () => {
 };
 
 const openEditModal = (promo: Promotion) => {
-  selectedPromo.value = { ...promo, isActive: promo.active }; 
+  selectedPromo.value = { ...promo, active: promo.active }; 
   isModalOpen.value = true;
 };
 
@@ -125,38 +125,47 @@ const handleSave = async (formData: any) => {
   }
 };
 
+
 const handleToggleStatus = async (promo: Promotion) => {
+  const now = new Date().getTime();
+  const expiry = new Date(promo.validUntil).getTime();
+  const isExpired = expiry < now;
+
+  if (isExpired && !promo.active) {
+    if (confirm(`This promotion expired on ${new Date(promo.validUntil).toLocaleDateString()}. \n\nDo you want to EDIT the date to reactivate it?`)) {
+      openEditModal(promo);
+      return;
+    }
+    return; 
+  }
+
   try {
-    promo.active = !promo.active;
-    
-    // API Call
-    // If your backend doesn't have a specific toggle endpoint, use update:
-    await promotionService.updatePromotion(promo.id, {
+    const updatedStatus = !promo.active;
+    await promotionService.updatePromotion(promo.id!, {
       ...promo,
-      active: promo.active
+      active: updatedStatus
     });
     
-    // Reload to ensure list sorting (Active vs Past) updates correctly
+    alert("Status updated successfully");
     await loadPromotions(); 
   } catch (error) {
-    // Revert on failure
-    promo.active = !promo.active;
-    console.error("Failed to toggle status", error);
-    alert("Failed to update status");
+    console.error("Toggle failed", error);
+    alert("Failed to update status.");
   }
 };
 
-const handleDelete = async (promo: Promotion) => {
-  if (!confirm(`Are you sure you want to delete ${promo.code}?`)) return;
-  
+const deletePromo = async (id: string) => {
+  if (!confirm("Are you sure you want to PERMANENTLY delete this coupon?")) return;
   try {
-    await promotionService.deletePromotion(promo.id);
-    promotions.value = promotions.value.filter(p => p.id !== promo.id);
+    await promotionService.deletePromotion(id);
+    // Optimistically remove from UI
+    promotions.value = promotions.value.filter(p => p.id !== id);
+    await loadPromotions(); // Sync with server
   } catch (error) {
     console.error("Delete failed", error);
-    alert("Failed to delete promotion");
+    alert("Delete failed. This code might be linked to existing orders.");
   }
-};
+}
 
 onMounted(() => {
   loadPromotions();

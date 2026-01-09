@@ -64,13 +64,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import adminService from '@/services/adminService'
+import adminService from '../../services/adminService'
 
 // Component Imports
-import UnifiedOrderStats from '@/components/admin/orders/UnifiedOrderStats.vue'
-import UnifiedOrderFilters from '@/components/admin/orders/UnifiedOrderFilters.vue'
-import UnifiedOrderTable from '@/components/admin/orders/UnifiedOrderTable.vue'
-import OrderManagementModal from '@/components/admin/orders/OrderManagementModal.vue'
+import UnifiedOrderStats from './orders/UnifiedOrderStats.vue'
+import UnifiedOrderFilters from './orders/UnifiedOrderFilters.vue'
+import UnifiedOrderTable from './orders/UnifiedOrderTable.vue'
+import OrderManagementModal from './orders/OrderManagementModal.vue'
 
 // --- State ---
 const rawOrders = ref<any[]>([]) // All loaded data

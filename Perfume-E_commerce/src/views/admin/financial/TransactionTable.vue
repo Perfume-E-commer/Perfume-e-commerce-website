@@ -28,8 +28,12 @@
             </td>
             <td class="px-6 py-4">
               <div class="flex flex-col">
-                <span class="font-medium text-gray-900">{{ tx.user?.firstName }} {{ tx.user?.lastName }}</span>
-                <span class="text-xs text-gray-500">{{ tx.email || tx.user?.email || 'Guest' }}</span>
+                <span class="font-medium text-gray-900">
+                  {{ getCustomerName(tx) }}
+                </span>
+                <span class="text-xs text-gray-500">
+                  {{ getCustomerEmail(tx) }}
+                </span>
               </div>
             </td>
             <td class="px-6 py-4 text-gray-500">
@@ -90,12 +94,36 @@ const props = defineProps<{
 
 defineEmits(['view']);
 
-// Helpers
-const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+// --- Helpers for Display & Safety ---
+
+// 1. Robust Name Finder
+const getCustomerName = (tx: any) => {
+  // Try User Object first
+  if (tx.user && tx.user.firstName) {
+    return `${tx.user.firstName} ${tx.user.lastName || ''}`.trim();
+  }
+  // Try Shipping Address Name
+  if (tx.shippingAddress && tx.shippingAddress.fullName) {
+    return tx.shippingAddress.fullName;
+  }
+  // Fallback
+  return 'Guest Customer';
+};
+
+// 2. Robust Email Finder
+const getCustomerEmail = (tx: any) => {
+  if (tx.email) return tx.email;
+  if (tx.user && tx.user.email) return tx.user.email;
+  return 'No Email'; // Or return '' to hide
+};
+
+const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0);
+
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
+
 const getStatusClasses = (status: string) => {
   switch (status) {
     case 'CONFIRMED': return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -106,79 +134,93 @@ const getStatusClasses = (status: string) => {
   }
 };
 
-// 📄 PDF Generation Logic (Client-side Invoice)
+// --- PDF Logic (Crash Proof) ---
 const generateInvoice = (tx: any) => {
-  const doc = new jsPDF();
+  try {
+    const doc = new jsPDF();
 
-  // Branding
-  doc.setFontSize(22);
-  doc.setTextColor(40, 5, 89); // Your brand purple
-  doc.text("ScentHaven", 14, 20);
-  
-  doc.setFontSize(10);
-  doc.setTextColor(100);
-  doc.text("123 Perfume Lane, Fragrance City", 14, 26);
-  doc.text("support@scenthaven.com", 14, 31);
+    // Branding
+    doc.setFontSize(22);
+    doc.setTextColor(40, 5, 89);
+    doc.text("ScentHaven", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text("123 Perfume Lane, Fragrance City", 14, 26);
+    doc.text("support@scenthaven.com", 14, 31);
 
-  // Invoice Header
-  doc.setFontSize(16);
-  doc.setTextColor(0);
-  doc.text("INVOICE", 140, 20);
-  
-  doc.setFontSize(10);
-  doc.text(`Invoice #: ${tx.id.slice(-8).toUpperCase()}`, 140, 28);
-  doc.text(`Date: ${new Date(tx.createdAt).toLocaleDateString()}`, 140, 33);
-  doc.text(`Status: ${tx.status}`, 140, 38);
+    // Invoice Header
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text("INVOICE", 140, 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Invoice #: ${tx.id ? tx.id.slice(-8).toUpperCase() : 'UNKNOWN'}`, 140, 28);
+    doc.text(`Date: ${formatDate(tx.createdAt)}`, 140, 33);
+    doc.text(`Status: ${tx.status || 'N/A'}`, 140, 38);
 
-  // Bill To
-  doc.text("Bill To:", 14, 45);
-  doc.setFontSize(11);
-  doc.setTextColor(0);
-  doc.text(tx.user?.firstName ? `${tx.user.firstName} ${tx.user.lastName}` : (tx.email || 'Guest Customer'), 14, 51);
-  doc.setFontSize(10);
-  doc.setTextColor(100);
-  if (tx.shippingAddress) {
-    doc.text(`${tx.shippingAddress.addressLine1}, ${tx.shippingAddress.city}`, 14, 56);
-    doc.text(tx.shippingAddress.country, 14, 61);
-  }
-
-  // Items Table
-  const tableBody = tx.orderItems?.map((item: any) => [
-    item.productName,
-    item.quantity,
-    formatCurrency(item.price),
-    formatCurrency(item.price * item.quantity)
-  ]) || [];
-
-  autoTable(doc, {
-    startY: 70,
-    head: [['Item Description', 'Qty', 'Unit Price', 'Amount']],
-    body: tableBody,
-    theme: 'striped',
-    headStyles: { fillColor: [40, 5, 89] },
-    columnStyles: {
-      1: { halign: 'center' },
-      2: { halign: 'right' },
-      3: { halign: 'right' }
+    // Bill To (Using Safe Helpers)
+    doc.text("Bill To:", 14, 45);
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    doc.text(getCustomerName(tx), 14, 51);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    // Safety check for shipping address
+    if (tx.shippingAddress) {
+      const line1 = tx.shippingAddress.addressLine1 || '';
+      const city = tx.shippingAddress.city || '';
+      const country = tx.shippingAddress.country || '';
+      doc.text(`${line1}, ${city}`, 14, 56);
+      doc.text(country, 14, 61);
+    } else {
+      doc.text("No shipping address provided", 14, 56);
     }
-  });
 
-  // Totals
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
-  doc.text(`Subtotal:`, 140, finalY);
-  doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY, { align: 'right' });
+    // Items Table
+    const tableBody = (tx.orderItems || []).map((item: any) => [
+      item.productName || 'Unknown Item',
+      item.quantity || 0,
+      formatCurrency(item.price),
+      formatCurrency((item.price || 0) * (item.quantity || 0))
+    ]);
+
+    autoTable(doc, {
+      startY: 70,
+      head: [['Item Description', 'Qty', 'Unit Price', 'Amount']],
+      body: tableBody,
+      theme: 'striped',
+      headStyles: { fillColor: [40, 5, 89] },
+      columnStyles: {
+        1: { halign: 'center' },
+        2: { halign: 'right' },
+        3: { halign: 'right' }
+      }
+    });
+
+    // Totals
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.text(`Subtotal:`, 140, finalY);
+    doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY, { align: 'right' });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 5, 89);
+    doc.text(`Total Due:`, 140, finalY + 10);
+    doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY + 10, { align: 'right' });
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor(150);
+    doc.text("Thank you for your business!", 105, 280, { align: 'center' });
+
+    // Save
+    const safeId = tx.id ? tx.id.slice(-6) : 'invoice';
+    doc.save(`Invoice_${safeId}.pdf`);
   
-  doc.setFontSize(12);
-  doc.setTextColor(40, 5, 89);
-  doc.text(`Total Due:`, 140, finalY + 10);
-  doc.text(`${formatCurrency(tx.totalAmount)}`, 190, finalY + 10, { align: 'right' });
-
-  // Footer
-  doc.setFontSize(10);
-  doc.setTextColor(150);
-  doc.text("Thank you for your business!", 105, 280, { align: 'center' });
-
-  // Save
-  doc.save(`Invoice_${tx.id.slice(-6)}.pdf`);
+  } catch (err) {
+    console.error("PDF Generation Error:", err);
+    alert("Could not generate PDF. Missing order data.");
+  }
 };
 </script>

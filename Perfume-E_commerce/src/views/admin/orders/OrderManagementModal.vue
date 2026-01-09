@@ -175,6 +175,15 @@ const getCustomerName = (order: any) => {
   return 'Guest Customer';
 };
 
+// ✅ FIX 1: Added missing getCustomerEmail helper
+const getCustomerEmail = (order: any) => {
+  if (order.email) return order.email;
+  if (order.userEmail) return order.userEmail;
+  if (order.user && order.user.email) return order.user.email;
+  if (order.user && order.user.username && order.user.username.includes('@')) return order.user.username;
+  return 'No Email';
+};
+
 const getItems = (order: any) => order.orderItems || order.items || [];
 
 const getPaymentColor = (status: string) => {
@@ -186,10 +195,10 @@ const getPaymentColor = (status: string) => {
 
 const handleStatusChange = async (event: Event) => {
   const newStatus = (event.target as HTMLSelectElement).value;
-  if (!newStatus || newStatus === props.order.status) return;
+  if (!newStatus || !props.order || newStatus === props.order.status) return;
 
   if(!confirm(`Update order status to ${newStatus}?`)) {
-    // Revert logic would be needed here if bound directly, but since we refresh, it's ok
+    // Ideally we would revert the select box here, but since we refresh data it handles itself
     return;
   }
 
@@ -197,7 +206,11 @@ const handleStatusChange = async (event: Event) => {
   try {
     await adminService.updateOrderStatus(props.order.id, newStatus);
     emit('refresh'); // Tell parent to reload data
-    props.order.status = newStatus; // Optimistic update
+    
+    // ✅ FIX 2: Safety check before assigning to prop
+    if (props.order) {
+      props.order.status = newStatus; 
+    }
   } catch (error) {
     console.error('Status update failed', error);
     alert('Failed to update status');
@@ -207,15 +220,20 @@ const handleStatusChange = async (event: Event) => {
 };
 
 const togglePayment = async () => {
+  if (!props.order) return;
+
   const current = props.order.paymentStatus || 'PAID';
   const newStatus = current === 'PAID' ? 'PENDING' : 'PAID';
   
   isUpdating.value = true;
   try {
-    // Ensure adminService.updatePaymentStatus exists!
     await adminService.updatePaymentStatus(props.order.id, newStatus);
     emit('refresh');
-    props.order.paymentStatus = newStatus;
+    
+    // Safety check
+    if (props.order) {
+      props.order.paymentStatus = newStatus;
+    }
   } catch (error) {
     console.error('Payment update failed', error);
     alert('Failed to update payment. Backend might not support this yet.');
@@ -224,13 +242,13 @@ const togglePayment = async () => {
   }
 };
 
-// --- PDF Logic (Embedded) ---
+// --- PDF Logic ---
 const generateInvoice = (tx: any) => {
   try {
     const doc = new jsPDF();
     const items = getItems(tx);
 
-    // Branding
+    // 1. Branding
     doc.setFontSize(22);
     doc.setTextColor(40, 5, 89);
     doc.text("ScentHaven", 14, 20);
@@ -238,7 +256,7 @@ const generateInvoice = (tx: any) => {
     doc.setTextColor(100);
     doc.text("123 Perfume Lane, Fragrance City", 14, 26);
 
-    // Header
+    // 2. Invoice Details
     doc.setFontSize(16);
     doc.setTextColor(0);
     doc.text("INVOICE", 140, 20);
@@ -248,13 +266,38 @@ const generateInvoice = (tx: any) => {
     doc.text(`Status: ${tx.status}`, 140, 38);
     doc.text(`Payment: ${tx.paymentStatus || 'PAID'}`, 140, 43);
 
-    // Bill To
-    doc.text("Bill To:", 14, 55);
+    // 3. Bill To
+    doc.text("Bill To:", 14, 50);
     doc.setFontSize(11);
     doc.setTextColor(0);
-    doc.text(getCustomerName(tx), 14, 61);
+    doc.text(getCustomerName(tx), 14, 56);
 
-    // Table
+    // Address & Email
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    
+    if (tx.shippingAddress) {
+      const addr = tx.shippingAddress;
+      const line1 = addr.addressLine1 || '';
+      const line2 = addr.addressLine2 ? ` ${addr.addressLine2}` : '';
+      const city = addr.city || '';
+      const zip = addr.postalCode || '';
+      const country = addr.country || '';
+
+      doc.text(`${line1}${line2}`, 14, 61);
+      doc.text(`${city}, ${zip}`, 14, 66);
+      doc.text(country, 14, 71);
+      
+      // Print Email (Now using the helper we just added)
+      const email = getCustomerEmail(tx); 
+      if (email && email !== 'No Email') {
+        doc.text(email, 14, 76);
+      }
+    } else {
+      doc.text("No shipping address provided", 14, 61);
+    }
+
+    // 4. Items Table
     const tableBody = items.map((item: any) => [
       item.productName || item.name,
       item.quantity,
@@ -263,15 +306,17 @@ const generateInvoice = (tx: any) => {
     ]);
 
     autoTable(doc, {
-      startY: 70,
+      startY: 85,
       head: [['Item', 'Qty', 'Price', 'Total']],
       body: tableBody,
       theme: 'striped',
       headStyles: { fillColor: [40, 5, 89] }
     });
 
-    // Totals
+    // 5. Totals
     const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0);
     doc.text(`Total: ${formatCurrency(tx.totalAmount)}`, 190, finalY, { align: 'right' });
 
     doc.save(`Invoice_${tx.id.slice(-6)}.pdf`);

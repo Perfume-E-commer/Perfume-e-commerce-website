@@ -49,7 +49,7 @@
                 icon: 'clipboard'
               },
               {
-                name: 'Orders & Billing', // Renamed & Combined
+                name: 'Orders & Billing', 
                 link: '/mainDashboard/dashboardordermanagement',
                 icon: 'cart'
               },

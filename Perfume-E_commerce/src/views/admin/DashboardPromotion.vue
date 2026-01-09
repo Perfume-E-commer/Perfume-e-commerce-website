@@ -62,12 +62,13 @@ const isModalOpen = ref(false);
 const isSaving = ref(false);
 const selectedPromo = ref<Promotion | null>(null);
 
-
+// --- Computed Logic ---
 const activePromotions = computed(() => {
   const now = new Date().getTime();
   return promotions.value.filter(p => {
     const expiry = new Date(p.validUntil).getTime();
-    return p.active && expiry >= now;
+    // Must be marked active AND date must be in the future
+    return p.active === true && expiry >= now;
   });
 });
 
@@ -75,16 +76,17 @@ const pastPromotions = computed(() => {
   const now = new Date().getTime();
   return promotions.value.filter(p => {
     const expiry = new Date(p.validUntil).getTime();
-    return !p.active || expiry < now;
+    // Move to past if manually deactivated OR date has passed
+    return p.active === false || expiry < now;
   });
 });
 
-
+// --- Actions ---
 const loadPromotions = async () => {
   try {
     const response = await promotionService.getAllPromotions();
+    // Backend returns Page object with 'content' array
     promotions.value = response.data.content || response.data || [];
-    
   } catch (error) {
     console.error("Failed to fetch promotions", error);
   }
@@ -96,7 +98,7 @@ const openCreateModal = () => {
 };
 
 const openEditModal = (promo: Promotion) => {
-  selectedPromo.value = { ...promo, active: promo.active }; 
+  selectedPromo.value = { ...promo }; 
   isModalOpen.value = true;
 };
 
@@ -104,10 +106,12 @@ const handleSave = async (formData: any) => {
   isSaving.value = true;
   try {
     const payload = {
-      ...formData,
-      active: formData.isActive
+      code: formData.code,
+      description: formData.description,
+      discountPercent: formData.discountPercent,
+      validUntil: formData.validUntil,
+      active: formData.active
     };
-    delete payload.isActive;
 
     if (selectedPromo.value) {
       await promotionService.updatePromotion(selectedPromo.value.id, payload);
@@ -115,7 +119,7 @@ const handleSave = async (formData: any) => {
       await promotionService.createPromotion(payload);
     }
     
-    await loadPromotions(); // Reload from server
+    await loadPromotions(); 
     isModalOpen.value = false;
   } catch (error) {
     console.error("Save failed", error);
@@ -125,49 +129,56 @@ const handleSave = async (formData: any) => {
   }
 };
 
-
 const handleToggleStatus = async (promo: Promotion) => {
   const now = new Date().getTime();
   const expiry = new Date(promo.validUntil).getTime();
   const isExpired = expiry < now;
 
+  // UX Rule: Re-activate expired codes by editing date instead of just toggling
   if (isExpired && !promo.active) {
     if (confirm(`This promotion expired on ${new Date(promo.validUntil).toLocaleDateString()}. \n\nDo you want to EDIT the date to reactivate it?`)) {
-      openEditModal(promo);
+      openEditModal(promo); 
       return;
     }
     return; 
   }
 
   try {
-    const updatedStatus = !promo.active;
-    await promotionService.updatePromotion(promo.id!, {
-      ...promo,
-      active: updatedStatus
-    });
+    // Send the current object with flipped active status
+    const updatedPayload = { ...promo, active: !promo.active };
+    await promotionService.updatePromotion(promo.id, updatedPayload);
     
     alert("Status updated successfully");
     await loadPromotions(); 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Toggle failed", error);
-    alert("Failed to update status.");
+    alert(`Failed to update status: ${error.response?.data?.message || 'Server Error'}`);
   }
 };
 
 const deletePromo = async (id: string) => {
   if (!confirm("Are you sure you want to PERMANENTLY delete this coupon?")) return;
+  
   try {
     await promotionService.deletePromotion(id);
-    // Optimistically remove from UI
+    // Remove from local state for immediate feedback
     promotions.value = promotions.value.filter(p => p.id !== id);
-    await loadPromotions(); // Sync with server
-  } catch (error) {
+    alert("Promotion deleted successfully");
+  } catch (error: any) {
     console.error("Delete failed", error);
-    alert("Delete failed. This code might be linked to existing orders.");
+    // If backend returns 400/500 due to foreign key constraints
+    const errorMsg = error.response?.data?.message || "This code is linked to existing order history and cannot be deleted.";
+    alert(`Delete failed: ${errorMsg}`);
   }
-}
+};
 
 onMounted(() => {
   loadPromotions();
 });
 </script>
+
+
+
+
+
+

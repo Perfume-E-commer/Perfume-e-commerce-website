@@ -44,56 +44,49 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import PromotionTable from '@/components/admin/promotions/PromotionTable.vue';
-import PromotionModal from '@/components/admin/promotions/PromotionModal.vue';
+import PromotionTable from '../components/promotions/PromotionTable.vue';
+import PromotionModal from '../components/promotions/PromotionModal.vue';
+import promotionService from '../../services/promotionService';
 
-// --- Types ---
 interface Promotion {
   id: string;
   code: string;
   description: string;
   discountPercent: number;
-  validUntil: string; // ISO Date String
-  isActive: boolean;
+  validUntil: string;
+  active: boolean;   
 }
 
-// --- State ---
 const promotions = ref<Promotion[]>([]);
 const isModalOpen = ref(false);
 const isSaving = ref(false);
 const selectedPromo = ref<Promotion | null>(null);
 
-// --- Computed Lists ---
+
 const activePromotions = computed(() => {
   const now = new Date().getTime();
   return promotions.value.filter(p => {
-    const expiry = new Date(p.validUntil).setHours(23, 59, 59, 999);
-    return p.isActive && expiry >= now;
+    const expiry = new Date(p.validUntil).getTime();
+    return p.active === true && expiry >= now;
   });
 });
 
 const pastPromotions = computed(() => {
   const now = new Date().getTime();
   return promotions.value.filter(p => {
-    const expiry = new Date(p.validUntil).setHours(23, 59, 59, 999);
-    return !p.isActive || expiry < now;
+    const expiry = new Date(p.validUntil).getTime();
+    return p.active === false || expiry < now;
   });
 });
 
-// --- Actions ---
 
 const loadPromotions = async () => {
-  // TODO: Replace with real API call
-  // await promotionService.getAll()
-  
-  // Mock Data for Demo
-  if (promotions.value.length === 0) {
-    promotions.value = [
-      { id: '1', code: 'HOLIDAY15', description: 'Holiday Special', discountPercent: 15, validUntil: '2025-12-31', isActive: true },
-      { id: '2', code: 'SUMMER20', description: 'Summer Sale', discountPercent: 20, validUntil: '2026-06-30', isActive: true },
-      { id: '3', code: 'WELCOME5', description: 'New User Bonus', discountPercent: 5, validUntil: '2024-11-10', isActive: false }, // Past
-      { id: '4', code: 'FLASH50', description: 'Flash Sale', discountPercent: 50, validUntil: '2023-01-01', isActive: true } // Expired
-    ];
+  try {
+    const response = await promotionService.getAllPromotions();
+    promotions.value = response.data.content || response.data || [];
+    
+  } catch (error) {
+    console.error("Failed to fetch promotions", error);
   }
 };
 
@@ -103,47 +96,65 @@ const openCreateModal = () => {
 };
 
 const openEditModal = (promo: Promotion) => {
-  selectedPromo.value = promo;
+  selectedPromo.value = { ...promo, isActive: promo.active }; 
   isModalOpen.value = true;
 };
 
 const handleSave = async (formData: any) => {
   isSaving.value = true;
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  if (selectedPromo.value) {
-    // Update existing
-    const index = promotions.value.findIndex(p => p.id === selectedPromo.value?.id);
-    if (index !== -1) {
-      promotions.value[index] = { ...selectedPromo.value, ...formData };
-    }
-  } else {
-    // Create new
-    const newPromo = {
-      id: Date.now().toString(),
-      ...formData
+  try {
+    const payload = {
+      ...formData,
+      active: formData.isActive
     };
-    promotions.value.push(newPromo);
-  }
+    delete payload.isActive;
 
-  isSaving.value = false;
-  isModalOpen.value = false;
+    if (selectedPromo.value) {
+      await promotionService.updatePromotion(selectedPromo.value.id, payload);
+    } else {
+      await promotionService.createPromotion(payload);
+    }
+    
+    await loadPromotions(); // Reload from server
+    isModalOpen.value = false;
+  } catch (error) {
+    console.error("Save failed", error);
+    alert("Failed to save promotion");
+  } finally {
+    isSaving.value = false;
+  }
 };
 
-const handleToggleStatus = (promo: Promotion) => {
-  // Optimistic update
-  const index = promotions.value.findIndex(p => p.id === promo.id);
-  if (index !== -1) {
-    promotions.value[index].isActive = !promotions.value[index].isActive;
+const handleToggleStatus = async (promo: Promotion) => {
+  try {
+    promo.active = !promo.active;
+    
+    // API Call
+    // If your backend doesn't have a specific toggle endpoint, use update:
+    await promotionService.updatePromotion(promo.id, {
+      ...promo,
+      active: promo.active
+    });
+    
+    // Reload to ensure list sorting (Active vs Past) updates correctly
+    await loadPromotions(); 
+  } catch (error) {
+    // Revert on failure
+    promo.active = !promo.active;
+    console.error("Failed to toggle status", error);
+    alert("Failed to update status");
   }
-  // TODO: Call API to persist
 };
 
-const handleDelete = (promo: Promotion) => {
-  if (confirm(`Delete promotion ${promo.code}?`)) {
+const handleDelete = async (promo: Promotion) => {
+  if (!confirm(`Are you sure you want to delete ${promo.code}?`)) return;
+  
+  try {
+    await promotionService.deletePromotion(promo.id);
     promotions.value = promotions.value.filter(p => p.id !== promo.id);
-    // TODO: Call API
+  } catch (error) {
+    console.error("Delete failed", error);
+    alert("Failed to delete promotion");
   }
 };
 

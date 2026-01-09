@@ -7,7 +7,9 @@
           {{ isEditing ? 'Edit Promotion' : 'Create New Promotion' }}
         </h2>
         <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
 
@@ -96,7 +98,6 @@
             {{ isEditing ? 'Update Promotion' : 'Create Promotion' }}
           </button>
         </div>
-
       </form>
     </div>
   </div>
@@ -122,20 +123,22 @@ const formData = ref({
   isActive: true
 });
 
-// Watch for modal opening to populate data
+/**
+ * Watch for modal opening to populate data.
+ * If editData is provided, format the date for the input field.
+ */
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     if (props.editData) {
       isEditing.value = true;
-      // Clone data to avoid direct mutation
       formData.value = { 
         ...props.editData,
-        // Format date for input:date (YYYY-MM-DD)
+        // Backend returns ISO Date, we need YYYY-MM-DD for input[type="date"]
         validUntil: props.editData.validUntil ? new Date(props.editData.validUntil).toISOString().split('T')[0] : ''
       };
     } else {
       isEditing.value = false;
-      // Default state for new promo
+      // Default expiry: 30 days from now
       const nextMonth = new Date();
       nextMonth.setDate(nextMonth.getDate() + 30);
       

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductStore } from '@/stores/productStore'
 import { storeToRefs } from 'pinia'
 import type { Product } from '@/types/clientProduct'
+
 import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
 import Scrolldown from '@/components/layout/Scrolldown.vue'
@@ -20,62 +21,48 @@ const productId = computed(() => String(route.params.id || ''))
 
 onMounted(async () => {
   const id = productId.value
+
   if (id) {
     await productStore.fetchProductById(id)
   }
+
   if (!products.value || products.value.length === 0) {
     await productStore.fetchProducts(0, 12)
   }
 })
 
-// 2. FIND the product in the store using that ID (prefer currentProduct)
+function shuffleArray<T>(array: T[]): T[] {
+  return [...array].sort(() => Math.random() - 0.5)
+}
+
+const displayCount = ref(4)
+const shuffledProducts = ref<Product[]>([])
+
+watch(
+  products,
+  (newProducts) => {
+    if (!newProducts || newProducts.length === 0) return
+
+    shuffledProducts.value = shuffleArray(
+      newProducts.filter((p) => String(p.id) !== productId.value),
+    )
+  },
+  { immediate: true },
+)
+
+const displayedProducts = computed(() => shuffledProducts.value.slice(0, displayCount.value))
+
 const selectedProduct = computed<Product | undefined>(() => {
   if (currentProduct.value) return currentProduct.value
+
   const id = productId.value
-  return (
-    products.value.find((p) => String(p.id) === id || p.name === id || (p as any).title === id) ||
-    undefined
-  )
+  return products.value.find((p) => String(p.id) === id)
 })
 
-// 3. Map the data safely. If products aren't loaded yet, provide defaults.
+/* =========================
+   PRODUCT INFO
+========================= */
 const productTitle = computed(() => selectedProduct.value?.name || '')
-// const productDescription = computed(() => selectedProduct.value?.descriptions || '')
-// const productImage = computed(() => selectedProduct.value?.image || '')
-// const productPrice = computed(() => selectedProduct.value?.price || 0)
-// const productStock = computed(() => {
-//   return variants.reduce((sum, v) => sum + (v.stock || 0), 0)
-// })
-
-// const variants = selectedProduct.value?.variants || []
-
-// No JSON.parse needed anymore, just grab the array/object directly
-// const productVariants = computed(() => selectedProduct.value?.variants || [])
-// const productStory = computed(() => selectedProduct.value?.productStorys || null)
-
-// Get other products for "Discover More"
-// `products` is a ref from the storeToRefs call
-
-const reviewer = [
-  {
-    avatar: '/Image/Product/Review1.png',
-    name: 'Jack Smith',
-    review: 'Very lovely fragrance...',
-    date: 'June 03, 2023',
-  },
-  {
-    avatar: '/Image/Product/Review2.png',
-    name: 'Ashley ',
-    review: 'I like floral perfume...',
-    date: 'January 05, 2023',
-  },
-  {
-    avatar: '/Image/Product/Review3.png',
-    name: 'John Doe',
-    review: 'I like floral perfume...',
-    date: 'October 05, 2022',
-  },
-]
 </script>
 
 <template>
@@ -85,6 +72,7 @@ const reviewer = [
     </header>
 
     <main>
+      <!-- Breadcrumb -->
       <section>
         <div class="flex flex-row text-black items-center mt-30 px-5 gap-1 luxurious-roman-regular">
           <a href="/">Home</a>
@@ -95,21 +83,24 @@ const reviewer = [
         </div>
       </section>
 
-      <section v-if="!loading">
+      <!-- Product Detail -->
+      <section v-if="!loading && selectedProduct">
         <ProductDetailPerfume
-          :id="selectedProduct?.id"
-          :name="selectedProduct?.name || ''"
-          :description="selectedProduct?.descriptions || ''"
-          :image="selectedProduct?.image || ''"
-          :price="selectedProduct?.price || 0"
-          :variants="selectedProduct?.variants || []"
-          :story="selectedProduct?.productStorys || null"
-          :stock="selectedProduct?.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0"
+          :id="selectedProduct.id"
+          :name="selectedProduct.name"
+          :description="selectedProduct.descriptions || ''"
+          :image="selectedProduct.image || ''"
+          :price="selectedProduct.price || 0"
+          :variants="selectedProduct.variants || []"
+          :story="selectedProduct.productStorys || null"
+          :stock="selectedProduct.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0"
+          :average-rating="selectedProduct.averageRating || 0"
+          :total-reviews="selectedProduct.totalReviews || 0"
         />
       </section>
 
       <section>
-        <RatingProduct :reviewer="reviewer" />
+        <RatingProduct :product-id="selectedProduct?.id" />
       </section>
 
       <section>
@@ -119,13 +110,14 @@ const reviewer = [
           Discover More
         </h1>
 
-        <ProductListPerfume v-if="products && products.length > 0" :details-item="products" />
+        <ProductListPerfume v-if="displayedProducts.length > 0" :details-item="displayedProducts" />
       </section>
     </main>
 
     <footer>
       <Footer />
     </footer>
+
     <Scrolldown />
     <Loading v-if="loading" />
   </div>

@@ -14,8 +14,7 @@ defineProps<{
 <template>
   <section class="container mx-auto px-4 py-14">
     <h2
-      class="luxurious-roman-regular text-center font-bold text-[#280559]
-             text-3xl md:text-4xl mb-10"
+      class="luxurious-roman-regular text-center font-bold text-[#280559] text-3xl md:text-4xl lg:text-5xl mb-10"
     >
       Limited Edition
     </h2>
@@ -24,18 +23,16 @@ defineProps<{
       <div
         v-for="(banner, index) in banners"
         :key="index"
-        class="relative h-[320px] rounded-2xl overflow-hidden group"
+        class="relative h-80 rounded-2xl overflow-hidden group"
       >
         <img
           :src="banner.image"
           :alt="banner.title"
-          class="absolute inset-0 w-full h-full object-cover
-                 transition-transform duration-500 group-hover:scale-105"
+          class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
         <div
-          class="relative z-10 h-full flex flex-col justify-end p-6
-                 bg-gradient-to-t from-black/60 via-black/30 to-transparent"
+          class="relative z-10 h-full flex flex-col justify-end p-6 bg-linear-to-t from-black/60 via-black/30 to-transparent"
         >
           <span class="luxurious-roman-regular text-xs tracking-widest text-white mb-2">
             LIMITED
@@ -50,9 +47,7 @@ defineProps<{
           </p>
 
           <button
-            class="w-fit px-5 py-2 rounded-lg text-sm luxurious-roman-regular
-                   bg-[#280559] text-white hover:bg-white hover:text-[#280559]
-                   transition-all duration-300"
+            class="w-fit px-5 py-2 rounded-lg text-sm luxurious-roman-regular bg-[#280559] text-white hover:bg-white hover:text-[#280559] transition-all duration-300"
           >
             {{ banner.buttonText || 'Shop Now' }}
           </button>

@@ -61,14 +61,14 @@
             </label>
             <div class="relative">
               <input 
-                v-model.number="formData.discountPercent"
+                v-model.number="formData.discountPercentage"
                 type="number" 
                 min="1" 
                 max="100"
                 required
                 :class="[
                   'w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none pr-8',
-                  formData.discountPercent > 100 || formData.discountPercent < 1 
+                  formData.discountPercentage > 100 || formData.discountPercentage < 1 
                     ? 'border-red-300 focus:ring-red-500' 
                     : 'border-gray-200 focus:ring-indigo-500'
                 ]"
@@ -160,15 +160,17 @@ const emit = defineEmits(['close', 'save']);
 
 const isEditing = ref(false);
 const codeError = ref<string>('');
+
+// ✅ FIX: Use 'discountPercentage' in state
 const formData = ref({
   code: '',
   description: '',
-  discountPercent: 10,
+  discountPercentage: 10, 
   validUntil: '',
   active: true
 });
 
-// Computed properties for validation
+// Computed properties
 const minDate = computed(() => {
   return new Date().toISOString().split('T')[0];
 });
@@ -185,15 +187,15 @@ const isFormValid = computed(() => {
   return (
     formData.value.code.trim() !== '' &&
     formData.value.description.trim() !== '' &&
-    formData.value.discountPercent >= 1 &&
-    formData.value.discountPercent <= 100 &&
+    formData.value.discountPercentage >= 1 &&
+    formData.value.discountPercentage <= 100 &&
     formData.value.validUntil !== '' &&
     !isDateInPast.value &&
     !codeError.value
   );
 });
 
-// FIXED: Updated validation to allow both uppercase and lowercase
+// Validation
 const validateCode = () => {
   const code = formData.value.code.trim();
   if (!code) {
@@ -201,14 +203,12 @@ const validateCode = () => {
     return;
   }
 
-  // FIXED: Allow both uppercase and lowercase letters
   const alphanumericRegex = /^[A-Za-z0-9]+$/;
   if (!alphanumericRegex.test(code)) {
-    codeError.value = 'Promo code must contain only letters and numbers (no spaces or special characters)';
+    codeError.value = 'Promo code must contain only letters and numbers';
     return;
   }
 
-  // Length validation
   if (code.length < 4) {
     codeError.value = 'Promo code must be at least 4 characters';
     return;
@@ -223,27 +223,31 @@ const validateCode = () => {
 };
 
 /**
- * Watch for modal opening to populate data.
+ * Watch for modal opening
  */
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     if (props.editData) {
       isEditing.value = true;
+      // ✅ FIX: Populate discountPercentage correctly from edit data
+      // Handles both potential field names for robustness
+      const discount = props.editData.discountPercentage || props.editData.discountPercent || 10;
+      
       formData.value = { 
         ...props.editData,
+        discountPercentage: discount,
         validUntil: props.editData.validUntil ? new Date(props.editData.validUntil).toISOString().split('T')[0] : '',
         active: props.editData.active !== undefined ? props.editData.active : true
       };
     } else {
       isEditing.value = false;
-      // Default expiry: 30 days from now
       const nextMonth = new Date();
       nextMonth.setDate(nextMonth.getDate() + 30);
       
       formData.value = {
         code: '',
         description: '',
-        discountPercent: 10,
+        discountPercentage: 10,
         validUntil: nextMonth.toISOString().split('T')[0],
         active: true
       };
@@ -255,12 +259,11 @@ watch(() => props.isOpen, (newVal) => {
 const handleSubmit = () => {
   if (!isFormValid.value) return;
   
-  // Format the data before emitting
-  // Convert code to uppercase before sending to backend
+  // ✅ FIX: Construct correct payload with 'discountPercentage'
   const payload = {
     ...formData.value,
     code: formData.value.code.toUpperCase().trim(),
-    discountPercent: Number(formData.value.discountPercent),
+    discountPercentage: Number(formData.value.discountPercentage),
     validUntil: new Date(formData.value.validUntil).toISOString()
   };
   

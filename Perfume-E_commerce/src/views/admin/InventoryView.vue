@@ -154,6 +154,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { adminService } from '@/services/adminService'
 import productService from '@/services/productService'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -218,7 +219,7 @@ const lowStockCount = computed(() => {
 // Actions
 const fetchProducts = async () => {
   try {
-    const res = await productService.getAllProducts({ page: 0, size: 200, search: '' }) // Get a large batch
+    const res = await adminService.getProducts({ page: 0, size: 200, search: '' }) // Get a large batch
     products.value = res.data.content || res.data
   } catch (err) {
     console.error("Failed to load inventory", err)
@@ -243,21 +244,20 @@ const confirmRestock = async () => {
 
   isUpdating.value = true
   try {
-    // 1. Get fresh data (to ensure we don't overwrite other fields)
+    // Get fresh product data
     const freshDataRes = await productService.getProductById(selectedProduct.value.id)
     const freshProduct = freshDataRes.data
     
-    // 2. Calculate new stock
+    // Calculate new stock
     const newStock = freshProduct.stock + restockAmount.value
     
-    // 3. Update backend
-    // Note: Assuming we send the full object back. If backend supports PATCH stock, use that.
+    // Update backend using productService (for updates)
     await productService.updateProduct(selectedProduct.value.id, {
       ...freshProduct,
       stock: newStock
     })
 
-    // 4. Update UI locally
+    // Update UI locally
     const pIndex = products.value.findIndex(p => p.id === selectedProduct.value?.id)
     if (pIndex !== -1) {
       products.value[pIndex].stock = newStock

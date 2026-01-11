@@ -44,6 +44,16 @@ export const adminService = {
     });
   },
 
+  getProducts(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {
+    return api.get('/admin/products', { 
+      params: {
+        page: params.page,
+        size: params.size,
+        search: params.search
+      }
+    });
+  },
+
   updateOrderStatus(orderId: string, status: string) {
     return api.put(`/admin/orders/${orderId}/status`, null, {
       params: { status }

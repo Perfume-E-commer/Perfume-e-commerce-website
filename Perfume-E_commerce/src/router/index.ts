@@ -199,11 +199,6 @@ const routes: RouteRecordRaw[] = [
         name: 'dashboardcustomer',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },
-      {
-        path: 'dashboardtransaction',
-        name: 'dashboardtransaction',
-        component: () => import('@/views/admin/DashboardTransaction.vue'),
-      },
       // {
       //   path: 'dashboard-addproduct',
       //   name: 'dashboard-addproduct',

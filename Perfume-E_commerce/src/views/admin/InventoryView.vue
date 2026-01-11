@@ -89,10 +89,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { adminService } from '@/services/adminService'
-import { productService } from '@/services/apiProduct' // For updates
-import InventoryFilterBar from '@/components/admin/InventoryFilterBar.vue'
-import InventoryTable from '@/components/admin/InventoryTable.vue'
+import { adminService } from '../../services/adminService'
+import { productService } from '../../services/apiProduct' // For updates
+import InventoryFilterBar from '../../components/admin/inventory/InventoryFilterBar.vue'
+import InventoryTable from '../../components/admin/inventory/InventoryTable.vue'
 import { generateInventoryReport } from '../../utils/inventoryReportGenerator'
 
 

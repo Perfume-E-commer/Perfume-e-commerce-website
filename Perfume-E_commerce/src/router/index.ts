@@ -135,19 +135,24 @@ const routes: RouteRecordRaw[] = [
 
   // ADMIN DASHBOARD (Layout Wrapper)
   {
-    path: '/mainDashboard',
-    name: 'mainDashboard',
+    path: '/admin',
+    name: 'MainDashboard',
     component: () => import('@/views/admin/MainDashboard.vue'),
     redirect: '/mainDashboard/admindashboard',
     children: [
       {
-        path: 'inventory',
-        name: 'inventory',
-        component: () => import('@/views/admin/InventoryView.vue'), 
+        path: '', // Default route: /admin -> AdminDashboard
+        name: 'admin-inventory',
+        component: () => import('@/views/admin/AdminDashboard.vue'),
       },
       {
-        path: 'admindashboard',
-        name: 'admindashboard',
+        path: 'inventory',
+        name: 'inventory',
+        component: () => import('@/views/admin/InventoryView.vue'),
+      },
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
         component: () => import('@/views/admin/AdminDashboard.vue'),
       },
       {
@@ -173,8 +178,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
       {
-        path: 'dashboardpromotion',
-        name: 'dashboardpromotion',
+        path: 'promotions',
+        name: 'dashboardpromotions',
         component: () => import('@/views/admin/DashboardPromotion.vue'),
       },
       // {
@@ -190,12 +195,12 @@ const routes: RouteRecordRaw[] = [
       //   ],
       // },
       {
-        path: 'dashboardordermanagement',
-        name: 'dashboardordermanagement',
+        path: 'orders',
+        name: 'admin-orders',
         component: () => import('@/views/admin/DashboardOrderManagement.vue'),
       },
       {
-        path: 'dashboardcustomer',
+        path: 'customers',
         name: 'dashboardcustomer',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },
@@ -224,7 +229,7 @@ router.beforeEach((to, from, next) => {
   const isLoginPage = to.name === 'login'
 
   if (isAuthenticated && isLoginPage) {
-    next({ name: 'admindashboard' })
+    next({ name: 'admin-home' })
   } else if (requiresAuth && !isAuthenticated) {
     next({ name: 'login' })
   } else {

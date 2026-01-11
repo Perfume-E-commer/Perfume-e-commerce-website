@@ -268,7 +268,7 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const currentPage = ref(0)
-const pageSize = ref(2)
+const pageSize = ref(10)
 const totalPages = ref(0)
 const searchQuery = ref('')
 const totalElements = ref(0)

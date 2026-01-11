@@ -76,7 +76,7 @@
                 <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1z" clip-rule="evenodd" />
                 </svg>
-                {{ promo.discountPercent }}% OFF
+                {{ promo.discountPercentage || promo.discount || promo.percentage || 0 }}% OFF
               </span>
             </td>
 
@@ -170,7 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 const props = defineProps<{
   title: string,
@@ -178,6 +178,13 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['toggle-status', 'edit', 'delete']);
+
+// ✅ DEBUG: Log the data to console so you can inspect it
+onMounted(() => {
+  if (props.promotions && props.promotions.length > 0) {
+    console.log("📢 PROMOTION DATA RECEIVED:", props.promotions[0]);
+  }
+});
 
 // Computed description based on title
 const tableDescription = computed(() => {

@@ -11,16 +11,24 @@ import Articles from '@/components/customer/landingpage/Articles.vue'
 import Scrolldown from '@/components/layout/Scrolldown.vue'
 import ProductListPerfume from '@/components/customer/product/ProductListPerfume.vue'
 import { useProductStore } from '@/stores/productStore'
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, ref, computed } from 'vue'
 import Loading from '@/components/layout/Loading.vue'
 import EditionComponent from '@/components/customer/landingpage/EditionComponent.vue'
 import { storeToRefs } from 'pinia'
-import SeeMoreButton from '@/components/customer/landingpage/SeeMoreButton.vue'
 
 const productStore = useProductStore()
 
 const { products, loading } = storeToRefs(productStore)
 const { fetchAllProducts } = productStore
+
+const displayCount = ref(4)
+const displayedProducts = computed(() => products.value.slice(0, displayCount.value))
+const loadMoreProducts = () => {
+  displayCount.value += 4
+}
+const collapseProducts = () => {
+  displayCount.value = 4
+}
 
 onMounted(() => {
   fetchAllProducts()
@@ -68,7 +76,6 @@ const limitedBanners = [
     image: '/Image/HomePage/Red1.png',
   },
 ]
-
 </script>
 <template>
   <div class="flex flex-col min-h-screen overflow-hidden">
@@ -90,8 +97,6 @@ const limitedBanners = [
           text='Welcome to ScentHaven Perfumes, where the spirit of victory and triumph come alive through scents that empower and inspire. Our curated collection, aptly named "Victory Scented," is a celebration of success and elegance, designed to unleash your victorious essence. Indulge in the sweet taste of triumph with captivating fragrances that tell the tale of your achievements. At ScentHaven, we believe that every victory deserves a signature scent, and we are dedicated to providing unforgettable fragrances that elevate your spirit and empower your journey.'
         />
       </section>
-      
-      
 
       <section class="w-full flex flex-row justify-center items-center bg-white z-30">
         <ValuePerfume
@@ -115,12 +120,25 @@ const limitedBanners = [
         >
           Best Selling Products
         </h1>
-        <ProductListPerfume v-if="!loading" :details-item="products" />
+        <ProductListPerfume v-if="!loading" :details-item="displayedProducts" />
         <div v-else class="text-center text-black luxurious-regular-roman">
           Loading Product.....
         </div>
-        <div class="flex justify-center mb-10">
-          <SeeMoreButton url="/products" />
+        <div class="flex justify-center mb-10 gap-4">
+          <button
+            @click="loadMoreProducts"
+            v-if="displayCount < products.length"
+            class="px-8 py-3 bg-[#280559] text-white font-semibold luxurious-roman-regular rounded-lg hover:bg-[#1a0438] transition-all duration-300 hover:scale-105"
+          >
+            See More
+          </button>
+          <button
+            @click="collapseProducts"
+            v-if="displayCount > 4"
+            class="px-8 py-3 bg-[#280559] text-white font-semibold luxurious-roman-regular rounded-lg transition-all duration-300 hover:scale-105"
+          >
+            See Less
+          </button>
         </div>
       </section>
       <section class="w-full bg-white z-30">

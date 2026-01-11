@@ -31,6 +31,8 @@ const props = defineProps<{
   stock: number
   variants: ProductVariant[] | string
   story: ProductStorysType | string | null
+  averageRating?: number
+  totalReviews?: number
 }>()
 
 // --- Computed ---
@@ -168,8 +170,13 @@ watch(
         </div>
 
         <div class="flex items-center gap-2 text-sm luxurious-roman-regular">
-          <div class="flex text-[#280559]">★★★★★</div>
-          <span class="underline text-gray-500 hover:text-black cursor-pointer">(90) Reviews</span>
+          <div class="flex text-[#280559]">
+            {{ '★'.repeat(Math.round(props.averageRating || 0))
+            }}{{ '☆'.repeat(5 - Math.round(props.averageRating || 0)) }}
+          </div>
+          <span class="underline text-gray-500 hover:text-black cursor-pointer"
+            >({{ props.totalReviews || 0 }}) Reviews</span
+          >
         </div>
 
         <div class="mt-2">

@@ -257,6 +257,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
 import { productService } from '../../services/apiProduct'
+import { adminService } from '../../services/adminService' 
 import type { Product } from '../../types/adminProduct'
 
 const router = useRouter()
@@ -301,29 +302,26 @@ const loadProducts = async () => {
     
     const params: { page?: number; size?: number; search?: string } = {
       page: currentPage.value,
-      size: pageSize.value,
+      size: pageSize.value,  
       search: searchQuery.value
     }
     
-    const response = await productService.getAllProducts(params)
+    const response = await adminService.getProducts(params)
     
-    // 1. Handle Content
-    // Check if content is directly in data or inside content property
     products.value = Array.isArray(response.data) ? response.data : (response.data.content || [])
 
-    // 2. Handle Pagination (Fixing the NaN issue)
     if (response.data.page) {
-      // New Spring Boot 3 VIA_DTO format
       totalElements.value = response.data.page.totalElements || 0
       totalPages.value = response.data.page.totalPages || 0
+      currentPage.value = response.data.page.number || 0
     } else if (response.data.totalElements !== undefined) {
-      // Old format
       totalElements.value = response.data.totalElements || 0
       totalPages.value = response.data.totalPages || 0
+      currentPage.value = response.data.number || 0
     } else {
-      // Fallback if no pagination info is found
       totalElements.value = products.value.length
       totalPages.value = 1
+      currentPage.value = 0
     }
     
   } catch (error: any) {

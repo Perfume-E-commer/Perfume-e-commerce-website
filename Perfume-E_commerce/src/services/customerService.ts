@@ -1,4 +1,5 @@
 import api from './apiClient';
+
 export interface Customer {
   id: string;
   firstName: string;
@@ -12,7 +13,7 @@ export interface Customer {
   ordersCount?: number;
   totalSpent?: number;
   lastOrderDate?: string;  
-  address?: string;       
+  address?: string;        
 }
 
 export interface CustomerStats {
@@ -51,7 +52,7 @@ export const customerService = {
       spendingTier?: string; 
     }
   }) {
-    return api.get<CustomerResponse>('/users/search', { 
+    return api.get<CustomerResponse>('/admin/customers/search', { 
       params: {
         query: params.search,
         page: params.page,
@@ -62,19 +63,19 @@ export const customerService = {
   },
 
   getCustomerStats() {
-    return api.get<CustomerStats>('/users/stats');
+    return api.get<CustomerStats>('/admin/customers/stats');
   },
 
   getCustomerDetails(id: string) {
-    return api.get<{ customer: Customer; orders: CustomerOrderHistory[] }>(`/users/${id}/details`);
+    return api.get<{ customer: Customer; orders: CustomerOrderHistory[] }>(`/admin/customers/${id}/details`);
   },
 
   deleteUser(id: string) {
-    return api.delete(`/users/${id}`);
+    return api.delete(`/users/${id}`); 
   },
   
   exportCustomers() {
-    return api.get('/users/export', { responseType: 'blob' });
+    return api.get('/admin/customers/export', { responseType: 'blob' });
   }
 };
 

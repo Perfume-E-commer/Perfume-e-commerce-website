@@ -70,10 +70,10 @@ import { useRoute, useRouter } from 'vue-router'
 import productService from '@/services/productService'
 
 // Component Imports
-import ProductBasicInfo from './product/ProductBasicInfo.vue'
-import ProductMedia from './product/ProductMedia.vue'
-import ProductPricing from './product/ProductPricing.vue'
-import ProductAttributes from './product/ProductAttributes.vue'
+import ProductBasicInfo from '../../components/admin/product/ProductBasicInfo.vue'
+import ProductMedia from '../../components/admin/product/ProductMedia.vue'
+import ProductPricing from '../../components/admin/product/ProductPricing.vue'
+import ProductAttributes from '../../components/admin/product/ProductAttributes.vue'
 
 const route = useRoute()
 const router = useRouter()

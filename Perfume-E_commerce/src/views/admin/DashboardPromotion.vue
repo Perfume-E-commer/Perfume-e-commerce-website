@@ -147,8 +147,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import PromotionTable from '../components/promotions/PromotionTable.vue';
-import PromotionModal from '../components/promotions/PromotionModal.vue';
+import PromotionTable from '../../components/admin/promotions/PromotionTable.vue';
+import PromotionModal from '../../components/admin/promotions/PromotionModal.vue';
 import promotionService from '../../services/promotionService';
 
 interface Promotion {

@@ -1,273 +1,269 @@
 <template>
-  <div>
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <!-- Total Sales Card -->
-      <TotalSaleOrder
-        total_name="Total Sales"
-        :total_value="formatCurrency(stats.totalSales)"
-        total_text="Sales"
-        rate_fluctuation="↑ 12.3%"
-        previous_value="$22.8K"
-        :detailLink="'/dashboardaddproduct'"
-      />
-
-      <!-- Total Orders Card -->
-      <TotalSaleOrder
-        total_name="Total Orders"
-        :total_value="stats.totalOrders.toString()"
-        total_text="Orders"
-        rate_fluctuation="↑ 6.7%"
-        previous_value="1.1K"
-        :detailLink="'/dashboardaddproduct'"
-      />
-      
-      <!-- Total Customers Card (commented out) -->
-      <!-- <TotalSaleOrder
-          total_name="Total Customers"
-          total_value="8.4K"
-          total_text="Customers"
-          rate_fluctuation="↑ 8.2%"
-          previous_value="7.7K"
-          :detailLink="'/dashboardaddproduct'"
-        /> -->
-
-      <!-- Pending & Canceled Card -->
-      <PendingCanceled
-        total_name="Pending & Canceled"
-        :pending_count="stats.pendingOrders"
-        :pending_users="0"
-        :canceled_count="stats.canceledOrders"
-        canceled_percentage="↓ 5.4%"
-        :detailLink="'/dashboardaddproduct'"
-      />
-    </div>
-    <div class="w-full mx-auto">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div
-          class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow h-fit self-start"
-        >
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <h3 class="text-gray-900 text-xl font-semibold">Sales Overview</h3>
-
-            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-              <span class="flex items-center">
-                <span class="w-3 h-3 bg-indigo-600 rounded-full mr-2"></span>
-                This Week
-              </span>
-              <span class="flex items-center">
-                <span class="w-3 h-3 bg-gray-300 rounded-full mr-2"></span>
-                Last Week
-              </span>
-            </div>
-          </div>
-
-          <div class="mb-6">
-            <ValueBoxReportWeek
-              :items="[
-                { name: 'Sales Overview', value: formatCompactNumber(stats.totalSales) },
-                { name: 'Total Products', value: '12.4k' },
-                { name: 'Stock Products', value: '8.4k' },
-                { name: 'Out of Stock', value: '32.5k' },
-                { name: 'Revenue', value: formatCompactNumber(stats.totalSales) },
-              ]"
-            />
-          </div>
-
-          <!-- Chart (NO STRETCH) -->
-          <div class="w-full">
-            <ApexCharts height="250" />
-          </div>
-        </div>
-
-        <!-- Category Section -->
-        <div class="bg-white rounded-2xl shadow-sm p-2 hover:shadow-md transition-shadow">
-          <viewCategory />
-        </div>
+  <div class="p-6 min-h-screen bg-gray-50/50 space-y-8 animate-fade-in">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Welcome back, Admin!</h1>
+        <p class="text-sm text-gray-500 mt-1">{{ currentDate }}</p>
+      </div>
+      <div class="flex gap-3">
+        <router-link to="/admin/products" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+          Manage Products
+        </router-link>
+        <router-link to="/admin/promotions" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+          Create Promotion
+        </router-link>
       </div>
     </div>
-    <div class="w-full mx-auto pt-6">
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div
-          class="lg:col-span-3 bg-white rounded-2xl shadow-sm p-6 lg:-mt-60 hover:shadow-md transition-shadow h-fit self-start"
-        >
-          <div class="lg:col-span-3">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-              <h3 class="text-gray-900 text-xl font-semibold">Sales Overview</h3>
 
-              <div class="relative inline-block">
-                <!-- button sorting or filtering -->
-                <ButtonRectangle @click="toggleDropdown" :style="{ hover: 'shadow-xl' }">
-                  Filter
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.5 6.45898H2.5C2.15833 6.45898 1.875 6.17565 1.875 5.83398C1.875 5.49232 2.15833 5.20898 2.5 5.20898H17.5C17.8417 5.20898 18.125 5.49232 18.125 5.83398C18.125 6.17565 17.8417 6.45898 17.5 6.45898Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M15 10.625H5C4.65833 10.625 4.375 10.3417 4.375 10C4.375 9.65833 4.65833 9.375 5 9.375H15C15.3417 9.375 15.625 9.65833 15.625 10C15.625 10.3417 15.3417 10.625 15 10.625Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M11.6654 14.791H8.33203C7.99036 14.791 7.70703 14.5077 7.70703 14.166C7.70703 13.8243 7.99036 13.541 8.33203 13.541H11.6654C12.007 13.541 12.2904 13.8243 12.2904 14.166C12.2904 14.5077 12.007 14.791 11.6654 14.791Z"
-                      fill="white"
-                    />
-                  </svg>
-                </ButtonRectangle>
-                <div
-                  v-if="selectedFilter"
-                  class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10"
-                >
-                  <ul>
-                    <li
-                      v-for="filter in filters"
-                      :key="filter"
-                      @click="selectFilter(filter)"
-                      class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {{ filter }}
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <viewTableBestSelling />
+    <div v-if="isLoading" class="flex justify-center py-20">
+      <div class="animate-spin h-10 w-10 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+    </div>
+
+    <div v-else class="space-y-8">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Orders (30d)</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ dashboardData.totalOrders30d }}</p>
           </div>
-          <div class="flex justify-end mt-4">
-            <ButtonDetail :detailLink="detailLink" />
+          <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           </div>
         </div>
 
-        <!-- Category Section -->
-
-        <div
-          class="bg-white p-6 lg:col-span-2 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div class="lg:col-span-2">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-              <h3 class="text-gray-900 text-xl font-semibold">Transaction</h3>
-
-              <div class="relative inline-block">
-                <!-- button sorting or filtering -->
-                <ButtonRectangle @click="toggleDropdown" :style="{ hover: 'shadow-xl' }">
-                  Filter
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M17.5 6.45898H2.5C2.15833 6.45898 1.875 6.17565 1.875 5.83398C1.875 5.49232 2.15833 5.20898 2.5 5.20898H17.5C17.8417 5.20898 18.125 5.49232 18.125 5.83398C18.125 6.17565 17.8417 6.45898 17.5 6.45898Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M15 10.625H5C4.65833 10.625 4.375 10.3417 4.375 10C4.375 9.65833 4.65833 9.375 5 9.375H15C15.3417 9.375 15.625 9.65833 15.625 10C15.625 10.3417 15.3417 10.625 15 10.625Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M11.6654 14.791H8.33203C7.99036 14.791 7.70703 14.5077 7.70703 14.166C7.70703 13.8243 7.99036 13.541 8.33203 13.541H11.6654C12.007 13.541 12.2904 13.8243 12.2904 14.166C12.2904 14.5077 12.007 14.791 11.6654 14.791Z"
-                      fill="white"
-                    />
-                  </svg>
-                </ButtonRectangle>
-                <div
-                  v-if="selectedFilter"
-                  class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10"
-                >
-                  <ul>
-                    <li
-                      v-for="filter in filters"
-                      :key="filter"
-                      @click="selectFilter(filter)"
-                      class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {{ filter }}
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <viewTranslation />
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Revenue (30d)</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ formatCurrency(dashboardData.revenue30d) }}</p>
           </div>
-          <div class="flex justify-end mt-4">
-            <ButtonDetail :detailLink="detailLink" />
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
+        </div>
+
+        <router-link to="/admin/inventory" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition group">
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-red-500 transition-colors">Low Stock Alerts</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ dashboardData.lowStockCount }}</p>
+          </div>
+          <div class="p-3 bg-red-50 text-red-600 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+        </router-link>
+
+        <router-link to="/admin/customers" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Customers</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ dashboardData.activeCustomers }}</p>
+          </div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+        </router-link>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-bold text-gray-900">Sales Overview (Last 30 Days)</h2>
+        </div>
+        
+        <div v-if="!dashboardData.salesChart || dashboardData.salesChart.length === 0" class="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-lg bg-gray-50/50">
+           <svg class="w-10 h-10 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 012 2h2a2 2 0 012-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+           <p>No sales data recorded yet.</p>
+           <p class="text-xs mt-1">Start selling to see analytics!</p>
+        </div>
+
+        <div v-else class="h-64 flex items-end justify-between gap-1 overflow-x-auto pb-2">
+           <div 
+             v-for="(day, index) in dashboardData.salesChart" 
+             :key="index"
+             class="flex flex-col items-center group relative w-full min-w-[20px]"
+           >
+             <div class="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded py-1 px-2 z-10 whitespace-nowrap shadow-xl">
+               {{ day.date }}: {{ formatCurrency(day.revenue) }} ({{ day.orderCount }} orders)
+             </div>
+             <div 
+               class="w-full max-w-[30px] bg-indigo-100 hover:bg-indigo-500 transition-all duration-300 rounded-t-sm"
+               :style="{ height: `${calculateHeight(day.revenue)}%` }"
+             ></div>
+             <span v-if="index % 4 === 0" class="text-[10px] text-gray-400 mt-2">{{ day.date }}</span>
+           </div>
         </div>
       </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">Recent Orders</h3>
+            <router-link to="/admin/orders" class="text-indigo-600 text-xs font-bold hover:underline">View All</router-link>
+          </div>
+          
+          <div v-if="dashboardData.recentOrders.length === 0" class="p-8 text-center text-gray-400 text-sm italic">
+            No recent orders found.
+          </div>
+
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                  <th class="px-5 py-3">Order #</th>
+                  <th class="px-5 py-3">Customer</th>
+                  <th class="px-5 py-3">Total</th>
+                  <th class="px-5 py-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr v-for="order in dashboardData.recentOrders" :key="order.id" class="hover:bg-gray-50">
+                  <td class="px-5 py-3 font-mono text-xs text-gray-600">{{ order.orderNumber || order.id.substring(0,8) }}</td>
+                  <td class="px-5 py-3 text-gray-900 font-medium">{{ order.customerName }}</td>
+                  <td class="px-5 py-3 text-gray-600">{{ formatCurrency(order.total) }}</td>
+                  <td class="px-5 py-3 text-right">
+                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase"
+                      :class="{
+                        'bg-green-100 text-green-700': order.status === 'DELIVERED',
+                        'bg-blue-100 text-blue-700': order.status === 'SHIPPED',
+                        'bg-yellow-100 text-yellow-700': order.status === 'PROCESSING',
+                        'bg-gray-100 text-gray-600': !['DELIVERED','SHIPPED','PROCESSING'].includes(order.status)
+                      }"
+                    >
+                      {{ order.status }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+             <div class="p-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
+                <h3 class="font-bold text-red-800 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  Low Stock
+                </h3>
+             </div>
+             <div class="p-4 space-y-3">
+               <div v-if="dashboardData.lowStockItems.length === 0" class="text-center text-gray-400 text-xs py-4">
+                 All items well stocked.
+               </div>
+               <div v-for="item in dashboardData.lowStockItems" :key="item.id" class="flex items-center justify-between">
+                 <div class="flex items-center gap-3">
+                   <div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs overflow-hidden">
+                     <img v-if="item.imageUrl" :src="item.imageUrl" class="w-full h-full object-cover">
+                     <span v-else>📦</span>
+                   </div>
+                   <div>
+                     <p class="text-sm font-medium text-gray-900 truncate max-w-[120px]" :title="item.name">{{ item.name }}</p>
+                   </div>
+                 </div>
+                 <span class="text-red-600 font-bold text-sm bg-red-50 px-2 py-0.5 rounded">{{ item.stock }} left</span>
+               </div>
+               <router-link v-if="dashboardData.lowStockItems.length > 0" to="/admin/inventory" class="block text-center text-xs text-indigo-600 font-medium mt-2 hover:underline">
+                 Restock Now
+               </router-link>
+             </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+             <div class="p-4 border-b border-gray-100 bg-indigo-50">
+                <h3 class="font-bold text-indigo-800">Active Promotions</h3>
+             </div>
+             <div class="p-4 space-y-3">
+               <div v-if="dashboardData.activePromotions.length === 0" class="text-center text-gray-400 text-xs py-4">
+                 No active campaigns.
+               </div>
+               <div v-for="promo in dashboardData.activePromotions" :key="promo.id" class="flex justify-between items-center border-b border-gray-50 pb-2 last:border-0 last:pb-0">
+                 <div>
+                   <p class="font-mono font-bold text-indigo-700 text-sm">{{ promo.code }}</p>
+                   <p class="text-[10px] text-gray-400">Expires: {{ formatDate(promo.validUntil) }}</p>
+                 </div>
+                 <span class="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">
+                   {{ promo.discountPercentage }}% OFF
+                 </span>
+               </div>
+             </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import TotalSaleOrder from '../components/TotalSale&Order.vue'
-import PendingCanceled from '../components/Pending&Canceled.vue'
-import ApexCharts from '../components/ApexCharts.vue'
-import ValueBoxReportWeek from '../components/ValueBoxReportWeek.vue'
-import viewCategory from '../components/viewCategory.vue'
-import viewTableBestSelling from '../components/viewTableBestSelling.vue'
-import viewTranslation from '../components/viewTranslation.vue'
-import ButtonRectangle from '../components/ButtonRectangle.vue'
-import ButtonDetail from '../components/ButtonDetail.vue'
-// ✨ UPDATED: Added adminService import
-import adminService from '@/services/adminService';
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue';
+import adminService, { type AdminDashboardResponse } from '@/services/adminService';
 
-const selectedFilter = ref('')
-const filters = ['Product', 'Today', 'This Week', 'This Month', 'This Year']
-
-// ✨ UPDATED: Create reactive state with default "0" values
-const stats = ref({
-  totalSales: 0,
-  totalOrders: 0,
-  pendingOrders: 0,
-  canceledOrders: 0
+// --- State ---
+const isLoading = ref(true);
+const dashboardData = ref<AdminDashboardResponse>({
+  totalOrders30d: 0,
+  revenue30d: 0,
+  lowStockCount: 0,
+  activeCustomers: 0,
+  salesChart: [],
+  recentOrders: [],
+  lowStockItems: [],
+  activePromotions: []
 });
 
-// ✨ UPDATED: Helper to format money (e.g., 2500 -> $2,500.00)
+const currentDate = computed(() => {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+});
+
+// --- Actions ---
+const loadDashboard = async () => {
+  isLoading.value = true;
+  try {
+    const response = await adminService.getDashboardStats();
+    dashboardData.value = response.data;
+  } catch (error) {
+    console.error("Failed to load dashboard data", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// --- Helpers ---
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 };
 
-// ✨ UPDATED: Helper to format compact numbers (e.g., 2500 -> 2.5k)
-const formatCompactNumber = (value: number) => {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(1)}M`;
-  } else if (value >= 1000) {
-    return `$${(value / 1000).toFixed(1)}k`;
-  }
-  return `$${value}`;
+const formatDate = (dateString: string) => {
+  if (!dateString || dateString === 'N/A') return 'No Expiry';
+  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-function toggleDropdown() {
-  if (selectedFilter.value) {
-    selectedFilter.value = ''
-  } else {
-    selectedFilter.value = 'This Week' // Default selection when opening
-  }
-}
+const calculateHeight = (revenue: number) => {
+  if (!dashboardData.value.salesChart || dashboardData.value.salesChart.length === 0) return 0;
+  
+  const maxRevenue = Math.max(...dashboardData.value.salesChart.map(d => d.revenue));
+  
+  const max = maxRevenue === 0 ? 100 : maxRevenue;
+  
+  const percentage = (revenue / max) * 100;
+  
+  return revenue > 0 ? Math.max(percentage, 2) : 0;
+};
 
-function selectFilter(filter: string) {
-  selectedFilter.value = filter
-  // Implement filtering logic here
-}
-
-const detailLink = '/dashboardaddproduct'
-
-// ✨ UPDATED: Fetch data when page loads
-onMounted(async () => {
-  try {
-    const response = await adminService.getDashboardStats();
-    stats.value = response.data;
-  } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
-  }
+// --- Init ---
+onMounted(() => {
+  loadDashboard();
 });
 </script>
+
+<style scoped>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+</style>

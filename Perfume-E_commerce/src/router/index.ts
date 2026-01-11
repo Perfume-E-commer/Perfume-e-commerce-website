@@ -135,24 +135,19 @@ const routes: RouteRecordRaw[] = [
 
   // ADMIN DASHBOARD (Layout Wrapper)
   {
-    path: '/admin',
-    name: 'MainDashboard',
+    path: '/mainDashboard',
+    name: 'mainDashboard',
     component: () => import('@/views/admin/MainDashboard.vue'),
     redirect: '/mainDashboard/admindashboard',
     children: [
       {
-        path: '', // Default route: /admin -> AdminDashboard
-        name: 'admin-inventory',
-        component: () => import('@/views/admin/AdminDashboard.vue'),
-      },
-      {
         path: 'inventory',
         name: 'inventory',
-        component: () => import('@/views/admin/InventoryView.vue'),
+        component: () => import('@/views/admin/InventoryView.vue'), 
       },
       {
-        path: 'dashboard',
-        name: 'admin-dashboard',
+        path: 'admindashboard',
+        name: 'admindashboard',
         component: () => import('@/views/admin/AdminDashboard.vue'),
       },
       {
@@ -178,8 +173,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
       {
-        path: 'promotions',
-        name: 'dashboardpromotions',
+        path: 'dashboardpromotion',
+        name: 'dashboardpromotion',
         component: () => import('@/views/admin/DashboardPromotion.vue'),
       },
       // {
@@ -195,12 +190,12 @@ const routes: RouteRecordRaw[] = [
       //   ],
       // },
       {
-        path: 'orders',
-        name: 'admin-orders',
+        path: 'dashboardordermanagement',
+        name: 'dashboardordermanagement',
         component: () => import('@/views/admin/DashboardOrderManagement.vue'),
       },
       {
-        path: 'customers',
+        path: 'dashboardcustomer',
         name: 'dashboardcustomer',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },
@@ -229,7 +224,7 @@ router.beforeEach((to, from, next) => {
   const isLoginPage = to.name === 'login'
 
   if (isAuthenticated && isLoginPage) {
-    next({ name: 'admin-home' })
+    next({ name: 'admindashboard' })
   } else if (requiresAuth && !isAuthenticated) {
     next({ name: 'login' })
   } else {

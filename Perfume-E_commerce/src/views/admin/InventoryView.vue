@@ -93,8 +93,8 @@ import { adminService } from '@/services/adminService'
 import { productService } from '@/services/apiProduct' // For updates
 import InventoryFilterBar from '@/components/admin/InventoryFilterBar.vue'
 import InventoryTable from '@/components/admin/InventoryTable.vue'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import { generateInventoryReport } from '../../utils/inventoryReportGenerator'
+
 
 // --- State ---
 const products = ref<any[]>([])
@@ -244,20 +244,7 @@ const saveNewBrand = () => {
 
 // PDF Export
 const generatePDF = () => {
-  const doc = new jsPDF()
-  doc.text("Inventory Report", 14, 20)
-  
-  const tableData = filteredProducts.value.map(p => [
-    p.name, p.brand, p.category, p.stock, p.stock === 0 ? 'Out' : 'In'
-  ])
-
-  autoTable(doc, {
-    startY: 30,
-    head: [['Name', 'Brand', 'Category', 'Stock', 'Status']],
-    body: tableData,
-  })
-  
-  doc.save('inventory.pdf')
+  generateInventoryReport(filteredProducts.value)
 }
 
 onMounted(fetchProducts)

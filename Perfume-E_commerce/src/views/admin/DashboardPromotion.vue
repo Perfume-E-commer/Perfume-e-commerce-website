@@ -1,8 +1,6 @@
-
 <template>
   <div class="p-6 space-y-8 min-h-screen bg-gray-50/50">
     
-    <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Promotion Management</h1>
@@ -19,199 +17,139 @@
       </button>
     </div>
 
-    <!-- Loading State -->
     <div v-if="isLoading" class="flex justify-center items-center py-12">
       <div class="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
     </div>
 
-    <!-- Content when loaded -->
     <div v-else>
-      <!-- Statistics Summary -->
-      <div v-if="promotions.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-500">Total Promotions</p>
-              <p class="text-2xl font-bold text-gray-800 mt-1">{{ promotions.length }}</p>
-            </div>
-            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
-              </svg>
-            </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Campaigns</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ activePromotions.length }}</p>
+          </div>
+          <div class="p-3 bg-indigo-50 rounded-lg text-indigo-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
         </div>
-        
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-500">Active Promotions</p>
-              <p class="text-2xl font-bold text-green-600 mt-1">{{ activePromotions.length }}</p>
-            </div>
-            <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-            </div>
+
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Promos</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1">{{ promotions.length }}</p>
           </div>
-        </div>
-        
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-500">Past Promotions</p>
-              <p class="text-2xl font-bold text-amber-600 mt-1">{{ pastPromotions.length }}</p>
-            </div>
-            <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-            </div>
+          <div class="p-3 bg-blue-50 rounded-lg text-blue-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
           </div>
         </div>
       </div>
 
-      <!-- Active Promotions Section -->
       <PromotionTable 
-        v-if="activePromotions.length > 0"
-        title="Active Promotions" 
+        title="Active Campaigns"
         :promotions="activePromotions"
-        @toggle-status="handleToggleStatus"
+        @toggle-status="toggleStatus"
         @edit="openEditModal"
         @delete="deletePromo"
       />
 
-      <!-- Past Promotions Section -->
       <PromotionTable 
-        v-if="pastPromotions.length > 0"
-        title="Past Promotions (Expired or Inactive)" 
-        :promotions="pastPromotions"
-        @toggle-status="handleToggleStatus"
+        v-if="inactivePromotions.length > 0"
+        title="Past & Inactive Promotions"
+        :promotions="inactivePromotions"
+        @toggle-status="toggleStatus"
         @edit="openEditModal"
         @delete="deletePromo"
       />
-
-      <!-- No Promotions Message -->
-      <div v-if="promotions.length === 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-        <h3 class="text-lg font-semibold text-gray-700 mb-2">No promotions yet</h3>
-        <p class="text-gray-500 mb-4">Create your first promotional code to offer discounts to customers</p>
-        <button 
-          @click="openCreateModal" 
-          class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition inline-flex items-center shadow-sm font-medium"
-        >
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-          </svg>
-          Create Your First Promotion
-        </button>
-      </div>
     </div>
 
-    <!-- Create/Edit Modal -->
-    <PromotionModal 
-      :is-open="isModalOpen" 
-      :is-loading="isSaving" 
+    <PromotionModal
+      :is-open="isModalOpen"
       :edit-data="selectedPromo"
-      @close="closeModal" 
+      :is-loading="isSaving"
+      @close="closeModal"
       @save="handleSave"
     />
-
-    <!-- Toast Notification -->
-    <div v-if="toast.show" :class="[
-        'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg border transform transition-all duration-300 z-50',
-        toast.type === 'success' 
-          ? 'bg-green-50 text-green-800 border-green-200'
-          : 'bg-red-50 text-red-800 border-red-200'
-      ]">
-      <div class="flex items-center gap-3">
-        <svg v-if="toast.type === 'success'" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-        </svg>
-        <span class="font-medium">{{ toast.message }}</span>
-        <button @click="toast.show = false" class="ml-4 text-gray-400 hover:text-gray-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useToast } from 'vue-toastification'; 
 import PromotionTable from '../../components/admin/promotions/PromotionTable.vue';
 import PromotionModal from '../../components/admin/promotions/PromotionModal.vue';
 import promotionService from '../../services/promotionService';
 
-interface Promotion {
-  id: string;
-  code: string;
-  description: string;
-  discountPercent: number;
-  validUntil: string;
-  active: boolean;
-  createdAt?: string;
-}
-
-// Reactive state
-const promotions = ref<Promotion[]>([]);
+// State
+const promotions = ref<any[]>([]);
 const isLoading = ref(true);
-const isModalOpen = ref(false);
 const isSaving = ref(false);
-const selectedPromo = ref<Promotion | null>(null);
+const isModalOpen = ref(false);
+const selectedPromo = ref<any | null>(null);
 
-// Toast notifications
-const toast = ref({
-  show: false,
-  message: '',
-  type: 'success' as 'success' | 'error'
-});
+const toast = useToast();
 
-// Show toast message
-const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-  toast.value = { show: true, message, type };
-  setTimeout(() => {
-    toast.value.show = false;
-  }, 3000);
-};
-
-// --- Computed Logic ---
+// Computed
 const activePromotions = computed(() => {
-  const now = new Date().getTime();
+  if (!Array.isArray(promotions.value)) return []; 
+  
+  const now = new Date();
   return promotions.value.filter(p => {
-    const expiry = new Date(p.validUntil).getTime();
-    // Active if: active=true AND not expired
-    return p.active === true && expiry >= now;
+    if (!p.validUntil) return false;
+    const expiry = new Date(p.validUntil);
+    expiry.setHours(23, 59, 59, 999);
+    return p.active && expiry >= now;
   });
 });
 
-const pastPromotions = computed(() => {
-  const now = new Date().getTime();
+const inactivePromotions = computed(() => {
+  if (!Array.isArray(promotions.value)) return []; // Prevent crash
+
+  const now = new Date();
   return promotions.value.filter(p => {
-    const expiry = new Date(p.validUntil).getTime();
-    // Past if: either expired OR inactive (regardless of date)
-    return expiry < now || p.active === false;
+    if (!p.validUntil) return true; 
+    const expiry = new Date(p.validUntil);
+    expiry.setHours(23, 59, 59, 999);
+    return !p.active || expiry < now;
   });
 });
 
-// --- Actions ---
-const loadPromotions = async () => {
+// Methods
+const fetchPromotions = async () => {
   isLoading.value = true;
   try {
     const response = await promotionService.getAllPromotions({ page: 0, size: 100, search: '' });
-    // Handle both Page object with 'content' or direct array
-    promotions.value = response.data.content || response.data || [];
+    
+    console.log("📢 Raw API Response:", response);
+
+    let dataToUse = [];
+
+    if (Array.isArray(response)) {
+      dataToUse = response;
+    } 
+    else if (Array.isArray(response.data)) {
+      dataToUse = response.data;
+    }
+    else if (response.data && Array.isArray(response.data.content)) {
+      dataToUse = response.data.content;
+    }
+    else if (response.result && Array.isArray(response.result)) {
+      dataToUse = response.result;
+    }
+    else if (response.data && Array.isArray(response.data.data)) {
+      dataToUse = response.data.data;
+    }
+
+    console.log("✅ Final Promotions Array:", dataToUse);
+    promotions.value = dataToUse;
+
   } catch (error: any) {
     console.error("Failed to fetch promotions", error);
     showToast(error.response?.data?.message || 'Failed to load promotions', 'error');
+    promotions.value = [];
   } finally {
     isLoading.value = false;
   }
@@ -222,7 +160,7 @@ const openCreateModal = () => {
   isModalOpen.value = true;
 };
 
-const openEditModal = (promo: Promotion) => {
+const openEditModal = (promo: any) => {
   selectedPromo.value = { ...promo };
   isModalOpen.value = true;
 };
@@ -232,104 +170,101 @@ const closeModal = () => {
   selectedPromo.value = null;
 };
 
-const handleSave = async (formData: any) => {
+// ✅ FIX: Save Handler using correct payload from Modal
+const handleSave = async (payload: any) => {
   isSaving.value = true;
   try {
-    const payload = {
-      code: formData.code,
-      description: formData.description,
-      discountPercent: formData.discountPercent,
-      validUntil: formData.validUntil,
-      active: formData.active !== undefined ? formData.active : true
-    };
-
     if (selectedPromo.value) {
-      await promotionService.updatePromotion(selectedPromo.value.id, payload);
-      showToast('Promotion updated successfully!');
+      // UPDATE Existing
+      const updatedPromo = await promotionService.updatePromotion(selectedPromo.value.id, payload);
+      
+      // Update local state immediately
+      const index = promotions.value.findIndex(p => p.id === selectedPromo.value.id);
+      if (index !== -1) {
+        promotions.value[index] = updatedPromo;
+      }
+      toast.success("Promotion updated successfully!");
     } else {
-      await promotionService.createPromotion(payload);
-      showToast('Promotion created successfully!');
+      // CREATE New
+      const newPromo = await promotionService.createPromotion(payload);
+      
+      // Add to local state immediately
+      promotions.value.unshift(newPromo);
+      toast.success("Promotion created successfully!");
     }
-    
-    await loadPromotions();
     closeModal();
   } catch (error: any) {
     console.error("Save failed", error);
-    showToast(
-      error.response?.data?.message || error.response?.data || 'Failed to save promotion',
-      'error'
-    );
+    const msg = error.response?.data?.message || "Failed to save promotion";
+    toast.error(msg);
   } finally {
     isSaving.value = false;
   }
 };
 
-const handleToggleStatus = async (promo: Promotion) => {
-  const now = new Date().getTime();
-  const expiry = new Date(promo.validUntil).getTime();
-  const isExpired = expiry < now;
-  const newActiveStatus = !promo.active;
-
-  // Special handling for expired promotions
-  if (isExpired && !promo.active) {
-    if (confirm(`This promotion expired on ${new Date(promo.validUntil).toLocaleDateString()}. \n\nDo you want to EDIT the date to reactivate it?`)) {
-      openEditModal(promo);
-      return;
-    }
-    return;
-  }
-
+const toggleStatus = async (promo: any) => {
   try {
-    // OPTIMISTIC UPDATE: Update local state immediately for better UX
+    const newActiveStatus = !promo.active;
+    
+    // OPTIMISTIC UPDATE: Update UI immediately
     promotions.value = promotions.value.map(p => 
       p.id === promo.id ? { ...p, active: newActiveStatus } : p
     );
 
-    // Send minimal payload to backend - only the active field
+    // Send only the active field if your API supports partial updates, 
+    // otherwise verify what your service expects.
     await promotionService.updatePromotion(promo.id, { active: newActiveStatus });
     
-    showToast(`Promotion ${newActiveStatus ? 'activated' : 'deactivated'} successfully!`);
+    toast.success(`Promotion ${newActiveStatus ? 'activated' : 'deactivated'} successfully!`);
     
   } catch (error: any) {
-    // ROLLBACK: Revert local state on error
+    // ROLLBACK on error
     promotions.value = promotions.value.map(p => 
       p.id === promo.id ? { ...p, active: promo.active } : p
     );
-    
     console.error("Toggle failed", error);
-    showToast(
-      error.response?.data?.message || 'Failed to update promotion status',
-      'error'
-    );
+    toast.error("Failed to update status");
   }
 };
 
 const deletePromo = async (id: string) => {
-  if (!confirm("Are you sure you want to permanently delete this promotion? This action cannot be undone.")) return;
+  if (!confirm("Are you sure you want to delete this promotion?")) return;
+  
+  // Store deleted item for rollback
+  const promoToDelete = promotions.value.find(p => p.id === id);
   
   try {
-    // OPTIMISTIC UPDATE: Remove from local state immediately
-    const promoToDelete = promotions.value.find(p => p.id === id);
+    // OPTIMISTIC UPDATE
     promotions.value = promotions.value.filter(p => p.id !== id);
     
     await promotionService.deletePromotion(id);
     
-    showToast('Promotion deleted successfully!');
+    toast.success("Promotion deleted successfully!");
   } catch (error: any) {
-    // ROLLBACK: Add back if deletion failed
+    // ROLLBACK
     if (promoToDelete) {
       promotions.value.push(promoToDelete);
     }
-    
     console.error("Delete failed", error);
-    showToast(
-      error.response?.data?.message || 'Failed to delete promotion. It might be linked to existing orders.',
-      'error'
-    );
+    toast.error("Failed to delete promotion");
   }
 };
 
+// Init
 onMounted(() => {
-  loadPromotions();
+  fetchPromotions();
 });
 </script>
+
+<style scoped>
+/* Transitions for lists */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+</style>

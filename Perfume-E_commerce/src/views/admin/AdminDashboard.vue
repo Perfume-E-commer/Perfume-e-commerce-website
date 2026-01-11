@@ -6,15 +6,25 @@
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Welcome back, Admin!</h1>
         <p class="text-sm text-gray-500 mt-1">{{ currentDate }}</p>
       </div>
+      
       <div class="flex gap-3">
-        <router-link to="/admin/products" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+        <router-link 
+          to="/admin/products" 
+          class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm flex items-center"
+        >
+          <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
           Manage Products
         </router-link>
-        <router-link to="/admin/promotions" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm">
+
+        <router-link 
+          to="/admin/promotions" 
+          class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm flex items-center"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Create Promotion
         </router-link>
       </div>
-    </div>
+      </div>
 
     <div v-if="isLoading" class="flex justify-center py-20">
       <div class="animate-spin h-10 w-10 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
@@ -23,7 +33,7 @@
     <div v-else class="space-y-8">
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
+        <router-link to="/admin/orders" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
           <div>
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Orders (30d)</p>
             <p class="text-3xl font-bold text-gray-900 mt-2">{{ dashboardData.totalOrders30d }}</p>
@@ -31,7 +41,7 @@
           <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           </div>
-        </div>
+        </router-link>
 
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
           <div>
@@ -222,9 +232,12 @@ const loadDashboard = async () => {
   isLoading.value = true;
   try {
     const response = await adminService.getDashboardStats();
-    dashboardData.value = response.data;
+    if(response && response.data) {
+       dashboardData.value = response.data;
+    }
   } catch (error) {
     console.error("Failed to load dashboard data", error);
+    // Keep defaults on error
   } finally {
     isLoading.value = false;
   }
@@ -242,13 +255,9 @@ const formatDate = (dateString: string) => {
 
 const calculateHeight = (revenue: number) => {
   if (!dashboardData.value.salesChart || dashboardData.value.salesChart.length === 0) return 0;
-  
   const maxRevenue = Math.max(...dashboardData.value.salesChart.map(d => d.revenue));
-  
   const max = maxRevenue === 0 ? 100 : maxRevenue;
-  
   const percentage = (revenue / max) * 100;
-  
   return revenue > 0 ? Math.max(percentage, 2) : 0;
 };
 

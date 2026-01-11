@@ -34,7 +34,6 @@
             </svg>
           </div>
         </div>
-
         <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
           <div>
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Promos</p>
@@ -51,18 +50,18 @@
       <PromotionTable 
         title="Active Campaigns"
         :promotions="activePromotions"
-        @toggle-status="toggleStatus"
+        @toggle-status="handleToggleStatus"
         @edit="openEditModal"
-        @delete="deletePromo"
+        @delete="handleDelete"
       />
 
       <PromotionTable 
         v-if="inactivePromotions.length > 0"
         title="Past & Inactive Promotions"
         :promotions="inactivePromotions"
-        @toggle-status="toggleStatus"
+        @toggle-status="handleToggleStatus"
         @edit="openEditModal"
-        @delete="deletePromo"
+        @delete="handleDelete"
       />
     </div>
 
@@ -78,83 +77,124 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useToast } from 'vue-toastification'; 
-import PromotionTable from '../../components/admin/promotions/PromotionTable.vue';
-import PromotionModal from '../../components/admin/promotions/PromotionModal.vue';
-import promotionService from '../../services/promotionService';
+import PromotionTable from '@/components/admin/promotions/PromotionTable.vue';
+import PromotionModal from '@/components/admin/promotions/PromotionModal.vue';
+import promotionService from '@/services/promotionService';
 
-// State
+// --- State ---
 const promotions = ref<any[]>([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const isModalOpen = ref(false);
 const selectedPromo = ref<any | null>(null);
 
-const toast = useToast();
-
-// Computed
+// --- Computed Properties ---
 const activePromotions = computed(() => {
-  if (!Array.isArray(promotions.value)) return []; 
-  
   const now = new Date();
   return promotions.value.filter(p => {
-    if (!p.validUntil) return false;
-    const expiry = new Date(p.validUntil);
-    expiry.setHours(23, 59, 59, 999);
-    return p.active && expiry >= now;
+    if (!p) return false;
+    if (p.active !== true) return false;
+    if (p.validUntil) {
+      const expiry = new Date(p.validUntil);
+      expiry.setHours(23, 59, 59, 999);
+      if (expiry < now) return false;
+    }
+    return true;
   });
 });
 
 const inactivePromotions = computed(() => {
-  if (!Array.isArray(promotions.value)) return []; // Prevent crash
-
   const now = new Date();
   return promotions.value.filter(p => {
-    if (!p.validUntil) return true; 
-    const expiry = new Date(p.validUntil);
-    expiry.setHours(23, 59, 59, 999);
-    return !p.active || expiry < now;
+    if (!p) return false;
+    if (p.active === false) return true;
+    if (p.validUntil) {
+      const expiry = new Date(p.validUntil);
+      expiry.setHours(23, 59, 59, 999);
+      if (expiry < now) return true;
+    }
+    return false;
   });
 });
 
-// Methods
-const fetchPromotions = async () => {
-  isLoading.value = true;
+// --- API Methods ---
+const loadPromotions = async () => {
+  if (promotions.value.length === 0) isLoading.value = true;
   try {
     const response = await promotionService.getAllPromotions({ page: 0, size: 100, search: '' });
     
-    console.log("📢 Raw API Response:", response);
-
-    let dataToUse = [];
-
-    if (Array.isArray(response)) {
-      dataToUse = response;
-    } 
-    else if (Array.isArray(response.data)) {
-      dataToUse = response.data;
-    }
-    else if (response.data && Array.isArray(response.data.content)) {
-      dataToUse = response.data.content;
-    }
-    else if (response.result && Array.isArray(response.result)) {
-      dataToUse = response.result;
-    }
-    else if (response.data && Array.isArray(response.data.data)) {
-      dataToUse = response.data.data;
-    }
-
-    console.log("✅ Final Promotions Array:", dataToUse);
-    promotions.value = dataToUse;
-
-  } catch (error: any) {
-    console.error("Failed to fetch promotions", error);
-    showToast(error.response?.data?.message || 'Failed to load promotions', 'error');
-    promotions.value = [];
+    // Robust Unwrap Logic
+    let data = [];
+    if (Array.isArray(response)) data = response;
+    else if (response?.data && Array.isArray(response.data)) data = response.data;
+    else if (response?.data?.content && Array.isArray(response.data.content)) data = response.data.content;
+    else if (response?.result && Array.isArray(response.result)) data = response.result;
+    
+    promotions.value = data;
+  } catch (error) {
+    console.error("Failed to load promotions:", error);
+    alert("Could not load promotions. Please refresh.");
   } finally {
     isLoading.value = false;
   }
 };
 
+const handleSave = async (payload: any) => {
+  isSaving.value = true;
+  try {
+    if (selectedPromo.value) {
+      // UPDATE SCENARIO
+      const id = selectedPromo.value.id;
+
+      // 🟢 SMART CHECK: Did the user toggle the status in the modal?
+      if (payload.active !== selectedPromo.value.active) {
+         console.log("🔄 Status change detected in Modal. Triggering Toggle Endpoint...");
+         await promotionService.togglePromotion(id);
+      }
+      
+      // Update other details
+      await promotionService.updatePromotion(id, payload);
+      alert("Updated successfully!");
+
+    } else {
+      // CREATE SCENARIO
+      await promotionService.createPromotion(payload);
+      alert("Created successfully!");
+    }
+    closeModal();
+    await loadPromotions(); 
+  } catch (error: any) {
+    console.error("Save error:", error);
+    const msg = error.response?.data?.message || "Operation failed";
+    alert("Error: " + msg);
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const handleToggleStatus = async (promo: any) => {
+  try {
+    // Standard List Toggle
+    await promotionService.togglePromotion(promo.id);
+    await loadPromotions();
+  } catch (error: any) {
+    console.error("Toggle error:", error);
+    alert("Failed to toggle status.");
+  }
+};
+
+const handleDelete = async (id: string) => {
+  if (!confirm("Delete this promotion?")) return;
+  try {
+    await promotionService.deletePromotion(id);
+    await loadPromotions(); 
+  } catch (error) {
+    console.error("Delete error:", error);
+    alert("Failed to delete.");
+  }
+};
+
+// --- Modal Logic ---
 const openCreateModal = () => {
   selectedPromo.value = null;
   isModalOpen.value = true;
@@ -170,101 +210,8 @@ const closeModal = () => {
   selectedPromo.value = null;
 };
 
-// ✅ FIX: Save Handler using correct payload from Modal
-const handleSave = async (payload: any) => {
-  isSaving.value = true;
-  try {
-    if (selectedPromo.value) {
-      // UPDATE Existing
-      const updatedPromo = await promotionService.updatePromotion(selectedPromo.value.id, payload);
-      
-      // Update local state immediately
-      const index = promotions.value.findIndex(p => p.id === selectedPromo.value.id);
-      if (index !== -1) {
-        promotions.value[index] = updatedPromo;
-      }
-      toast.success("Promotion updated successfully!");
-    } else {
-      // CREATE New
-      const newPromo = await promotionService.createPromotion(payload);
-      
-      // Add to local state immediately
-      promotions.value.unshift(newPromo);
-      toast.success("Promotion created successfully!");
-    }
-    closeModal();
-  } catch (error: any) {
-    console.error("Save failed", error);
-    const msg = error.response?.data?.message || "Failed to save promotion";
-    toast.error(msg);
-  } finally {
-    isSaving.value = false;
-  }
-};
-
-const toggleStatus = async (promo: any) => {
-  try {
-    const newActiveStatus = !promo.active;
-    
-    // OPTIMISTIC UPDATE: Update UI immediately
-    promotions.value = promotions.value.map(p => 
-      p.id === promo.id ? { ...p, active: newActiveStatus } : p
-    );
-
-    // Send only the active field if your API supports partial updates, 
-    // otherwise verify what your service expects.
-    await promotionService.updatePromotion(promo.id, { active: newActiveStatus });
-    
-    toast.success(`Promotion ${newActiveStatus ? 'activated' : 'deactivated'} successfully!`);
-    
-  } catch (error: any) {
-    // ROLLBACK on error
-    promotions.value = promotions.value.map(p => 
-      p.id === promo.id ? { ...p, active: promo.active } : p
-    );
-    console.error("Toggle failed", error);
-    toast.error("Failed to update status");
-  }
-};
-
-const deletePromo = async (id: string) => {
-  if (!confirm("Are you sure you want to delete this promotion?")) return;
-  
-  // Store deleted item for rollback
-  const promoToDelete = promotions.value.find(p => p.id === id);
-  
-  try {
-    // OPTIMISTIC UPDATE
-    promotions.value = promotions.value.filter(p => p.id !== id);
-    
-    await promotionService.deletePromotion(id);
-    
-    toast.success("Promotion deleted successfully!");
-  } catch (error: any) {
-    // ROLLBACK
-    if (promoToDelete) {
-      promotions.value.push(promoToDelete);
-    }
-    console.error("Delete failed", error);
-    toast.error("Failed to delete promotion");
-  }
-};
-
-// Init
+// --- Init ---
 onMounted(() => {
-  fetchPromotions();
+  loadPromotions();
 });
 </script>
-
-<style scoped>
-/* Transitions for lists */
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.3s ease;
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
-</style>

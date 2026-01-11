@@ -77,7 +77,6 @@
               class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="Unlimited"
             />
-            <p class="text-[10px] text-gray-400 mt-1">Leave empty for unlimited</p>
           </div>
         </div>
 
@@ -103,22 +102,18 @@
               type="date" 
               required
               :min="formData.validFrom"
-              :class="[
-                'w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none',
-                isDateInvalid ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-indigo-500'
-              ]"
+              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
             />
           </div>
         </div>
-        <p v-if="isDateInvalid" class="text-xs text-red-500">End date must be after start date</p>
 
-        <div v-if="isEditing" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
+        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
           <span class="text-sm font-medium text-gray-700">Active Status</span>
           <button 
             type="button"
             @click="formData.active = !formData.active"
             :class="formData.active ? 'bg-green-500' : 'bg-gray-300'"
-            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <span 
               :class="formData.active ? 'translate-x-6' : 'translate-x-1'"
@@ -126,6 +121,9 @@
             />
           </button>
         </div>
+        <p class="text-xs text-right text-gray-400">
+          {{ formData.active ? 'Promotion will be visible.' : 'Promotion will be hidden.' }}
+        </p>
 
         <div class="pt-4 flex justify-end gap-3">
           <button 
@@ -166,20 +164,14 @@ const emit = defineEmits(['close', 'save']);
 const isEditing = ref(false);
 const codeError = ref<string>('');
 
-// ✅ FIX: Added validFrom and usageLimit to state
 const formData = ref({
   code: '',
   description: '',
   discountPercentage: 10, 
-  validFrom: '',  // New
+  validFrom: '',
   validUntil: '',
-  usageLimit: null as number | null, // New
-  active: true
-});
-
-const isDateInvalid = computed(() => {
-  if (!formData.value.validFrom || !formData.value.validUntil) return false;
-  return new Date(formData.value.validUntil) < new Date(formData.value.validFrom);
+  usageLimit: null as number | null,
+  active: true // Default to true
 });
 
 const isFormValid = computed(() => {
@@ -190,7 +182,6 @@ const isFormValid = computed(() => {
     formData.value.discountPercentage <= 100 &&
     formData.value.validFrom !== '' &&
     formData.value.validUntil !== '' &&
-    !isDateInvalid.value &&
     !codeError.value
   );
 });
@@ -204,27 +195,23 @@ const validateCode = () => {
     codeError.value = 'Letters and numbers only';
     return;
   }
-  if (code.length < 4 || code.length > 20) {
-    codeError.value = '4-20 characters required';
-    return;
-  }
   codeError.value = '';
 };
 
+// Initialize Form Data
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     if (props.editData) {
       isEditing.value = true;
-      // Handle potential field name mismatches
       const discount = props.editData.discountPercentage || props.editData.discountPercent || 10;
       
       formData.value = { 
         ...props.editData,
         discountPercentage: discount,
-        validFrom: props.editData.validFrom ? new Date(props.editData.validFrom).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        validFrom: props.editData.validFrom ? new Date(props.editData.validFrom).toISOString().split('T')[0] : '',
         validUntil: props.editData.validUntil ? new Date(props.editData.validUntil).toISOString().split('T')[0] : '',
         usageLimit: props.editData.usageLimit || null,
-        active: props.editData.active !== undefined ? props.editData.active : true
+        active: props.editData.active // ✅ Load existing status
       };
     } else {
       isEditing.value = false;
@@ -236,10 +223,10 @@ watch(() => props.isOpen, (newVal) => {
         code: '',
         description: '',
         discountPercentage: 10,
-        validFrom: today.toISOString().split('T')[0], // Default to Today
+        validFrom: today.toISOString().split('T')[0],
         validUntil: nextMonth.toISOString().split('T')[0],
         usageLimit: null,
-        active: true
+        active: true // ✅ Default to Active
       };
     }
     codeError.value = '';
@@ -255,7 +242,8 @@ const handleSubmit = () => {
     discountPercentage: Number(formData.value.discountPercentage),
     usageLimit: formData.value.usageLimit ? Number(formData.value.usageLimit) : null,
     validFrom: new Date(formData.value.validFrom).toISOString(),
-    validUntil: new Date(formData.value.validUntil).toISOString()
+    validUntil: new Date(formData.value.validUntil).toISOString(),
+    active: formData.value.active // ✅ Ensure active status is sent
   };
   
   emit('save', payload);

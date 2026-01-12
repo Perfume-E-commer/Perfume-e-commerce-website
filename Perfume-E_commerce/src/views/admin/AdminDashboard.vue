@@ -83,21 +83,12 @@
            <p>No sales data available yet.</p>
         </div>
 
-        <div v-else class="h-64 flex items-end justify-between gap-1 overflow-x-auto pb-2">
-           <div 
-             v-for="(day, index) in dashboardData.salesChart" 
-             :key="index"
-             class="flex flex-col items-center group relative w-full min-w-[20px]"
-           >
-             <div class="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded py-1 px-2 z-10 whitespace-nowrap shadow-xl">
-               {{ day.date }}: {{ formatCurrency(day.revenue) }} ({{ day.orderCount }} orders)
-             </div>
-             <div 
-               class="w-full max-w-[30px] bg-indigo-100 hover:bg-indigo-500 transition-all duration-300 rounded-t-sm"
-               :style="{ height: `${calculateHeight(day.revenue)}%` }"
-             ></div>
-             <span v-if="index % 4 === 0" class="text-[10px] text-gray-400 mt-2">{{ day.date }}</span>
-           </div>
+        <div v-else class="w-full">
+            <ApexCharts 
+              height="300" 
+              :data="chartComputed.revenue" 
+              :labels="chartComputed.dates" 
+            />
         </div>
       </div>
 
@@ -131,10 +122,11 @@
                   <td class="px-5 py-3 text-right">
                     <span class="px-2 py-1 rounded text-[10px] font-bold uppercase"
                       :class="{
-                        'bg-green-100 text-green-700': order.status === 'DELIVERED',
+                        'bg-green-100 text-green-700': order.status === 'CONFIRMED' || order.status === 'DELIVERED',
                         'bg-blue-100 text-blue-700': order.status === 'SHIPPED',
-                        'bg-yellow-100 text-yellow-700': order.status === 'PROCESSING',
-                        'bg-gray-100 text-gray-600': !['DELIVERED','SHIPPED','PROCESSING'].includes(order.status)
+                        'bg-yellow-100 text-yellow-700': order.status === 'PENDING',
+                        'bg-red-100 text-red-700': order.status === 'CANCELLED',
+                        'bg-gray-100 text-gray-600': !['CONFIRMED','DELIVERED','SHIPPED','PENDING','CANCELLED'].includes(order.status)
                       }"
                     >
                       {{ order.status }}
@@ -147,7 +139,6 @@
         </div>
 
         <div class="space-y-6">
-          
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
              <div class="p-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
                 <h3 class="font-bold text-red-800 flex items-center gap-2">
@@ -196,7 +187,6 @@
                </div>
              </div>
           </div>
-
         </div>
       </div>
 
@@ -206,7 +196,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import adminService, { type AdminDashboardResponse } from '@/services/adminService';
+import adminService, { type AdminDashboardResponse } from '../../services/adminService';
+// ✅ FIXED: Import the chart component
+import ApexCharts from '../components/ApexCharts.vue';
 
 // --- State ---
 const isLoading = ref(true);
@@ -223,6 +215,17 @@ const dashboardData = ref<AdminDashboardResponse>({
 
 const currentDate = computed(() => {
   return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+});
+
+// ✅ FIXED: Transformed data for the chart
+const chartComputed = computed(() => {
+  const rawData = dashboardData.value.salesChart || [];
+  return {
+    // Extract dates (e.g., "Jan 01")
+    dates: rawData.map((item: any) => item.date),
+    // Extract revenue (e.g., 150.0)
+    revenue: rawData.map((item: any) => item.revenue)
+  }
 });
 
 // --- Actions ---
@@ -248,15 +251,6 @@ const formatCurrency = (value: number) => {
 const formatDate = (dateString: string) => {
   if (!dateString || dateString === 'N/A') return 'No Expiry';
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
-// Robust Height Calculation for Chart
-const calculateHeight = (revenue: number) => {
-  if (!dashboardData.value.salesChart || dashboardData.value.salesChart.length === 0) return 0;
-  const maxRevenue = Math.max(...dashboardData.value.salesChart.map(d => d.revenue));
-  const max = maxRevenue === 0 ? 100 : maxRevenue;
-  const percentage = (revenue / max) * 100;
-  return revenue > 0 ? Math.max(percentage, 5) : 0;
 };
 
 // --- Init ---

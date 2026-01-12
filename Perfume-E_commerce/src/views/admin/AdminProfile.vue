@@ -1,181 +1,130 @@
 <template>
-  <div class="min-h-screen bg-gray-50/50 p-6">
-    <div class="max-w-6xl mx-auto mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Account Settings</h1>
-      <p class="text-gray-500 mt-1">Manage your personal details and business banking information.</p>
+  <div class="p-6 min-h-screen bg-gray-50/50 space-y-6 animate-fade-in">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Admin Profile</h1>
+        <p class="text-sm text-gray-500 mt-1">Manage your account settings and preferences.</p>
+      </div>
     </div>
 
-    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      <div class="lg:col-span-4 space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div class="h-32 bg-gradient-to-r from-emerald-600 to-teal-500"></div>
-          <div class="px-6 pb-6 text-center relative">
-            <div class="relative -mt-16 inline-block">
-              <img 
-                :src="user.imageUrl || 'https://ui-avatars.com/api/?name=Admin+User&background=0D9488&color=fff'" 
-                class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-                alt="Profile"
-              />
-              <button class="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md hover:bg-gray-50 text-gray-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-              </button>
-            </div>
-            <h2 class="mt-4 text-xl font-bold text-gray-900">{{ user.firstName }} {{ user.lastName }}</h2>
-            <p class="text-emerald-600 font-medium text-sm bg-emerald-50 inline-block px-3 py-1 rounded-full mt-2">
-              {{ user.role || 'ADMINISTRATOR' }}
-            </p>
-          </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center">
+        <div class="relative w-32 h-32 mb-4">
+          <img 
+            :src="form.avatarUrl || 'https://ui-avatars.com/api/?name=Admin+User&background=6366f1&color=fff'" 
+            class="w-full h-full rounded-full object-cover border-4 border-indigo-50"
+            alt="Profile"
+          >
+          <button class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition shadow-sm" title="Change Photo">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
         </div>
-        
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Account Status</h3>
-          <div class="flex justify-between items-center mb-4">
-            <span class="text-gray-600">Verification</span>
-            <span class="flex items-center text-emerald-600 text-sm font-medium">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              Verified
-            </span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Member Since</span>
-            <span class="text-gray-900 font-medium">{{ formatDate(user.createdAt) }}</span>
-          </div>
-        </div>
+        <h2 class="text-xl font-bold text-gray-900">{{ form.firstName }} {{ form.lastName }}</h2>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mt-2">
+          {{ form.role }}
+        </span>
+        <p class="text-sm text-gray-500 mt-4">
+          "With great power comes great responsibility."
+        </p>
       </div>
 
-      <div class="lg:col-span-8 space-y-6">
+      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Personal Information</h3>
         
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-gray-900">Personal Information</h3>
-            <button @click="saveProfile" :disabled="loading" class="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition disabled:opacity-50">
-              {{ loading ? 'Saving...' : 'Save Changes' }}
+        <form @submit.prevent="saveProfile" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+              <input 
+                v-model="form.firstName" 
+                type="text" 
+                class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+              <input 
+                v-model="form.lastName" 
+                type="text" 
+                class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm text-sm"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+            <input 
+              v-model="form.email" 
+              type="email" 
+              disabled
+              class="w-full rounded-lg border-gray-300 bg-gray-50 text-gray-500 shadow-sm text-sm cursor-not-allowed"
+            >
+            <p class="text-xs text-gray-400 mt-1">Email cannot be changed securely from this panel.</p>
+          </div>
+
+          <div class="border-t border-gray-100 pt-6">
+             <h3 class="text-lg font-bold text-gray-900 mb-4">Security</h3>
+             <button type="button" class="text-indigo-600 text-sm font-medium hover:text-indigo-800 flex items-center">
+               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+               Change Password
+             </button>
+          </div>
+
+          <div class="flex justify-end pt-4">
+            <button 
+              type="submit" 
+              class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm flex items-center"
+              :disabled="isLoading"
+            >
+              <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Save Changes
             </button>
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input v-model="form.firstName" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input v-model="form.lastName" type="text" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition" />
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              <input v-model="user.email" disabled type="email" class="w-full px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 text-gray-500 cursor-not-allowed" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input v-model="form.phoneNumber" type="tel" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition" />
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 relative overflow-hidden">
-          <div class="flex justify-between items-start mb-6 relative z-10">
-            <div>
-              <h3 class="text-lg font-bold text-gray-900">Business Banking</h3>
-              <p class="text-sm text-gray-500">For payouts and business transactions.</p>
-            </div>
-             <div class="p-3 bg-blue-50 rounded-full text-blue-600">
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                </svg>
-             </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
-              <input 
-                v-model="form.bankName" 
-                placeholder="e.g. ABA Bank, ACLEDA"
-                type="text" 
-                class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" 
-              />
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Account Number / IBAN</label>
-              <div class="relative">
-                <input 
-                  v-model="form.bankAccountNumber" 
-                  type="text" 
-                  placeholder="000 000 000"
-                  class="w-full pl-10 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition font-mono" 
-                />
-                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-6 flex justify-end relative z-10">
-             <button @click="saveProfile" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition">Update Banking Info</button>
-          </div>
-        </div>
-
+        </form>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import userService from '@/services/userService'
+import { ref, onMounted } from 'vue';
 
-// State
-const loading = ref(false)
-const user = ref<any>({})
+const isLoading = ref(false);
+
 const form = ref({
-  firstName: '',
-  lastName: '',
-  phoneNumber: '',
-  bankName: '',
-  bankAccountNumber: ''
-})
+  firstName: 'Kakashi',
+  lastName: 'Uchiha',
+  email: 'admin@scenthaven.com',
+  role: 'ADMIN',
+  avatarUrl: ''
+});
 
-// Helper to format date
-const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-}
+const loadProfile = async () => {
 
-// Fetch Profile
-const fetchProfile = async () => {
-  try {
-    const response = await userService.getProfile()
-    user.value = response.data
-    // Sync form with user data
-    form.value = {
-      firstName: response.data.firstName,
-      lastName: response.data.lastName,
-      phoneNumber: response.data.phoneNumber,
-      bankName: response.data.bankName || '',
-      bankAccountNumber: response.data.bankAccountNumber || ''
-    }
-  } catch (error) {
-    console.error('Failed to load profile', error)
-  }
-}
+};
 
-// Update Profile
 const saveProfile = async () => {
-  loading.value = true
-  try {
-    const response = await userService.updateProfile(form.value)
-    user.value = response.data
-    alert('Profile updated successfully!')
-  } catch (error) {
-    console.error('Failed to update', error)
-    alert('Failed to update profile.')
-  } finally {
-    loading.value = false
-  }
-}
+  isLoading.value = true;
+  setTimeout(() => {
+    isLoading.value = false;
+    alert('Profile updated successfully! (Mock)');
+  }, 1000);
+};
 
 onMounted(() => {
-  fetchProfile()
-})
+  loadProfile();
+});
 </script>
+
+<style scoped>
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+</style>

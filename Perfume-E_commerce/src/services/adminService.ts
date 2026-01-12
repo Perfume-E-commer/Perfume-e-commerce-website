@@ -68,6 +68,15 @@ export interface BillingRecord {
   date: string; 
 }
 
+export interface AdminProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  avatarUrl?: string;
+}
+
 export const adminService = {
   getDashboardStats() {
     return api.get<DashboardStats>('/admin/dashboard');
@@ -101,6 +110,10 @@ export const adminService = {
 
   getBillingRecords() {
     return api.get<BillingRecord[]>('/admin/billing');
+  },
+
+  getProfile() {
+    return api.get<AdminProfile>('/users/profile'); 
   },
 
   updatePaymentStatus(orderId: string, paymentStatus: string) {

@@ -196,6 +196,8 @@ const isLoggedIn = computed(() => !!authStore.token)
           </div>
         </div>
 
+        <NotificationBell />
+
         <div class="flex gap-4 items-center">
           <button
             @click="toggleSearch"

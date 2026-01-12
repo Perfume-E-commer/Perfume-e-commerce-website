@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import authService from '@/Services/authService'
+import authService from '@/services/authService'
 const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
@@ -141,6 +141,11 @@ const routes: RouteRecordRaw[] = [
     redirect: '/mainDashboard/admindashboard',
     children: [
       {
+        path: 'inventory',
+        name: 'inventory',
+        component: () => import('@/views/admin/InventoryView.vue'), 
+      },
+      {
         path: 'admindashboard',
         name: 'admindashboard',
         component: () => import('@/views/admin/AdminDashboard.vue'),
@@ -167,6 +172,11 @@ const routes: RouteRecordRaw[] = [
         name: 'product-edit',
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
+      {
+        path: 'dashboardpromotion',
+        name: 'dashboardpromotion',
+        component: () => import('@/views/admin/DashboardPromotion.vue'),
+      },
       // {
       //   path: 'dashboardcategories',
       //   name: 'dashboardcategories',
@@ -188,11 +198,6 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboardcustomer',
         name: 'dashboardcustomer',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
-      },
-      {
-        path: 'dashboardtransaction',
-        name: 'dashboardtransaction',
-        component: () => import('@/views/admin/DashboardTransaction.vue'),
       },
       // {
       //   path: 'dashboard-addproduct',

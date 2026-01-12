@@ -24,7 +24,11 @@
           Create Promotion
         </router-link>
       </div>
+<<<<<<< HEAD
     </div>
+=======
+      </div>
+>>>>>>> c7e271fe7116ed2c91ea358234c845daeb9013f7
 
     <div v-if="isLoading" class="flex justify-center py-20">
       <div class="animate-spin h-10 w-10 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
@@ -197,7 +201,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import adminService, { type AdminDashboardResponse } from '../../services/adminService';
-// ✅ FIXED: Import the chart component
 import ApexCharts from '../components/ApexCharts.vue';
 
 // --- State ---
@@ -217,18 +220,14 @@ const currentDate = computed(() => {
   return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 });
 
-// ✅ FIXED: Transformed data for the chart
 const chartComputed = computed(() => {
   const rawData = dashboardData.value.salesChart || [];
   return {
-    // Extract dates (e.g., "Jan 01")
     dates: rawData.map((item: any) => item.date),
-    // Extract revenue (e.g., 150.0)
     revenue: rawData.map((item: any) => item.revenue)
   }
 });
 
-// --- Actions ---
 const loadDashboard = async () => {
   isLoading.value = true;
   try {
@@ -252,6 +251,7 @@ const formatDate = (dateString: string) => {
   if (!dateString || dateString === 'N/A') return 'No Expiry';
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
+
 
 // --- Init ---
 onMounted(() => {

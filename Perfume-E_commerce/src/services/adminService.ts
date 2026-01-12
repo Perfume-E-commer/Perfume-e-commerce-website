@@ -113,7 +113,11 @@ export const adminService = {
   },
 
   getProfile() {
-    return api.get<AdminProfile>('/users/profile'); 
+    return api.get<AdminProfile>('/admin/profile');
+  },
+
+  updateProfile(data: Partial<AdminProfile>) {
+    return api.put<AdminProfile>('/admin/profile', data);
   },
 
   updatePaymentStatus(orderId: string, paymentStatus: string) {

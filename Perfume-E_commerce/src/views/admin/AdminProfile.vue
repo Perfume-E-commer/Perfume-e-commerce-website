@@ -91,40 +91,55 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import adminService from '../../services/adminService'
 
 const isLoading = ref(false);
+const isSaving = ref(false);
 
 const form = ref({
-  firstName: 'Kakashi',
-  lastName: 'Uchiha',
-  email: 'admin@scenthaven.com',
-  role: 'ADMIN',
+  firstName: '',
+  lastName: '',
+  email: '',
+  role: '',
   avatarUrl: ''
 });
 
 const loadProfile = async () => {
-
+  isLoading.value = true;
+  try {
+    const response = await adminService.getProfile();
+    form.value = {
+      firstName: response.data.firstName,
+      lastName: response.data.lastName,
+      email: response.data.email,
+      role: response.data.role,
+      avatarUrl: response.data.avatarUrl || ''
+    };
+  } catch (error) {
+    console.error("Failed to load profile", error);
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const saveProfile = async () => {
-  isLoading.value = true;
-  setTimeout(() => {
-    isLoading.value = false;
-    alert('Profile updated successfully! (Mock)');
-  }, 1000);
+  isSaving.value = true;
+  try {
+    await adminService.updateProfile({
+      firstName: form.value.firstName,
+      lastName: form.value.lastName,
+      avatarUrl: form.value.avatarUrl
+    });
+    alert('Profile updated successfully!');
+  } catch (error) {
+    console.error("Failed to update profile", error);
+    alert('Failed to update profile.');
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 onMounted(() => {
   loadProfile();
 });
 </script>
-
-<style scoped>
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out;
-}
-</style>

@@ -88,19 +88,22 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
+const router = useRouter();
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 
 const handleLogin = async () => {
-  await authStore.login(email.value, password.value);
+  const success = await authStore.login(email.value, password.value);
+  if (success) {
+    if (authStore.user?.role === 'ADMIN') {
+      router.push('/admin/dashboard');
+    } else {
+      router.push('/');
+    }
+  }
 };
 </script>
-
-<style scoped>
-.luxurious-roman-regular {
-  font-family: 'Luxurious Roman', serif;
-}
-</style>

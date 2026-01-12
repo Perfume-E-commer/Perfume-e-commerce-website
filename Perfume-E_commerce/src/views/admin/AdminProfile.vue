@@ -17,9 +17,15 @@
             class="w-full h-full rounded-full object-cover border-4 border-indigo-50"
             alt="Profile"
           >
-          <button class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition shadow-sm" title="Change Photo">
+          <label class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition shadow-sm cursor-pointer" title="Change Photo">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </button>
+            <input 
+              type="file" 
+              accept="image/*" 
+              class="hidden"
+              @change="onFileSelect"
+            >
+          </label>
         </div>
         <h2 class="text-xl font-bold text-gray-900">{{ form.firstName }} {{ form.lastName }}</h2>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mt-2">
@@ -76,9 +82,9 @@
             <button 
               type="submit" 
               class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition shadow-sm flex items-center"
-              :disabled="isLoading"
+              :disabled="isSaving"
             >
-              <svg v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               Save Changes
             </button>
           </div>
@@ -95,6 +101,7 @@ import adminService from '../../services/adminService'
 
 const isLoading = ref(false);
 const isSaving = ref(false);
+const selectedFile = ref<File | null>(null);
 
 const form = ref({
   firstName: '',
@@ -103,6 +110,21 @@ const form = ref({
   role: '',
   avatarUrl: ''
 });
+
+const onFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    selectedFile.value = target.files[0];
+    // Preview the image
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        form.value.avatarUrl = e.target.result as string;
+      }
+    };
+    reader.readAsDataURL(target.files[0]);
+  }
+};
 
 const loadProfile = async () => {
   isLoading.value = true;
@@ -125,12 +147,18 @@ const loadProfile = async () => {
 const saveProfile = async () => {
   isSaving.value = true;
   try {
-    await adminService.updateProfile({
-      firstName: form.value.firstName,
-      lastName: form.value.lastName,
-      avatarUrl: form.value.avatarUrl
-    });
+    const formData = new FormData();
+    
+    formData.append('firstName', form.value.firstName);
+    formData.append('lastName', form.value.lastName);
+    
+    if (selectedFile.value) {
+      formData.append('image', selectedFile.value);
+    }
+
+    await adminService.updateProfile(formData);
     alert('Profile updated successfully!');
+    selectedFile.value = null; 
   } catch (error) {
     console.error("Failed to update profile", error);
     alert('Failed to update profile.');

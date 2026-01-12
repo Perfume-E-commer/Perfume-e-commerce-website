@@ -136,7 +136,7 @@ const routes: RouteRecordRaw[] = [
   // ADMIN DASHBOARD (Layout Wrapper)
   {
     path: '/admin',
-    component: () => import('@/views/admin/MainDashboard.vue'),
+    component: () => import('../views/admin/MainDashboard.vue'),
     meta: { requiresAuth: true }, // Protects all admin routes
     children: [
       {

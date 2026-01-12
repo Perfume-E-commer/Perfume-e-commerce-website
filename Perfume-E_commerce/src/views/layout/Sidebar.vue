@@ -33,19 +33,19 @@
           
           <ListSidebar
             :menuItems="[
-              { name: 'Dashboard', link: '/mainDashboard/admindashboard', icon: 'home' },
-              { name: 'Products', link: '/mainDashboard/products', icon: 'box' },
-              { name: 'Inventory', link: '/mainDashboard/inventory', icon: 'clipboard' },
-              { name: 'Orders & Billing', link: '/mainDashboard/dashboardordermanagement', icon: 'cart' },
-              { name: 'Promotions', link: '/mainDashboard/dashboardpromotion', icon: 'tag' },
-              { name: 'Customers', link: '/mainDashboard/dashboardcustomer', icon: 'users' },
+              { name: 'Dashboard', link: '/admin/dashboard', icon: 'home' },
+              { name: 'Products', link: '/admin/products', icon: 'box' },
+              { name: 'Inventory', link: '/admin/inventory', icon: 'clipboard' },
+              { name: 'Orders & Billing', link: '/admin/orders', icon: 'cart' },
+              { name: 'Promotions', link: '/admin/promotions', icon: 'tag' },
+              { name: 'Customers', link: '/admin/customers', icon: 'users' },
             ]"
             @item-click="handleItemClick"
           />
 
           <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 mt-6 px-2">Settings</div>
           <ListSidebar
-            :menuItems="[{ name: 'Admin Profile', link: '/mainDashboard/adminprofile', icon: 'cog' }]"
+            :menuItems="[{ name: 'Admin Profile', link: '/admin/profile', icon: 'cog' }]"
             @item-click="handleItemClick"
           />
         </ul>

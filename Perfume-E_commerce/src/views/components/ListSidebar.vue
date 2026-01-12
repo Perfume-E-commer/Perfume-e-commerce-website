@@ -24,7 +24,6 @@
 
 <script lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
-import { computed } from 'vue'
 
 export default {
   name: 'ListSidebar',

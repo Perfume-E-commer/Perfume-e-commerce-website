@@ -75,6 +75,9 @@ export interface AdminProfile {
   email: string;
   role: string;
   avatarUrl?: string;
+  street?: string;
+  city?: string;
+  zipCode?: string;
 }
 
 export const adminService = {
@@ -115,9 +118,19 @@ export const adminService = {
   getProfile() {
     return api.get<AdminProfile>('/admin/profile');
   },
+  
+  updateProfile(data: Partial<AdminProfile>, imageFile?: File) {
+    const formData = new FormData();
 
-  updateProfile(data: Partial<AdminProfile>) {
-    return api.put<AdminProfile>('/admin/profile', data);
+    formData.append('data', new Blob([JSON.stringify(data)], { 
+      type: 'application/json' 
+    }));
+
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    return api.put<AdminProfile>('/admin/profile', formData);
   },
 
   updatePaymentStatus(orderId: string, paymentStatus: string) {

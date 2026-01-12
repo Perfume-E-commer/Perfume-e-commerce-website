@@ -23,7 +23,7 @@
     <div class="mb-10">
       <h3 class="text-sm font-semibold text-gray-700 mb-5">Base Product Information</h3>
 
-      <div class="space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2"
             >Base Price ($) <span class="text-red-500">*</span></label
@@ -36,7 +36,8 @@
               type="number"
               min="0.01"
               step="0.01"
-              class="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+              placeholder="0.00"
+              class="w-full pl-8 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
             />
           </div>
         </div>
@@ -59,8 +60,8 @@
               type="number"
               min="0"
               step="0.01"
-              class="w-full pl-8 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
               placeholder="Optional"
+              class="w-full pl-8 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
             />
           </div>
         </div>
@@ -75,16 +76,17 @@
               "
               type="number"
               min="0"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+              placeholder="0"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
             />
             <button
               v-if="hasVariants"
               @click="syncStockFromVariants"
               type="button"
-              class="px-4 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors whitespace-nowrap"
+              class="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors whitespace-nowrap"
               title="Sum all variant stocks"
             >
-              Auto Calculate
+              Auto
             </button>
           </div>
           <p class="text-xs text-gray-500 mt-2">
@@ -107,7 +109,7 @@
         <button
           @click="addVariant"
           type="button"
-          class="px-4 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-semibold hover:bg-purple-100 transition-colors flex items-center gap-2"
+          class="px-4 py-2 bg-green-50 text-green-700 rounded-lg text-sm font-semibold hover:bg-green-100 transition-colors flex items-center gap-2"
         >
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -145,158 +147,204 @@
       </div>
 
       <!-- Variants List -->
-      <div v-else class="space-y-6">
+      <div v-else class="space-y-4">
         <div
           v-for="(variant, index) in modelValue.variants"
           :key="index"
-          class="p-5 border border-gray-200 rounded-xl bg-gray-50 hover:border-gray-300 transition-colors"
+          class="p-4 border border-gray-200 rounded-xl bg-gray-50/50 hover:border-green-200 transition-colors relative"
         >
-          <div class="flex items-center justify-between mb-6">
-            <h4 class="text-sm font-bold text-gray-700">Variant {{ index + 1 }}</h4>
-            <button
-              @click="removeVariant(index)"
-              class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              aria-label="Remove variant"
-            >
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </button>
-          </div>
+          <!-- Remove Button -->
+          <button
+            @click="removeVariant(index)"
+            class="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            aria-label="Remove variant"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <!-- Left Column: Inputs -->
-            <div class="lg:col-span-2 space-y-4">
-              <!-- Size Label -->
-              <div>
-                <label class="block text-xs font-medium text-gray-600 mb-2">Size Label</label>
-                <input
-                  v-model="variant.size"
-                  type="text"
-                  placeholder="e.g. 50ml, 100ml, 200ml"
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-purple-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
-                />
-              </div>
-
-              <!-- Image URL Input -->
-              <div>
-                <label class="block text-xs font-medium text-gray-600 mb-2">Image URL</label>
-                <input
-                  v-model="variant.imageUrl"
-                  type="text"
-                  placeholder="Paste direct image URL for this size..."
-                  class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-purple-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors placeholder:text-gray-400"
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  URL should end with .jpg, .png, .webp, etc.
-                </p>
-              </div>
-
-              <!-- Price, Stock & Min Stock -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="lg:col-span-8">
+              <div class="space-y-4">
+                <!-- Changed from grid grid-cols-1 md:grid-cols-4 gap-4 -->
+                <!-- Size Label -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-2">Price ($)</label>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"
-                      >$</span
-                    >
-                    <input
-                      v-model.number="variant.price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      class="w-full pl-8 pr-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-purple-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
-                    />
-                  </div>
+                  <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
+                    >Size / Name</label
+                  >
+                  <input
+                    v-model="variant.size"
+                    type="text"
+                    placeholder="e.g. 50ml"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+                  />
                 </div>
 
+                <!-- Price -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-2">Stock</label>
+                  <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
+                    >Price ($)</label
+                  >
+                  <input
+                    v-model.number="variant.price"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+                  />
+                </div>
+
+                <!-- Stock -->
+                <div>
+                  <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
+                    >Stock</label
+                  >
                   <input
                     v-model.number="variant.stock"
                     type="number"
                     min="0"
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-purple-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+                    placeholder="0"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
                   />
                 </div>
 
+                <!-- Min Stock -->
                 <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-2">Min Stock</label>
+                  <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
+                    >Min Stock</label
+                  >
                   <input
                     v-model.number="variant.minStock"
                     type="number"
                     min="0"
                     placeholder="5"
-                    class="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-purple-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
                   />
                 </div>
               </div>
             </div>
 
-            <!-- Right Column: Image Preview -->
-            <div class="lg:col-span-1">
-              <label class="block text-xs font-medium text-gray-600 mb-2">Image Preview</label>
-              <div
-                v-if="variant.imageUrl"
-                class="relative group h-64 w-full bg-white rounded-xl border-2 border-gray-200 overflow-hidden"
-              >
-                <img
-                  :src="variant.imageUrl"
-                  class="w-full h-full object-contain p-4"
-                  :alt="variant.size ? `${variant.size} variant image` : 'Variant image'"
-                  @error="handleImageError($event, index)"
-                />
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                ></div>
-                <button
-                  @click="variant.imageUrl = ''"
-                  class="absolute top-3 right-3 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-lg"
-                  aria-label="Remove image"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
+            <!-- Right Column: Image -->
+            <div class="lg:col-span-4">
+              <div class="flex flex-col gap-4">
+                <!-- Image Preview - Made larger -->
+                <div>
+                  <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
+                    >Image Preview</label
+                  >
+                  <div
+                    class="h-40 w-full bg-white rounded-xl border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center relative group"
+                  >
+                    <img
+                      v-if="variant.imageUrl"
+                      :src="variant.imageUrl"
+                      class="h-full w-full object-cover"
+                      @error="handleImageError($event, index)"
                     />
-                  </svg>
-                </button>
-                <div
-                  v-if="variant.size"
-                  class="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded"
-                >
-                  {{ variant.size }}
-                </div>
-              </div>
-              <div
-                v-else
-                class="h-64 w-full border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center bg-gray-50 text-gray-400"
-              >
-                <svg class="w-10 h-10 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1"
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <p class="text-xs text-center px-4">Add an image URL to see preview</p>
-              </div>
+                    <div v-else class="text-sm text-gray-400 text-center p-4">
+                      <svg
+                        class="w-8 h-8 mx-auto mb-2 text-gray-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p>No image set</p>
+                    </div>
 
-              <div v-if="variant.imageUrl" class="mt-2 text-center">
-                <button
-                  @click="refreshImage(index)"
-                  class="text-xs text-blue-600 hover:text-blue-700 hover:underline"
-                >
-                  Refresh Image
-                </button>
+                    <button
+                      v-if="variant.imageUrl"
+                      @click="variant.imageUrl = ''"
+                      class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+                      aria-label="Remove image"
+                    >
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Image Input -->
+                <div class="space-y-2">
+                  <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                    >Variant Image</label
+                  >
+
+                  <!-- Input Mode Toggle -->
+                  <div class="flex gap-2 mb-1">
+                    <button
+                      type="button"
+                      @click="toggleVariantInputType(index, 'url')"
+                      :class="[
+                        'text-[10px] font-bold uppercase px-2 py-1 rounded',
+                        variantInputTypes[index] === 'url'
+                          ? 'bg-green-100 text-green-700'
+                          : 'text-gray-400 hover:text-gray-600',
+                      ]"
+                    >
+                      URL
+                    </button>
+                    <button
+                      type="button"
+                      @click="toggleVariantInputType(index, 'upload')"
+                      :class="[
+                        'text-[10px] font-bold uppercase px-2 py-1 rounded',
+                        variantInputTypes[index] === 'upload'
+                          ? 'bg-green-100 text-green-700'
+                          : 'text-gray-400 hover:text-gray-600',
+                      ]"
+                    >
+                      Upload
+                    </button>
+                  </div>
+
+                  <!-- URL Input -->
+                  <input
+                    v-if="variantInputTypes[index] === 'url'"
+                    v-model="variant.imageUrl"
+                    placeholder="https://..."
+                    class="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-1 focus:ring-green-500 outline-none hover:border-gray-400 transition-colors"
+                  />
+
+                  <!-- File Upload -->
+                  <div v-else class="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      @change="(e) => handleVariantUpload(e, index)"
+                      class="block w-full text-sm text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 outline-none"
+                    />
+                    <span
+                      v-if="uploadingIndex === index"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-green-600 font-medium animate-pulse"
+                      >Uploading...</span
+                    >
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -326,8 +374,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import type { Product, ProductVariant } from '@/types/Product'
+import adminService from '@/services/adminService'
 
 const props = defineProps<{
   modelValue: Product
@@ -335,7 +384,11 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue'])
 
-// Helpers
+// State
+const variantInputTypes = reactive<Record<number, 'url' | 'upload'>>({})
+const uploadingIndex = ref<number | null>(null)
+
+// Computed Properties
 const hasVariants = computed(
   () => props.modelValue.variants && props.modelValue.variants.length > 0,
 )
@@ -367,7 +420,7 @@ const updatePrice = (field: 'price' | 'discountedPrice', event: Event) => {
 const addVariant = () => {
   const newVariant: ProductVariant = {
     size: '',
-    price: props.modelValue.price,
+    price: props.modelValue.price || 0,
     stock: 0,
     minStock: 5,
     imageUrl: '',
@@ -375,6 +428,9 @@ const addVariant = () => {
   const currentVariants = props.modelValue.variants ? [...props.modelValue.variants] : []
   currentVariants.push(newVariant)
   updateField('variants', currentVariants)
+
+  // Set default input type for new variant
+  variantInputTypes[currentVariants.length - 1] = 'url'
 }
 
 const removeVariant = (index: number) => {
@@ -389,20 +445,42 @@ const syncStockFromVariants = () => {
   updateField('stock', total)
 }
 
-const handleImageError = (event: Event, index: number) => {
-  const img = event.target as HTMLImageElement
-  img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGRkZGRkUiLz48cGF0aCBkPSJNNTAgNTAgTDE1MCA1MCAxNTAgMTUwIDUwIDE1MFoiIHN0cm9rZT0iI0U1RTVFNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTcwIDcwIEwxMzAgNzAgMTMwIDEzMCA3MCAxMzBaIiBzdHJva2U9IiNFNUU1RTUiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iMjAiIHN0cm9rZT0iI0U1RTVFNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+'
+const toggleVariantInputType = (index: number, type: 'url' | 'upload') => {
+  variantInputTypes[index] = type
 }
 
-const refreshImage = (index: number) => {
-  const variant = props.modelValue.variants?.[index]
-  if (variant && variant.imageUrl) {
-    const url = new URL(variant.imageUrl)
-    url.searchParams.set('t', Date.now().toString())
-    variant.imageUrl = url.toString()
-    
+const handleVariantUpload = async (event: Event, index: number) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  uploadingIndex.value = index
+
+  try {
+    // Upload to server
+    const res = await adminService.uploadImage(file)
     const currentVariants = [...(props.modelValue.variants || [])]
+    currentVariants[index].imageUrl = res.data.url
     updateField('variants', currentVariants)
+  } catch (error) {
+    console.error('Variant upload failed', error)
+    // Fallback to local base64
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const currentVariants = [...(props.modelValue.variants || [])]
+      currentVariants[index].imageUrl = e.target?.result as string
+      updateField('variants', currentVariants)
+    }
+    reader.readAsDataURL(file)
+  } finally {
+    uploadingIndex.value = null
+    // Clear the input so same file can be selected again
+    (event.target as HTMLInputElement).value = ''
   }
+}
+
+const handleImageError = (event: Event, index: number) => {
+  const img = event.target as HTMLImageElement
+  img.src =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGRkZGRkUiLz48cGF0aCBkPSJNNTAgNTAgTDE1MCA1MCAxNTAgMTUwIDUwIDE1MFoiIHN0cm9rZT0iI0U1RTVFNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTcwIDcwIEwxMzAgNzAgMTMwIDEzMCA3MCAxMzBaIiBzdHJva2U9IiNFNUU1RTUiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iMjAiIHN0cm9rZT0iI0U1RTVFNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+'
 }
 </script>

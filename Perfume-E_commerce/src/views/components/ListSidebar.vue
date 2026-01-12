@@ -40,7 +40,10 @@ export default {
     const route = useRoute()
 
     const isActive = (link: string) => {
-      return route.path === link
+      if (link === '/admin/dashboard' && route.path !== '/admin/dashboard') {
+          return false;
+      }
+      return route.path.startsWith(link)
     }
 
     return { isActive }

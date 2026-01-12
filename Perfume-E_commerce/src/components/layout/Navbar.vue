@@ -1,12 +1,34 @@
 <script setup lang="ts">
 import { Handbag, UserRound, Search, Menu, X, Heart, CircleUserRound } from 'lucide-vue-next'
 import { ref, watch, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import { useProductStore } from '@/stores/productStore'
 import NotificationBell from '@/components/ui/NotificationBell.vue'
 
 const authStore = useAuthStore()
+const productStore = useProductStore()
+const router = useRouter()
 const menuOpen = ref(false)
 const searchOpen = ref(false)
+const searchQuery = ref('')
+
+// Real-time search suggestions
+const searchSuggestions = computed(() => {
+  if (!searchQuery.value.trim()) return []
+
+  const lowerQuery = searchQuery.value.toLowerCase()
+  const source =
+    productStore.allProducts.length > 0 ? productStore.allProducts : productStore.products
+
+  return source
+    .filter((product) => {
+      const matchesName = product.name.toLowerCase().includes(lowerQuery)
+      const matchesBrand = product.brand && product.brand.toLowerCase().includes(lowerQuery)
+      return matchesName || matchesBrand
+    })
+    .slice(0, 5) // Show max 5 suggestions
+})
 
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
@@ -18,7 +40,43 @@ function toggleSearch() {
   if (searchOpen.value) menuOpen.value = false
 }
 
-// Prevent body scroll when any overlay is open
+// Handle search functionality
+async function handleSearch() {
+  if (searchQuery.value.trim()) {
+    // Ensure products are loaded before searching
+    if (productStore.allProducts.length === 0) {
+      await productStore.fetchAllProducts()
+    }
+    productStore.searchProductsByNameOrBrand(searchQuery.value)
+    router.push('/productlist')
+    searchQuery.value = ''
+    searchOpen.value = false
+  }
+}
+
+function handleSearchKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter') {
+    handleSearch()
+  }
+}
+
+function selectSearchResult(product: any) {
+  searchQuery.value = product.name
+  handleSearch()
+}
+
+function searchByQuery(query: string) {
+  searchQuery.value = query
+  handleSearch()
+}
+
+const popularBrands = computed(() => {
+  const source =
+    productStore.allProducts.length > 0 ? productStore.allProducts : productStore.products
+  const brands = [...new Set(source.map((p) => p.brand).filter(Boolean))] as string[]
+  return brands.slice(0, 5)
+})
+
 watch([menuOpen, searchOpen], ([menu, search]) => {
   if (menu || search) {
     document.body.style.overflow = 'hidden'
@@ -71,23 +129,82 @@ const isLoggedIn = computed(() => !!authStore.token)
       </div>
 
       <div class="flex gap-3 xl:gap-5 items-center lg:px-5 z-10">
-        <div class="relative text-black hidden lg:block group">
+        <div class="relative text-black hidden lg:block group w-64 lg:w-md">
           <input
+            v-model="searchQuery"
             type="text"
             placeholder="Search your perfume here...."
-            class="md:w-72 xl:w-96 text-black luxurious-roman-regular text-base font-light px-5 py-3 rounded-full bg-gray-50 border border-transparent focus:outline-none focus:border-[#280559] focus:bg-white transition-all duration-300"
+            class="w-full text-black luxurious-roman-regular text-base font-light px-5 py-3 rounded-full bg-gray-50 border border-transparent focus:outline-none focus:border-[#280559] focus:bg-white transition-all duration-300"
+            @keydown="handleSearchKeydown"
           />
-          <div
-            class="absolute top-2 right-5 text-gray-400 group-focus-within:text-[#280559] transition-colors duration-300"
+          <button
+            @click="handleSearch"
+            class="absolute top-2 right-5 text-gray-400 group-focus-within:text-[#280559] hover:text-[#280559] transition-colors duration-300"
           >
             <Search stroke-width="1" class="w-6 h-6 xl:w-8 xl:h-8" />
+          </button>
+
+          <!-- Search Suggestions Dropdown -->
+          <div
+            v-if="searchQuery.trim() && searchSuggestions.length > 0"
+            class="absolute top-full left-1/2 transform -translate-x-[82%] mt-2 w-[93vw] bg-white border border-gray-200 rounded shadow-lg z-50 max-h-85 overflow-y-auto"
+          >
+            <ul class="py-2 px-5">
+              <p class="luxurious-roman-regular text-2xl text-gray-900 mb-5 mt-5">Popular Scents</p>
+              <div class="flex flex-wrap gap-5 mb-4">
+                <button
+                  v-for="product in searchSuggestions"
+                  :key="product.id"
+                  @click="selectSearchResult(product)"
+                  class="px-3 py-1 bg-gray-50 rounded-full text-xs text-gray-700 hover:bg-[#280559] hover:text-white transition-all duration-300"
+                >
+                  {{ product.brand }}
+                </button>
+              </div>
+
+              <li
+                v-for="product in searchSuggestions"
+                :key="product.id"
+                class="luxurious-roman-regular"
+              >
+                <button
+                  @click="selectSearchResult(product)"
+                  class="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                >
+                  <img
+                    :src="product.image"
+                    :alt="product.name"
+                    class="w-16 h-16 object-cover rounded"
+                  />
+                  <div class="flex-1">
+                    <p class="text-base font-medium text-gray-900">
+                      {{ product.name }}
+                    </p>
+                    <p class="text-sm text-gray-500">{{ product.brand }}</p>
+                  </div>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- No results message -->
+          <div
+            v-else-if="searchQuery.trim() && searchSuggestions.length === 0"
+            class="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg z-50 p-4 text-center"
+          >
+            <p class="text-sm text-gray-500">No products found for "{{ searchQuery }}"</p>
           </div>
         </div>
 
         <NotificationBell />
 
         <div class="flex gap-4 items-center">
-          <button @click="toggleSearch" />
+          <button
+            @click="toggleSearch"
+            class="lg:hidden text-black hover:text-[#280559] transition-colors"
+          >
+            <Search stroke-width="1.5" class="w-6 h-6" />
+          </button>
 
           <router-link
             to="/account"
@@ -222,37 +339,82 @@ const isLoggedIn = computed(() => !!authStore.token)
         leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 -translate-y-2"
       >
-        <div v-if="searchOpen" class="lg:hidden fixed inset-0 z-60">
-          <div class="absolute inset-0 bg-white" @click="searchOpen = false">
-            <div class="flex flex-row items-center gap-3 px-5 py-5 border-b border-gray-100">
-              <div class="w-full relative rounded-[30px]">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  class="w-full luxurious-roman-regular text-lg font-light px-5 py-3 rounded-full bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#280559]"
-                  autofocus
-                />
-                <div class="absolute top-2.5 right-5 text-gray-400">
-                  <Search stroke-width="1" class="w-6 h-6" />
-                </div>
-              </div>
+        <div v-if="searchOpen" class="lg:hidden fixed inset-0 z-100 bg-white pt-16">
+          <div
+            class="fixed top-0 left-0 right-0 flex flex-row items-center gap-3 px-5 py-5 border-b border-gray-100 bg-white z-100 transition-shadow duration-300"
+            :class="{ 'shadow-sm': !menuOpen && !searchOpen }"
+          >
+            <div class="w-full relative rounded-[30px]">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search..."
+                class="w-full luxurious-roman-regular text-lg font-light px-5 py-3 rounded-full bg-gray-50 focus:outline-none focus:ring-1 focus:ring-[#280559]"
+                autofocus
+                @keydown="handleSearchKeydown"
+                @click.stop
+              />
               <button
-                @click="searchOpen = false"
-                class="text-base luxurious-roman-regular px-2 text-black hover:text-[#280559]"
+                @click.stop="handleSearch"
+                class="absolute top-3.5 right-5 text-[#280559] hover:text-[#1a0438] transition-colors"
               >
-                Cancel
+                <Search stroke-width="1.5" class="w-6 h-6" />
               </button>
-            </div>
-            <div class="px-6 py-8">
-              <p
-                class="text-sm text-gray-500 luxurious-roman-regular uppercase tracking-wider mb-4"
+
+              <!-- Mobile Search Suggestions Dropdown -->
+              <div
+                v-if="searchQuery.trim() && searchSuggestions.length > 0"
+                class="absolute top-full transform mt-2 w-[93vw] bg-white border border-gray-200 rounded shadow-lg z-50 max-h-80 overflow-y-auto"
               >
-                Popular Scents
-              </p>
-              <div class="flex flex-wrap gap-2">
-                <span class="px-4 py-2 bg-gray-50 rounded-full text-sm text-gray-700">Dior</span>
-                <span class="px-4 py-2 bg-gray-50 rounded-full text-sm text-gray-700">Chanel</span>
+                <ul class="py-2">
+                  <li v-for="product in searchSuggestions" :key="product.id">
+                    <button
+                      @click="selectSearchResult(product)"
+                      class="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                    >
+                      <img
+                        :src="product.image"
+                        :alt="product.name"
+                        class="w-10 h-10 object-cover rounded"
+                      />
+                      <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">
+                          {{ product.name }}
+                        </p>
+                        <p class="text-xs text-gray-500">{{ product.brand }}</p>
+                      </div>
+                    </button>
+                  </li>
+                </ul>
               </div>
+
+              <!-- Mobile No results message -->
+              <div
+                v-else-if="searchQuery.trim() && searchSuggestions.length === 0"
+                class="absolute top-full w-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg z-50 p-4 text-center"
+              >
+                <p class="text-sm text-gray-500">No products found for "{{ searchQuery }}"</p>
+              </div>
+            </div>
+            <button
+              @click="searchOpen = false"
+              class="text-base luxurious-roman-regular px-2 text-black hover:text-[#280559]"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div class="px-6 py-8 mt-5">
+            <p class="luxurious-roman-regular text-xl text-gray-900 mb-4">Popular Scents</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button
+                v-for="brand in popularBrands"
+                :key="brand"
+                @click="searchByQuery(brand)"
+                class="px-3 py-1 bg-gray-50 rounded-full text-xs text-gray-700 hover:bg-[#280559] hover:text-white transition-all duration-300"
+              >
+                {{ brand }}
+              </button>
             </div>
           </div>
         </div>

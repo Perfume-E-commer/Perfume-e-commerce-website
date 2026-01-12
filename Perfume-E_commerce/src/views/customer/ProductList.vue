@@ -14,15 +14,28 @@ import { storeToRefs } from 'pinia'
 const productStore = useProductStore()
 
 const { products, loading } = storeToRefs(productStore)
-const { fetchAllProducts } = productStore
+const { fetchAllProducts, updateFilters, updateSort } = productStore
 
 onMounted(() => {
   fetchAllProducts()
   console.log('perfume list: ', productStore.products)
 })
+
 watch(products, () => {
   console.log('Perfume List', productStore.products)
 })
+
+// Handle filter changes from MenuFilter component
+const handleFilterChange = (filters: Record<string, any>) => {
+  console.log('Filters applied:', filters)
+  updateFilters(filters)
+}
+
+// Handle sort changes from MenuFilter component
+const handleSortChange = (sortOption: string) => {
+  console.log('Sort applied:', sortOption)
+  updateSort(sortOption)
+}
 
 const SpecialOffer = [
   {
@@ -64,10 +77,30 @@ const SpecialOffer = [
         Best Selling Products
       </h1>
       <section class="bg-white">
-        <MenuFilter />
+        <MenuFilter @filterChange="handleFilterChange" @sortChange="handleSortChange" />
       </section>
       <section v-if="!loading" class="bg-white">
-        <ProductListPerfume :details-item="products" />
+        <div v-if="products.length === 0" class="flex flex-col items-center justify-center py-20">
+          <svg
+            class="w-24 h-24 text-gray-400 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            ></path>
+          </svg>
+          <h3 class="text-2xl font-bold text-gray-800 mb-2">No Products Available</h3>
+          <p class="text-gray-600 text-center max-w-md luxurious-roman-regular">
+            The products matching your filters are not yet arrived to the store. Please try
+            different filters or check back soon!
+          </p>
+        </div>
+        <ProductListPerfume v-else :details-item="products" />
       </section>
       <section>
         <PanigationProduct />

@@ -31,6 +31,13 @@ export interface Product {
   image: string
   descriptions: string
   variants: ProductVariant[]
+  RatingReviews?: RatingReview[]
+  averageRating?: number
+  totalReviews?: number
+  brand?: string
+  category?: string
+  scent?: string | null
+  occasion?: string | null
   productStorys: {
     intro: StorySection
     overture: StorySection
@@ -38,6 +45,13 @@ export interface Product {
     features: StorySection[]
     scentNotes: ScentNote[]
   }
+}
+
+export interface RatingReview {
+  userId: string
+  userName: string
+  stars: number
+  comment: string
 }
 
 export interface ProductPage {

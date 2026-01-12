@@ -1,4 +1,3 @@
-// services/api.js
 import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 import type { Product } from '@/types/adminProduct'
@@ -21,24 +20,8 @@ api.interceptors.request.use((config) => {
 })
 
 export const productService = {
-  getAllProducts(params: { 
-    page: number; 
-    size: number; 
-    search?: string;     
-    category?: string;    
-    minPrice?: number;    
-    maxPrice?: number;    
-  } = { page: 0, size: 10 }) {
-    return api.get('/products', {
-      params: {
-        page: params.page,
-        size: params.size,
-        search: params.search,
-        category: params.category,
-        minPrice: params.minPrice,
-        maxPrice: params.maxPrice
-      }
-    });
+  getAllProducts() {
+    return api.get('/products')
   },
 
   getPaginationProducts(page: number, limit: number) {
@@ -68,6 +51,17 @@ export const productService = {
   getProductsByCategory(category: string) {
     return api.get(`/products/category/${category}`)
   },
-}
 
-export default productService
+  submitProductReview(productId: string, reviewData: { stars: number; comment: string }) {
+    return api.post(`/products/${productId}/ratings`, reviewData)
+  },
+
+  getProductReviews(productId: string) {
+    return api.get(`/products/${productId}/reviews`)
+  },
+
+  getFilterProducts(filters: Record<string, any>) {
+    const queryParams = new URLSearchParams(filters).toString()
+    return api.get(`/products/filter?${queryParams}`)
+  },
+}

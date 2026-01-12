@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 
 // --- 1. TYPES ---
 type FilterCategory = 'brand' | 'scent' | 'category' | 'occasion'
 
-// --- 2. DATA ---
+// --- 2. EMITS ---
+const emit = defineEmits<{
+  filterChange: [filters: Record<string, any>]
+  sortChange: [sortOption: string]
+}>()
+
+// --- 3. DATA ---
 const activeDropdown = ref<string | null>(null)
 const isMobileMenuOpen = ref(false) // New state for mobile menu
 
 const filters = ref({
   brand: [
     { id: 1, label: 'Chanel', checked: false },
-    { id: 2, label: 'Dior', checked: true },
+    { id: 2, label: 'Dior', checked: false },
     { id: 3, label: 'Gucci', checked: false },
   ],
   scent: [
@@ -20,16 +26,19 @@ const filters = ref({
     { id: 3, label: 'Citrus', checked: false },
   ],
   category: [
-    { id: 1, label: 'Perfume', checked: false },
-    { id: 2, label: 'Cologne', checked: false },
+    { id: 1, label: 'MEN', checked: false },
+    { id: 2, label: 'WOMEN', checked: false },
   ],
   occasion: [
     { id: 1, label: 'Daily', checked: false },
-    { id: 2, label: 'Party', checked: true },
+    { id: 2, label: 'Party', checked: false },
   ],
   sort: [
-    { id: 1, label: 'Price: Low to High', checked: false },
-    { id: 2, label: 'Price: High to Low', checked: false },
+    { id: 0, label: 'Default', value: 'default', checked: true },
+    { id: 1, label: 'Price: Low to High', value: 'price_asc', checked: false },
+    { id: 2, label: 'Price: High to Low', value: 'price_desc', checked: false },
+    { id: 3, label: 'Rating: High to Low', value: 'rating_desc', checked: false },
+    { id: 4, label: 'Rating: Low to High', value: 'rating_asc', checked: false },
   ],
 })
 
@@ -40,7 +49,21 @@ const filterGroups: { key: FilterCategory; label: string }[] = [
   { key: 'occasion', label: 'Occasions' },
 ]
 
-// --- 3. LOGIC ---
+// --- 4. COMPUTED ---
+const selectedFilters = computed(() => {
+  const selected: Record<string, string[]> = {}
+  filterGroups.forEach((group) => {
+    const checkedItems = filters.value[group.key]
+      .filter((item) => item.checked)
+      .map((item) => item.label)
+    if (checkedItems.length > 0) {
+      selected[group.key] = checkedItems
+    }
+  })
+  return selected
+})
+
+// --- 5. LOGIC ---
 const toggleDropdown = (key: string) => {
   if (activeDropdown.value === key) {
     activeDropdown.value = null
@@ -54,13 +77,28 @@ const toggleMobileMenu = () => {
 }
 
 const closeAll = (e: Event) => {
-  // Optional: check if click target is inside the component to avoid closing unexpectedly
-  // For now, keeping your original simple logic to clear active dropdowns
-  // but we usually don't want to close the Mobile Menu immediately on click inside it.
   const target = e.target as HTMLElement
   if (!target.closest('.filter-container')) {
     activeDropdown.value = null
   }
+}
+
+// Emit filter changes whenever filters are updated
+watch(
+  selectedFilters,
+  (newFilters) => {
+    emit('filterChange', newFilters)
+  },
+  { deep: true },
+)
+
+// Handle sort changes
+const handleSortChange = (sortValue: string) => {
+  emit('sortChange', sortValue)
+  // Reset all sort options except the selected one
+  filters.value.sort.forEach((option) => {
+    option.checked = option.value === sortValue
+  })
 }
 
 onMounted(() => document.addEventListener('click', closeAll))
@@ -101,20 +139,19 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
             >
               <ul class="p-3 space-y-2">
                 <li v-for="option in filters[group.key]" :key="option.id">
-                  <div class="flex items-center hover:bg-gray-50 p-1 rounded cursor-pointer">
+                  <label
+                    class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors duration-150"
+                  >
                     <input
                       :id="`desktop-${group.key}-${option.id}`"
                       type="checkbox"
                       v-model="option.checked"
                       class="w-4 h-4 border-gray-300 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
-                    <label
-                      :for="`desktop-${group.key}-${option.id}`"
-                      class="ms-2 text-sm font-medium text-gray-900 cursor-pointer w-full"
-                    >
+                    <span class="ms-2 text-sm font-medium text-gray-900">
                       {{ option.label }}
-                    </label>
-                  </div>
+                    </span>
+                  </label>
                 </li>
               </ul>
             </div>
@@ -148,20 +185,22 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
         >
           <ul class="p-3 space-y-2">
             <li v-for="option in filters.sort" :key="option.id">
-              <div class="flex items-center hover:bg-gray-50 p-1 rounded cursor-pointer">
+              <label
+                class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors duration-150"
+              >
                 <input
                   name="sort-radio-desktop"
                   :id="`desktop-sort-${option.id}`"
                   type="radio"
+                  :value="option.value"
+                  :checked="option.checked"
+                  @change="handleSortChange(option.value)"
                   class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
-                <label
-                  :for="`desktop-sort-${option.id}`"
-                  class="ms-2 text-sm font-medium text-gray-900 cursor-pointer w-full"
-                >
+                <span class="ms-2 text-sm font-medium text-gray-900">
                   {{ option.label }}
-                </label>
-              </div>
+                </span>
+              </label>
             </li>
           </ul>
         </div>
@@ -214,7 +253,7 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
         <div v-for="group in filterGroups" :key="group.key" class="border-b border-gray-100 pb-2">
           <button
             @click.stop="toggleDropdown(group.key)"
-            class="flex items-center justify-between w-full px-2 py-3 text-lg font-medium text-left text-black bg-gray-50 rounded hover:bg-gray-100"
+            class="flex items-center justify-between w-full px-2 py-3 text-lg font-medium text-left text-black bg-gray-50 rounded hover:bg-gray-100 transition-colors duration-150"
           >
             {{ group.label }}
             <svg
@@ -230,23 +269,26 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
             </svg>
           </button>
 
-          <div v-if="activeDropdown === group.key" @click.stop class="mt-2 w-full bg-white pl-4">
-            <ul class="space-y-3 py-2">
+          <div
+            v-if="activeDropdown === group.key"
+            @click.stop
+            class="mt-2 w-full bg-white pl-4 animate-fade-in rounded border border-gray-200"
+          >
+            <ul class="space-y-2 py-2">
               <li v-for="option in filters[group.key]" :key="option.id">
-                <div class="flex items-center">
+                <label
+                  class="flex items-center cursor-pointer p-1 rounded hover:bg-gray-50 transition-colors duration-150"
+                >
                   <input
                     :id="`mobile-${group.key}-${option.id}`"
                     type="checkbox"
                     v-model="option.checked"
                     class="w-5 h-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
                   />
-                  <label
-                    :for="`mobile-${group.key}-${option.id}`"
-                    class="ms-3 text-base text-gray-700 w-full"
-                  >
+                  <span class="ms-3 text-base text-gray-700">
                     {{ option.label }}
-                  </label>
-                </div>
+                  </span>
+                </label>
               </li>
             </ul>
           </div>
@@ -255,7 +297,7 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
         <div class="border-b border-gray-100 pb-2">
           <button
             @click.stop="toggleDropdown('sort')"
-            class="flex items-center justify-between w-full px-2 py-3 text-lg font-medium text-left text-black bg-gray-50 rounded hover:bg-gray-100"
+            class="flex items-center justify-between w-full px-2 py-3 text-lg font-medium text-left text-black bg-gray-50 rounded hover:bg-gray-100 transition-colors duration-150"
           >
             Sort by
             <svg
@@ -271,23 +313,29 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
             </svg>
           </button>
 
-          <div v-if="activeDropdown === 'sort'" @click.stop class="mt-2 w-full bg-white pl-4">
-            <ul class="space-y-3 py-2">
+          <div
+            v-if="activeDropdown === 'sort'"
+            @click.stop
+            class="mt-2 w-full bg-white pl-4 animate-fade-in rounded border border-gray-200"
+          >
+            <ul class="space-y-2 py-2">
               <li v-for="option in filters.sort" :key="option.id">
-                <div class="flex items-center">
+                <label
+                  class="flex items-center cursor-pointer p-1 rounded hover:bg-gray-50 transition-colors duration-150"
+                >
                   <input
                     name="sort-radio-mobile"
                     :id="`mobile-sort-${option.id}`"
                     type="radio"
+                    :value="option.value"
+                    :checked="option.checked"
+                    @change="handleSortChange(option.value)"
                     class="w-5 h-5 border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <label
-                    :for="`mobile-sort-${option.id}`"
-                    class="ms-3 text-base text-gray-700 w-full"
-                  >
+                  <span class="ms-3 text-base text-gray-700">
                     {{ option.label }}
-                  </label>
-                </div>
+                  </span>
+                </label>
               </li>
             </ul>
           </div>
@@ -305,7 +353,7 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;

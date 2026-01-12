@@ -1,5 +1,44 @@
 import api from './apiClient'
 
+export interface DailySalesData {
+  date: string;
+  revenue: number;
+  orderCount: number;
+}
+
+export interface RecentOrder {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  total: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface LowStockItem {
+  id: string;
+  name: string;
+  stock: number;
+  imageUrl?: string;
+}
+
+export interface ActivePromotion {
+  id: string;
+  code: string;
+  discountPercentage: number;
+  validUntil: string;
+}
+
+export interface AdminDashboardResponse {
+  totalOrders30d: number;
+  revenue30d: number;
+  lowStockCount: number;
+  activeCustomers: number;
+  salesChart: DailySalesData[];
+  recentOrders: RecentOrder[];
+  lowStockItems: LowStockItem[];
+  activePromotions: ActivePromotion[];
+}
 export interface DashboardStats {
   totalSales: number;
   totalOrders: number;
@@ -31,7 +70,7 @@ export interface BillingRecord {
 
 export const adminService = {
   getDashboardStats() {
-    return api.get<DashboardStats>('/admin/dashboard-stats');
+    return api.get<DashboardStats>('/admin/dashboard');
   },
 
   getAllOrders(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {

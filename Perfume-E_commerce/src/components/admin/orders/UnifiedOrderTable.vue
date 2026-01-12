@@ -40,7 +40,7 @@
             @click="$emit('open-modal', order)"
           >
             <td class="px-6 py-4 font-mono text-indigo-600 font-bold text-xs">
-              #{{ order.id ? order.id.slice(-6).toUpperCase() : '---' }}
+              {{ order.orderNumber || '#' + (order.id ? order.id.slice(-6).toUpperCase() : '---') }}
             </td>
 
             <td class="px-6 py-4">
@@ -99,23 +99,22 @@ defineEmits(['open-modal']);
 
 // --- Helpers ---
 
-// Robust Name
+// ✅ FIX 2: Check shippingAddress.fullName first (matches your JSON data)
 const getCustomerName = (order: any) => {
-  if (order.user && order.user.firstName) {
-    return `${order.user.firstName} ${order.user.lastName || ''}`.trim();
-  }
   if (order.shippingAddress && order.shippingAddress.fullName) {
     return order.shippingAddress.fullName;
+  }
+  if (order.user && order.user.firstName) {
+    return `${order.user.firstName} ${order.user.lastName || ''}`.trim();
   }
   return 'Guest Customer';
 };
 
-// Robust Email
+// Robust Email Logic
 const getCustomerEmail = (order: any) => {
-  if (order.email) return order.email;
   if (order.userEmail) return order.userEmail;
+  if (order.email) return order.email;
   if (order.user && order.user.email) return order.user.email;
-  if (order.user && order.user.username && order.user.username.includes('@')) return order.user.username;
   return 'No Email';
 };
 
@@ -126,7 +125,7 @@ const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-// Styles for Order Status (Shipping)
+// Styles for Order Status
 const getOrderStatusClasses = (status: string) => {
   switch (status) {
     case 'CONFIRMED': return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -137,9 +136,9 @@ const getOrderStatusClasses = (status: string) => {
   }
 };
 
-// Styles for Payment Status (Money)
+// Styles for Payment Status
 const getPaymentStatusClasses = (status: string) => {
-  const s = status || 'PAID'; // Default to PAID if missing (MVP assumption)
+  const s = status || 'PAID'; 
   switch (s) {
     case 'PAID': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
     case 'PENDING': return 'bg-amber-50 text-amber-700 border-amber-100';

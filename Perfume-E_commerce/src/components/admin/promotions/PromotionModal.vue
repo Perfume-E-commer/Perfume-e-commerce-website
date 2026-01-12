@@ -13,12 +13,11 @@
         </button>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
+      <form @submit.prevent="handleSubmit" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
         
         <div>
           <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-            Promo Code
-            <span class="text-red-500 ml-1">*</span>
+            Promo Code <span class="text-red-500">*</span>
           </label>
           <input 
             v-model="formData.code"
@@ -33,16 +32,12 @@
             placeholder="e.g. HOLIDAY15"
             @input="validateCode"
           />
-          <p class="text-xs text-gray-400 mt-1">
-            Unique code customers will enter at checkout. Letters and numbers only.
-          </p>
           <p v-if="codeError" class="text-xs text-red-500 mt-1">{{ codeError }}</p>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-            Description
-            <span class="text-red-500 ml-1">*</span>
+            Description <span class="text-red-500">*</span>
           </label>
           <input 
             v-model="formData.description"
@@ -56,77 +51,85 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-              Discount (%)
-              <span class="text-red-500 ml-1">*</span>
+              Discount (%) <span class="text-red-500">*</span>
             </label>
             <div class="relative">
               <input 
-                v-model.number="formData.discountPercent"
+                v-model.number="formData.discountPercentage"
                 type="number" 
                 min="1" 
                 max="100"
                 required
-                :class="[
-                  'w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none pr-8',
-                  formData.discountPercent > 100 || formData.discountPercent < 1 
-                    ? 'border-red-300 focus:ring-red-500' 
-                    : 'border-gray-200 focus:ring-indigo-500'
-                ]"
+                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none pr-8"
               />
               <span class="absolute right-3 top-2 text-gray-400 font-bold">%</span>
             </div>
-            <p class="text-xs text-gray-400 mt-1">Between 1-100%</p>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-              Expiry Date
-              <span class="text-red-500 ml-1">*</span>
+              Usage Limit
+            </label>
+            <input 
+              v-model.number="formData.usageLimit"
+              type="number" 
+              min="1"
+              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="Unlimited"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              Valid From <span class="text-red-500">*</span>
+            </label>
+            <input 
+              v-model="formData.validFrom"
+              type="date" 
+              required
+              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+              Valid Until <span class="text-red-500">*</span>
             </label>
             <input 
               v-model="formData.validUntil"
               type="date" 
               required
-              :class="[
-                'w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none',
-                isDateInPast ? 'border-red-300 focus:ring-red-500' : 'border-gray-200 focus:ring-indigo-500'
-              ]"
-              :min="minDate"
+              :min="formData.validFrom"
+              class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
             />
-            <p v-if="isDateInPast" class="text-xs text-red-500 mt-1">Date must be in the future</p>
           </div>
         </div>
 
-        <div v-if="isEditing" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
-          <span class="text-sm font-medium text-gray-700">Promotion Status</span>
-          <div class="flex items-center gap-2">
-            <span :class="formData.active ? 'text-green-600' : 'text-gray-500'" class="text-sm font-medium">
-              {{ formData.active ? 'Active' : 'Inactive' }}
-            </span>
-            <button 
-              type="button"
-              @click="formData.active = !formData.active"
-              :class="formData.active ? 'bg-green-500' : 'bg-gray-300'"
-              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-            >
-              <span 
-                :class="formData.active ? 'translate-x-6' : 'translate-x-1'"
-                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-              />
-            </button>
-          </div>
+        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
+          <span class="text-sm font-medium text-gray-700">Active Status</span>
+          <button 
+            type="button"
+            @click="formData.active = !formData.active"
+            :class="formData.active ? 'bg-green-500' : 'bg-gray-300'"
+            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <span 
+              :class="formData.active ? 'translate-x-6' : 'translate-x-1'"
+              class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+            />
+          </button>
         </div>
-
-        <div v-else class="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-100">
-          <span class="text-sm font-medium text-green-800">This promotion will be active immediately</span>
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-        </div>
+        <p class="text-xs text-right text-gray-400">
+          {{ formData.active ? 'Promotion will be visible.' : 'Promotion will be hidden.' }}
+        </p>
 
         <div class="pt-4 flex justify-end gap-3">
           <button 
             type="button" 
             @click="$emit('close')"
-            class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition border border-gray-300"
+            class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg border border-gray-300"
           >
             Cancel
           </button>
@@ -134,12 +137,12 @@
             type="submit" 
             :disabled="isLoading || !isFormValid"
             :class="[
-              'px-6 py-2 text-white text-sm font-medium rounded-lg transition shadow-sm flex items-center',
+              'px-6 py-2 text-white text-sm font-medium rounded-lg shadow-sm flex items-center',
               !isFormValid || isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
             ]"
           >
             <span v-if="isLoading" class="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></span>
-            {{ isEditing ? 'Update Promotion' : 'Create Promotion' }}
+            {{ isEditing ? 'Update' : 'Create' }}
           </button>
         </div>
       </form>
@@ -160,92 +163,70 @@ const emit = defineEmits(['close', 'save']);
 
 const isEditing = ref(false);
 const codeError = ref<string>('');
+
 const formData = ref({
   code: '',
   description: '',
-  discountPercent: 10,
+  discountPercentage: 10, 
+  validFrom: '',
   validUntil: '',
-  active: true
-});
-
-// Computed properties for validation
-const minDate = computed(() => {
-  return new Date().toISOString().split('T')[0];
-});
-
-const isDateInPast = computed(() => {
-  if (!formData.value.validUntil) return false;
-  const selectedDate = new Date(formData.value.validUntil);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return selectedDate < today;
+  usageLimit: null as number | null,
+  active: true // Default to true
 });
 
 const isFormValid = computed(() => {
   return (
     formData.value.code.trim() !== '' &&
     formData.value.description.trim() !== '' &&
-    formData.value.discountPercent >= 1 &&
-    formData.value.discountPercent <= 100 &&
+    formData.value.discountPercentage >= 1 &&
+    formData.value.discountPercentage <= 100 &&
+    formData.value.validFrom !== '' &&
     formData.value.validUntil !== '' &&
-    !isDateInPast.value &&
     !codeError.value
   );
 });
 
-// FIXED: Updated validation to allow both uppercase and lowercase
 const validateCode = () => {
   const code = formData.value.code.trim();
-  if (!code) {
-    codeError.value = '';
-    return;
-  }
-
-  // FIXED: Allow both uppercase and lowercase letters
+  if (!code) { codeError.value = ''; return; }
+  
   const alphanumericRegex = /^[A-Za-z0-9]+$/;
   if (!alphanumericRegex.test(code)) {
-    codeError.value = 'Promo code must contain only letters and numbers (no spaces or special characters)';
+    codeError.value = 'Letters and numbers only';
     return;
   }
-
-  // Length validation
-  if (code.length < 4) {
-    codeError.value = 'Promo code must be at least 4 characters';
-    return;
-  }
-
-  if (code.length > 20) {
-    codeError.value = 'Promo code cannot exceed 20 characters';
-    return;
-  }
-
   codeError.value = '';
 };
 
-/**
- * Watch for modal opening to populate data.
- */
+// Initialize Form Data
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     if (props.editData) {
       isEditing.value = true;
+      const discount = props.editData.discountPercentage || props.editData.discountPercent || 10;
+      
       formData.value = { 
         ...props.editData,
+        discountPercentage: discount,
+        validFrom: props.editData.validFrom ? new Date(props.editData.validFrom).toISOString().split('T')[0] : '',
         validUntil: props.editData.validUntil ? new Date(props.editData.validUntil).toISOString().split('T')[0] : '',
-        active: props.editData.active !== undefined ? props.editData.active : true
+        usageLimit: props.editData.usageLimit || null,
+        active: props.editData.active // ✅ Load existing status
       };
     } else {
       isEditing.value = false;
-      // Default expiry: 30 days from now
+      const today = new Date();
       const nextMonth = new Date();
       nextMonth.setDate(nextMonth.getDate() + 30);
       
       formData.value = {
         code: '',
         description: '',
-        discountPercent: 10,
+        discountPercentage: 10,
+        validFrom: today.toISOString().split('T')[0],
         validUntil: nextMonth.toISOString().split('T')[0],
-        active: true
+        usageLimit: null,
+        active: true // ✅ Default to Active
       };
     }
     codeError.value = '';
@@ -255,13 +236,14 @@ watch(() => props.isOpen, (newVal) => {
 const handleSubmit = () => {
   if (!isFormValid.value) return;
   
-  // Format the data before emitting
-  // Convert code to uppercase before sending to backend
   const payload = {
     ...formData.value,
     code: formData.value.code.toUpperCase().trim(),
-    discountPercent: Number(formData.value.discountPercent),
-    validUntil: new Date(formData.value.validUntil).toISOString()
+    discountPercentage: Number(formData.value.discountPercentage),
+    usageLimit: formData.value.usageLimit ? Number(formData.value.usageLimit) : null,
+    validFrom: new Date(formData.value.validFrom).toISOString(),
+    validUntil: new Date(formData.value.validUntil).toISOString(),
+    active: formData.value.active // ✅ Ensure active status is sent
   };
   
   emit('save', payload);

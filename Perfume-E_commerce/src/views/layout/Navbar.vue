@@ -39,7 +39,7 @@
                 <span class="sr-only">Open user menu</span>
                 <img 
                   class="w-8 h-8 rounded-full object-cover" 
-                  :src="adminProfile.avatar || '/me.jpg'" 
+                  :src="adminProfile.avatar" 
                   alt="user photo" 
                 />
               </button>
@@ -100,13 +100,10 @@ const adminProfile = ref({
 })
 
 const logout = () => {
-  // Clear token/storage
-  authService.logout() // Assuming logout clears localStorage
-  // Redirect
+  authService.logout() 
   router.push('/login')
 }
 
-// Fetch Data on Mount
 onMounted(async () => {
   try {
     const response = await adminService.getProfile()

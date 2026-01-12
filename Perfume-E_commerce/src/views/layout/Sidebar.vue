@@ -54,7 +54,7 @@
       <div class="p-4 border-t border-gray-200 bg-gray-50">
         <div class="flex items-center gap-3 mb-3">
           <img 
-            :src="adminProfile.avatar || '/me.jpg'" 
+            :src="adminProfile.avatar" 
             class="w-10 h-10 rounded-full border border-gray-200 object-cover" 
             alt="Admin" 
           />

@@ -1,88 +1,61 @@
 <template>
   <div>
-    <apexchart :height="height" type="area" :options="options" :series="series"></apexchart>
+    <apexchart 
+      :height="height" 
+      type="area" 
+      :options="chartOptions" 
+      :series="chartSeries"
+    ></apexchart>
   </div>
 </template>
-<!-- <script lang="ts">
-import { defineComponent, ref } from 'vue'
-
-export default defineComponent({
-  name: 'ApexCharts',
-  setup() {
-    const options = ref({
-      chart: {
-        id: 'vuechart-example',
-      },
-      xaxis: {
-        categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999],
-      },
-    })
-
-    const series = ref([
-      {
-        name: 'series-1',
-        data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
-        borderColor: document.documentElement.style.getPropertyValue('--primary-indigo-600'),
-        tension: 0.4,
-        backgroundColor: document.documentElement.style.getPropertyValue('--primary-indigo-100'),
-      },
-    ])
-
-    return { options, series }
-  },
-})
-</script> -->
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import ChartVue from 'vue3-apexcharts'
+import { defineComponent, computed, toRefs } from 'vue'
+import VueApexCharts from 'vue3-apexcharts'
 
 export default defineComponent({
   name: 'ApexCharts',
+  components: {
+    apexchart: VueApexCharts,
+  },
   props: {
     height: {
       type: [Number, String],
-      // default: 350,
+      default: 350,
     },
+    // ✅ NEW: Accept dynamic data
+    data: {
+      type: Array as () => number[], // Revenue numbers
+      default: () => []
+    },
+    labels: {
+      type: Array as () => string[], // Dates
+      default: () => []
+    }
   },
-  setup() {
-    const options = ref({
+  setup(props) {
+    const { data, labels } = toRefs(props)
+
+    // ✅ Computed Series: Updates when props change
+    const chartSeries = computed(() => [
+      {
+        name: 'Revenue',
+        data: data.value, // Uses the real data passed from parent
+      }
+    ])
+
+    // ✅ Computed Options: Updates when dates change
+    const chartOptions = computed(() => ({
       chart: {
-        id: 'sales-chart',
-        height: 350,
+        id: 'revenue-chart',
         type: 'area',
-        zoom: {
-          enabled: true,
-        },
-        toolbar: {
-          show: true,
-          tools: {
-            download: true, // export PNG / SVG / CSV
-            selection: true,
-            zoom: true,
-            zoomin: true,
-            zoomout: true,
-            pan: true,
-            reset: true,
-          },
-          export: {
-            csv: {
-              filename: 'sales-data',
-            },
-            svg: {
-              filename: 'sales-chart',
-            },
-            png: {
-              filename: 'sales-chart',
-            },
-          },
-        },
+        toolbar: { show: false },
+        zoom: { enabled: false }
       },
-      colors: ['#4F46E5', '#9CA3AF'],
+      colors: ['#4F46E5'], // Indigo-600
       stroke: {
         curve: 'smooth',
         width: 3,
-        lineCap: 'round',
       },
       fill: {
         type: 'gradient',
@@ -93,81 +66,37 @@ export default defineComponent({
           stops: [0, 90, 100],
         },
       },
-      markers: {
-        size: 5,
-        hover: {
-          size: 7,
-        },
-      },
-      grid: {
-        borderColor: '#f1f5f9',
-        strokeDashArray: 5,
-        padding: {
-          top: 10,
-          right: 10,
-          bottom: 0,
-          left: 10,
-        },
-      },
+      dataLabels: { enabled: false },
       xaxis: {
-        categories: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        axisBorder: {
-          show: false,
-        },
-        axisTicks: {
-          show: false,
-        },
+        categories: labels.value, // Uses real dates
+        axisBorder: { show: false },
+        axisTicks: { show: false },
         labels: {
-          style: {
-            colors: '#6b7280',
-            fontSize: '12px',
-          },
+          style: { colors: '#9CA3AF', fontSize: '12px' },
         },
       },
       yaxis: {
         labels: {
-          formatter: function (value: number) {
-            return value + 'k'
+          formatter: (value: number) => {
+            return '$' + value; // Format as currency
           },
-          style: {
-            colors: '#6b7280',
-            fontSize: '12px',
-          },
+          style: { colors: '#9CA3AF', fontSize: '12px' },
         },
-        min: 0,
-        max: 50,
-        tickAmount: 5,
+      },
+      grid: {
+        borderColor: '#f1f5f9',
+        strokeDashArray: 4,
       },
       tooltip: {
-        enabled: true,
-        shared: true,
-        intersect: false,
         y: {
           formatter: function (val: number) {
-            return val + 'k'
-          },
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      legend: {
-        show: false,
-      },
-    })
+            return '$' + val.toFixed(2)
+          }
+        }
+      }
+    }))
 
-    const series = ref([
-      {
-        name: 'This Week',
-        data: [8, 12, 18, 25, 14, 32, 28],
-      },
-      {
-        name: 'Last Week',
-        data: [5, 8, 12, 18, 22, 25, 20],
-      },
-    ])
-
-    return { options, series }
+    return { chartOptions, chartSeries }
   },
 })
 </script>

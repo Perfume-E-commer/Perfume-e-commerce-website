@@ -35,33 +35,32 @@
             :menuItems="[
               {
                 name: 'Dashboard',
-                link: '/mainDashboard/admindashboard',
+                link: '/admin/dashboard',
                 icon: 'home' 
               },
               {
                 name: 'Products',
-                link: '/mainDashboard/products', 
+                link: '/admin/products', 
                 icon: 'box'
               },
               {
                 name: 'Inventory',
-                link: '/mainDashboard/inventory', 
+                link: '/admin/inventory', 
                 icon: 'clipboard'
               },
               {
                 name: 'Orders & Billing', 
-                link: '/mainDashboard/dashboardordermanagement',
+                link: '/admin/orders',
                 icon: 'cart'
               },
-              // REMOVED: Transactions
               {
                 name: 'Promotions',
-                link: '/mainDashboard/dashboardpromotion', 
+                link: '/admin/promotions', 
                 icon: 'tag'
               },
               {
                 name: 'Customers',
-                link: '/mainDashboard/dashboardcustomer',
+                link: '/admin/customers',
                 icon: 'users'
               },
             ]"
@@ -70,7 +69,7 @@
 
           <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 mt-6 px-2">Settings</div>
           <ListSidebar
-            :menuItems="[{ name: 'Admin Profile', link: '/mainDashboard/adminprofile', icon: 'cog' }]"
+            :menuItems="[{ name: 'Admin Profile', link: '/admin/profile', icon: 'cog' }]"
             @item-click="handleItemClick"
           />
         </ul>

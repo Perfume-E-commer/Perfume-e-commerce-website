@@ -121,7 +121,7 @@ export const adminService = {
   
   updateProfile(data: Partial<AdminProfile>, imageFile?: File) {
     const formData = new FormData();
-
+    
     formData.append('data', new Blob([JSON.stringify(data)], { 
       type: 'application/json' 
     }));
@@ -130,7 +130,11 @@ export const adminService = {
       formData.append('image', imageFile);
     }
 
-    return api.put<AdminProfile>('/admin/profile', formData);
+    return api.put('/admin/profile', formData, {
+       headers: {
+         'Content-Type': 'multipart/form-data'
+       }
+    });
   },
 
   updatePaymentStatus(orderId: string, paymentStatus: string) {

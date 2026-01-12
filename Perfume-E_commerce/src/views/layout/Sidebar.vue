@@ -20,7 +20,7 @@
         </div>
         <button
           class="text-gray-600 hover:text-indigo-600 rounded-lg p-1.5 transition-all duration-200"
-          @click="closeSidebar"
+          @click="$emit('toggle')"
           aria-label="Close sidebar"
         >
           <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -33,43 +33,19 @@
           
           <ListSidebar
             :menuItems="[
-              {
-                name: 'Dashboard',
-                link: '/admin/dashboard',
-                icon: 'home' 
-              },
-              {
-                name: 'Products',
-                link: '/admin/products', 
-                icon: 'box'
-              },
-              {
-                name: 'Inventory',
-                link: '/admin/inventory', 
-                icon: 'clipboard'
-              },
-              {
-                name: 'Orders & Billing', 
-                link: '/admin/orders',
-                icon: 'cart'
-              },
-              {
-                name: 'Promotions',
-                link: '/admin/promotions', 
-                icon: 'tag'
-              },
-              {
-                name: 'Customers',
-                link: '/admin/customers',
-                icon: 'users'
-              },
+              { name: 'Dashboard', link: '/mainDashboard/admindashboard', icon: 'home' },
+              { name: 'Products', link: '/mainDashboard/products', icon: 'box' },
+              { name: 'Inventory', link: '/mainDashboard/inventory', icon: 'clipboard' },
+              { name: 'Orders & Billing', link: '/mainDashboard/dashboardordermanagement', icon: 'cart' },
+              { name: 'Promotions', link: '/mainDashboard/dashboardpromotion', icon: 'tag' },
+              { name: 'Customers', link: '/mainDashboard/dashboardcustomer', icon: 'users' },
             ]"
             @item-click="handleItemClick"
           />
 
           <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 mt-6 px-2">Settings</div>
           <ListSidebar
-            :menuItems="[{ name: 'Admin Profile', link: '/admin/profile', icon: 'cog' }]"
+            :menuItems="[{ name: 'Admin Profile', link: '/mainDashboard/adminprofile', icon: 'cog' }]"
             @item-click="handleItemClick"
           />
         </ul>
@@ -77,10 +53,14 @@
 
       <div class="p-4 border-t border-gray-200 bg-gray-50">
         <div class="flex items-center gap-3 mb-3">
-          <img src="/me.jpg" class="w-10 h-10 rounded-full border border-gray-200" alt="Admin" />
+          <img 
+            :src="adminProfile.avatar || '/me.jpg'" 
+            class="w-10 h-10 rounded-full border border-gray-200 object-cover" 
+            alt="Admin" 
+          />
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold text-gray-900 truncate">Kakashi Uchiha</p>
-            <p class="text-xs text-gray-500 truncate">admin@scenthaven.com</p>
+            <p class="text-sm font-bold text-gray-900 truncate">{{ adminProfile.name }}</p>
+            <p class="text-xs text-gray-500 truncate" :title="adminProfile.email">{{ adminProfile.email }}</p>
           </div>
         </div>
         
@@ -92,42 +72,54 @@
   </aside>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import ListSidebar from '../components/ListSidebar.vue'
+import adminService from '@/services/adminService' 
 
-export default {
-  name: 'Sidebar',
-  components: { ListSidebar },
-  props: {
-    isOpen: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  emits: ['toggle'],
-  data() {
-    return {
-      isMobile: window.innerWidth < 768,
-    }
-  },
-  methods: {
-    handleResize() {
-      this.isMobile = window.innerWidth < 768
-    },
-    closeSidebar() {
-      this.$emit('toggle')
-    },
-    handleItemClick() {
-      if (this.isMobile) {
-        this.closeSidebar()
-      }
-    },
-  },
-  mounted() {
-    window.addEventListener('resize', this.handleResize)
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.handleResize)
-  },
+// Props & Emits
+defineProps<{ isOpen: boolean }>()
+const emit = defineEmits(['toggle'])
+
+// State
+const isMobile = ref(window.innerWidth < 768)
+const adminProfile = ref({
+  name: 'Admin User',
+  email: 'Loading...',
+  avatar: ''
+})
+
+// Methods
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 768
 }
+
+const handleItemClick = () => {
+  if (isMobile.value) {
+    emit('toggle')
+  }
+}
+
+// Fetch Profile Data on Mount
+onMounted(async () => {
+  window.addEventListener('resize', handleResize)
+
+  try {
+    const response = await adminService.getProfile()
+    if (response.data) {
+      adminProfile.value = {
+        name: `${response.data.firstName} ${response.data.lastName}`,
+        email: response.data.email,
+        avatar: response.data.avatarUrl || ''
+      }
+    }
+  } catch (error) {
+    console.error("Sidebar: Failed to load profile", error)
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
 </script>

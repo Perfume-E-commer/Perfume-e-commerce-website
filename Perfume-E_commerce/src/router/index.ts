@@ -135,80 +135,72 @@ const routes: RouteRecordRaw[] = [
 
   // ADMIN DASHBOARD (Layout Wrapper)
   {
-    path: '/mainDashboard',
-    name: 'mainDashboard',
+    path: '/admin',
     component: () => import('@/views/admin/MainDashboard.vue'),
-    redirect: '/mainDashboard/admindashboard',
+    meta: { requiresAuth: true }, // Protects all admin routes
     children: [
       {
-        path: 'inventory',
-        name: 'inventory',
-        component: () => import('@/views/admin/InventoryView.vue'), 
-      },
-      {
-        path: 'admindashboard',
-        name: 'admindashboard',
+        path: '', // Default route: /admin -> AdminDashboard
+        name: 'admin-home',
         component: () => import('@/views/admin/AdminDashboard.vue'),
       },
       {
-        path: 'adminprofile',
-        name: 'adminprofile',
+        path: 'dashboard', // /admin/dashboard
+        name: 'admin-dashboard',
+        component: () => import('@/views/admin/AdminDashboard.vue'),
+      },
+
+      // 1. Inventory
+      {
+        path: 'inventory', // /admin/inventory
+        name: 'admin-inventory',
+        component: () => import('@/views/admin/InventoryView.vue'),
+      },
+
+      // 2. Profile
+      {
+        path: 'profile', // /admin/profile
+        name: 'admin-profile',
         component: () => import('@/views/admin/AdminProfile.vue'),
       },
 
-      // --- PRODUCT MANAGEMENT (Cleaned Paths) ---
+      // 3. Products
       {
-        path: 'products',
-        name: 'product-list',
+        path: 'products', // /admin/products
+        name: 'admin-products',
         component: () => import('@/views/admin/ProductList.vue'),
       },
       {
-        path: 'product/add',
-        name: 'product-add',
+        path: 'products/add', // /admin/products/add
+        name: 'admin-product-add',
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
       {
-        path: 'product/edit/:id',
-        name: 'product-edit',
+        path: 'products/edit/:id', // /admin/products/edit/123
+        name: 'admin-product-edit',
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
+
+      // 4. Promotions
       {
-        path: 'dashboardpromotion',
-        name: 'dashboardpromotion',
+        path: 'promotions', // /admin/promotions
+        name: 'admin-promotions',
         component: () => import('@/views/admin/DashboardPromotion.vue'),
       },
-      // {
-      //   path: 'dashboardcategories',
-      //   name: 'dashboardcategories',
-      //   component: () => import('@/views/admin/ProductList.vue'),
-      //   children: [
-      //     {
-      //       path: 'updatecategory/:id',
-      //       name: 'updatecategory',
-      //       component: () => import('@/views/admin/UpdateCategory.vue'),
-      //     },
-      //   ],
-      // },
+
+      // 5. Orders
       {
-        path: 'dashboardordermanagement',
-        name: 'dashboardordermanagement',
+        path: 'orders', // /admin/orders
+        name: 'admin-orders',
         component: () => import('@/views/admin/DashboardOrderManagement.vue'),
       },
+
+      // 6. Customers
       {
-        path: 'dashboardcustomer',
-        name: 'dashboardcustomer',
+        path: 'customers', // /admin/customers
+        name: 'admin-customers',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },
-      // {
-      //   path: 'dashboard-addproduct',
-      //   name: 'dashboard-addproduct',
-      //   component: () => import('@/views/admin/DashboardAddProduct.vue'),
-      // },
-      // {
-      //   path: 'dashboard-addproduct/:id',
-      //   name: 'dashboard-editproduct',
-      //   component: () => import('@/views/admin/DashboardAddProduct.vue'),
-      // },
     ],
   },
 ]

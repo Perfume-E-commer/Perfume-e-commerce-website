@@ -24,7 +24,7 @@
           Create Promotion
         </router-link>
       </div>
-      </div>
+    </div>
 
     <div v-if="isLoading" class="flex justify-center py-20">
       <div class="animate-spin h-10 w-10 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
@@ -80,9 +80,7 @@
         </div>
         
         <div v-if="!dashboardData.salesChart || dashboardData.salesChart.length === 0" class="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-lg bg-gray-50/50">
-           <svg class="w-10 h-10 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 012 2h2a2 2 0 012-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-           <p>No sales data recorded yet.</p>
-           <p class="text-xs mt-1">Start selling to see analytics!</p>
+           <p>No sales data available yet.</p>
         </div>
 
         <div v-else class="h-64 flex items-end justify-between gap-1 overflow-x-auto pb-2">
@@ -237,7 +235,6 @@ const loadDashboard = async () => {
     }
   } catch (error) {
     console.error("Failed to load dashboard data", error);
-    // Keep defaults on error
   } finally {
     isLoading.value = false;
   }
@@ -253,12 +250,13 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
+// Robust Height Calculation for Chart
 const calculateHeight = (revenue: number) => {
   if (!dashboardData.value.salesChart || dashboardData.value.salesChart.length === 0) return 0;
   const maxRevenue = Math.max(...dashboardData.value.salesChart.map(d => d.revenue));
   const max = maxRevenue === 0 ? 100 : maxRevenue;
   const percentage = (revenue / max) * 100;
-  return revenue > 0 ? Math.max(percentage, 2) : 0;
+  return revenue > 0 ? Math.max(percentage, 5) : 0;
 };
 
 // --- Init ---

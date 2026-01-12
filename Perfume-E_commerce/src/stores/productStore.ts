@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Product, ProductPage } from '@/types/clientProduct'
-import { productService } from '@/Services/productService'
+import { productService } from '@/services/productService'
 
 function transformBackendProduct(backendData: any): Product {
   return {

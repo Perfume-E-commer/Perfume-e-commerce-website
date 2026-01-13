@@ -24,11 +24,7 @@
           Create Promotion
         </router-link>
       </div>
-<<<<<<< HEAD
     </div>
-=======
-      </div>
->>>>>>> c7e271fe7116ed2c91ea358234c845daeb9013f7
 
     <div v-if="isLoading" class="flex justify-center py-20">
       <div class="animate-spin h-10 w-10 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
@@ -252,8 +248,6 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-
-// --- Init ---
 onMounted(() => {
   loadDashboard();
 });

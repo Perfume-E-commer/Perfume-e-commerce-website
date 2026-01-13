@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#F9F9F9]">
+    <Navbar />
     <div class="bg-white border-b border-gray-100">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav class="flex text-sm text-gray-500">
@@ -34,6 +35,7 @@
 
       </div>
     </div>
+    <Footer />
   </div>
 </template>
 
@@ -41,6 +43,9 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import CustomerSidebar from '../../components/layout/CustomerSidebar.vue';
+import Header from '@/components/layout/Header.vue'; 
+import Footer from '../../components/layout/Footer.vue';
+import Navbar from '../../components/layout/Navbar.vue';
 
 const route = useRoute();
 

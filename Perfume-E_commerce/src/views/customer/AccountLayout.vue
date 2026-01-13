@@ -43,7 +43,6 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import CustomerSidebar from '../../components/layout/CustomerSidebar.vue';
-import Header from '@/components/layout/Header.vue'; 
 import Footer from '../../components/layout/Footer.vue';
 import Navbar from '../../components/layout/Navbar.vue';
 

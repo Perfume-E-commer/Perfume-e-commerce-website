@@ -116,6 +116,12 @@ const routes: RouteRecordRaw[] = [
     name: 'verify',
     component: () => import('@/views/auth/VerifyEmail.vue'),
   },
+  {
+    path: '/orders',
+    name: 'MyOrders',
+    component: () => import('../views/customer/MyOrders.vue'),
+    meta: { requiresAuth: true },
+  },
 
   // {
   //   path: '/dashboardcategories',
@@ -137,67 +143,67 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/admin',
     component: () => import('../views/admin/MainDashboard.vue'),
-    meta: { requiresAuth: true }, // Protects all admin routes
+    meta: { requiresAuth: true },
     children: [
       {
-        path: '', // Default route: /admin -> AdminDashboard
+        path: '',
         name: 'admin-home',
         component: () => import('@/views/admin/AdminDashboard.vue'),
       },
       {
-        path: 'dashboard', // /admin/dashboard
+        path: 'dashboard',
         name: 'admin-dashboard',
         component: () => import('@/views/admin/AdminDashboard.vue'),
       },
 
-      // 1. Inventory
+      // Inventory
       {
-        path: 'inventory', // /admin/inventory
+        path: 'inventory',
         name: 'admin-inventory',
         component: () => import('@/views/admin/InventoryView.vue'),
       },
 
-      // 2. Profile
+      // Profile
       {
-        path: 'profile', // /admin/profile
+        path: 'profile',
         name: 'admin-profile',
         component: () => import('@/views/admin/AdminProfile.vue'),
       },
 
-      // 3. Products
+      // Products
       {
-        path: 'products', // /admin/products
+        path: 'products',
         name: 'admin-products',
         component: () => import('@/views/admin/ProductList.vue'),
       },
       {
-        path: 'products/add', // /admin/products/add
+        path: 'products/add',
         name: 'admin-product-add',
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
       {
-        path: 'products/edit/:id', // /admin/products/edit/123
+        path: 'products/edit/:id',
         name: 'admin-product-edit',
         component: () => import('@/views/admin/DashboardAddProduct.vue'),
       },
 
-      // 4. Promotions
+      // Promotions
       {
-        path: 'promotions', // /admin/promotions
+        path: 'promotions',
         name: 'admin-promotions',
         component: () => import('@/views/admin/DashboardPromotion.vue'),
       },
 
-      // 5. Orders
+      // Orders
       {
-        path: 'orders', // /admin/orders
+        path: 'orders',
         name: 'admin-orders',
         component: () => import('@/views/admin/DashboardOrderManagement.vue'),
       },
 
-      // 6. Customers
+      // Customers
       {
-        path: 'customers', // /admin/customers
+        path: 'customers',
         name: 'admin-customers',
         component: () => import('@/views/admin/DashboardCustomer.vue'),
       },

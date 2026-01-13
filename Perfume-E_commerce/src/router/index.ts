@@ -117,11 +117,41 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/auth/VerifyEmail.vue'),
   },
   {
-    path: '/orders',
-    name: 'MyOrders',
-    component: () => import('../views/customer/MyOrders.vue'),
+    path: '/account',
+    component: () => import('../views/customer/AccountLayout.vue'),
     meta: { requiresAuth: true },
-  },
+    children: [
+      {
+        path: '', 
+        redirect: '/account/profile'
+      },
+      {
+        path: 'profile', 
+        name: 'My Profile',
+        component: () => import('../views/customer/UserProfile.vue'),
+      },
+      {
+        path: 'orders', 
+        name: 'My Orders',
+        component: () => import('../views/customer/AccountLayout.vue'),
+      },
+      {
+        path: 'returns', 
+        name: 'My Returns',
+        component: () => import('@/views/customer/MyReturns.vue') 
+      },
+      {
+        path: 'wishlist', 
+        name: 'My Wishlist',
+        component: () => import('@/views/customer/MyWishlist.vue') 
+      },
+      {
+        path: 'history',
+        name: 'Order History',
+        component: () => import('@/views/customer/OrderHistory.vue') 
+      }
+    ]
+  }
 
   // {
   //   path: '/dashboardcategories',

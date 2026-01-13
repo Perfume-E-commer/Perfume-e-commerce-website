@@ -207,7 +207,7 @@ const isLoggedIn = computed(() => !!authStore.token)
           </button>
 
           <router-link
-            to="/account"
+            to="/account/profile"
             @click="menuOpen = false"
             class="text-black hover:text-[#280559] hover:scale-110 transition-all duration-300"
           >

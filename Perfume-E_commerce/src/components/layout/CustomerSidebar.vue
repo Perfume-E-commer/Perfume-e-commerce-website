@@ -4,7 +4,7 @@
       
       <li>
         <router-link 
-          to="/profile" 
+          to="/account/profile" 
           class="block px-6 py-4 hover:bg-gray-50 transition"
           active-class="font-bold text-[#280559] border-l-4 border-[#280559] bg-purple-50"
         >
@@ -14,7 +14,7 @@
 
       <li>
         <router-link 
-          to="/orders" 
+          to="/account/orders" 
           class="block px-6 py-4 hover:bg-gray-50 transition"
           active-class="font-bold text-[#280559] border-l-4 border-[#280559] bg-purple-50"
         >
@@ -24,7 +24,7 @@
 
       <li>
         <router-link 
-          to="/returns" 
+          to="/account/returns" 
           class="block px-6 py-4 hover:bg-gray-50 transition"
           active-class="font-bold text-[#280559] border-l-4 border-[#280559] bg-purple-50"
         >
@@ -34,7 +34,7 @@
 
       <li>
         <router-link 
-          to="/wishlist" 
+          to="/account/wishlist" 
           class="block px-6 py-4 hover:bg-gray-50 transition"
           active-class="font-bold text-[#280559] border-l-4 border-[#280559] bg-purple-50"
         >
@@ -44,7 +44,7 @@
 
       <li>
         <router-link 
-          to="/order-history" 
+          to="/account/history" 
           class="block px-6 py-4 hover:bg-gray-50 transition"
           active-class="font-bold text-[#280559] border-l-4 border-[#280559] bg-purple-50"
         >
@@ -55,6 +55,3 @@
     </ul>
   </div>
 </template>
-
-<script setup lang="ts">
-</script>

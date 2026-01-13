@@ -117,7 +117,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getImageUrl } from '../../utils/imageHelper';
+import { getImageUrl } from '../../../utils/imageHelper';
 
 interface OrderItem {
   name: string;

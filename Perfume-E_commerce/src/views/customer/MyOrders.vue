@@ -32,10 +32,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import OrderCard from '@/components/OrderCard.vue';
-import orderService, { type Order } from '@/services/orderService';
-
-// No CustomerSidebar import needed!
+import OrderCard from '../../components/customer/order/OrderCard.vue';
+import orderService, { type Order } from '../../services/orderService';
 
 const orders = ref<Order[]>([]);
 const loading = ref(true);

@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import CustomerSidebar from '@/components/CustomerSidebar.vue';
+import CustomerSidebar from '../../components/layout/CustomerSidebar.vue';
 
 const route = useRoute();
 

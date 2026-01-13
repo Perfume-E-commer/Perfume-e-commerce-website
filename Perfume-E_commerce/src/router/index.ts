@@ -133,41 +133,25 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'orders', 
         name: 'My Orders',
-        component: () => import('../views/customer/AccountLayout.vue'),
+        component: () => import('../views/customer/MyOrders.vue'),
       },
-      {
-        path: 'returns', 
-        name: 'My Returns',
-        component: () => import('@/views/customer/MyReturns.vue') 
-      },
-      {
-        path: 'wishlist', 
-        name: 'My Wishlist',
-        component: () => import('@/views/customer/MyWishlist.vue') 
-      },
-      {
-        path: 'history',
-        name: 'Order History',
-        component: () => import('@/views/customer/OrderHistory.vue') 
-      }
+      // {
+      //   path: 'returns', 
+      //   name: 'My Returns',
+      //   component: () => import('@/views/customer/MyReturns.vue'),
+      // },
+      // {
+      //   path: 'wishlist', 
+      //   name: 'My Wishlist',
+      //   component: () => import('@/views/customer/MyWishlist.vue'),
+      // },
+      // {
+      //   path: 'history',
+      //   name: 'Order History',
+      //   component: () => import('@/views/customer/OrderHistory.vue'),
+      // }
     ]
-  }
-
-  // {
-  //   path: '/dashboardcategories',
-  //   name: 'dashboardcategories',
-  //   component: () => import('@/views/admin/ProductList.vue'),
-  // },
-  // {
-  //   path: '/dashboardcustomer',
-  //   name: 'dashboardcustomer',
-  //   component: () => import('@/views/admin/DashboardCustomer.vue'),
-  // },
-  // {
-  //   path: '/dashboardordermanagement',
-  //   name: 'dashboardordermanagement',
-  //   component: () => import('@/views/admin/DashboardOrderManagement.vue'),
-  // },
+  },
 
   // ADMIN DASHBOARD (Layout Wrapper)
   {

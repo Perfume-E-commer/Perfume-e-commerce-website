@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-export const productService = {
+const productService = {
   getAllProducts() {
     return api.get('/products')
   },
@@ -65,3 +65,5 @@ export const productService = {
     return api.get(`/products/filter?${queryParams}`)
   },
 }
+
+export default productService

@@ -11,7 +11,7 @@
       </div>
       <div class="flex gap-3 w-full sm:w-auto">
         <button
-          @click="router.push('/mainDashboard/products')"
+          @click="router.push('/admin/products')"
           class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors shadow-sm w-full sm:w-auto"
         >
           Cancel
@@ -67,9 +67,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import productService from '@/services/productService'
-
-// Component Imports
+import productService from '../../services/productService'
 import ProductBasicInfo from '../../components/admin/product/ProductBasicInfo.vue'
 import ProductMedia from '../../components/admin/product/ProductMedia.vue'
 import ProductPricing from '../../components/admin/product/ProductPricing.vue'
@@ -78,29 +76,23 @@ import ProductAttributes from '../../components/admin/product/ProductAttributes.
 const route = useRoute()
 const router = useRouter()
 
-// State
 const isLoading = ref(false)
 const errorMessage = ref('')
 const isEditMode = ref(false)
 const productId = ref('')
 
-// Initialize Empty Data Structure (CRITICAL FIX FOR CRASH)
-// We initialize `productStory` and arrays so child components don't read undefined.
 const formData = ref({
-  // Basic
   name: '',
   brand: '',
   category: '',
   description: '',
   summary: '',
-  scent: '', // For "Fragrance Family" summary
+  scent: '', 
   occasion: '',
   
-  // Media
   imageUrl: '',
   images: [] as string[],
   
-  // Pricing
   price: 0,
   discountedPrice: 0,
   stock: 0,
@@ -110,12 +102,11 @@ const formData = ref({
   isFeatured: false,
   isActive: true,
   
-  // Complex Structures
   variants: [] as any[],
   
-  scentNotes: [] as any[], // Initialized empty array
+  scentNotes: [] as any[], 
   
-  productStory: {          // Initialized object (Fixes the reading 'intro' error)
+  productStory: {         
     intro: { title: '', content: '' },
     overture: { title: '', content: '' }
   },
@@ -123,7 +114,6 @@ const formData = ref({
   features: [] as any[]
 })
 
-// Validation
 const validateForm = () => {
   if (!formData.value.name) return 'Product Name is required.'
   if (formData.value.price <= 0) return 'Price must be greater than 0.'
@@ -131,7 +121,6 @@ const validateForm = () => {
   return null
 }
 
-// Submit Handler
 const handleSubmit = async () => {
   errorMessage.value = ''
   const error = validateForm()

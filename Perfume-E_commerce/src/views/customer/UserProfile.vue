@@ -1,250 +1,292 @@
 <template>
-  <div class="flex flex-col xl:flex-row gap-8">
-    
-    <div class="w-full xl:w-1/3 space-y-6">
-      
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex flex-col items-center text-center">
-        <h2 class="text-xl font-bold text-gray-900 self-start mb-6">Profile</h2>
+  <div class="w-full">
+    <div v-if="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#280559]"></div>
+    </div>
 
-        <div class="relative w-32 h-32 mb-4">
-          <img 
-            :src="form.imageUrl || 'https://i.pravatar.cc/150?img=12'" 
-            alt="Profile" 
-            class="w-full h-full rounded-full object-cover border-4 border-gray-50 shadow-inner"
+    <div v-else class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="p-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-6 w-full md:w-auto">
+          <div class="relative group cursor-pointer" @click="triggerFileInput">
+            <div
+              class="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 group-hover:border-[#280559] p-1 transition-colors"
+            >
+              <img
+                :src="
+                  previewImage ||
+                  getFullImageUrl(form.imageUrl) ||
+                  'https://via.placeholder.com/150'
+                "
+                alt="Profile"
+                class="w-full h-full rounded-full object-cover"
+              />
+            </div>
+            <div
+              class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+              </svg>
+            </div>
+            <input
+              type="file"
+              ref="fileInput"
+              class="hidden"
+              accept="image/*"
+              @change="handleFileChange"
+            />
+          </div>
+
+          <div>
+            <h1 class="text-2xl font-serif font-bold text-[#280559]">My Profile</h1>
+            <p class="text-gray-500 text-sm mt-1">Manage your account settings</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <button
+            @click="showPasswordModal = true"
+            class="px-6 py-3 rounded-xl text-sm font-bold text-[#280559] bg-purple-50 hover:bg-purple-100 transition-colors flex-grow md:flex-grow-0"
           >
-          <button class="absolute bottom-0 right-0 bg-[#280559] p-2 rounded-full text-white hover:bg-purple-900 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
+            Change Password
+          </button>
+
+          <button
+            @click="saveProfileInfo"
+            :disabled="isSaving"
+            class="bg-[#280559] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-[#1e0342] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 flex-grow md:flex-grow-0"
+          >
+            <span
+              v-if="isSaving"
+              class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+            ></span>
+            {{ isSaving ? 'Saving...' : 'Save Changes' }}
           </button>
         </div>
-        
-        <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ form.firstName }} {{ form.lastName }}</h3>
-        <p class="text-gray-500 mb-8">{{ form.email }}</p>
-
-        <button 
-          @click="showPasswordSection = !showPasswordSection"
-          class="w-full bg-[#2E0249] text-white font-medium py-3 rounded-xl hover:bg-purple-900 transition shadow-lg shadow-purple-100"
-        >
-          {{ showPasswordSection ? 'Hide Password Options' : 'Change Password' }}
-        </button>
       </div>
 
-      <transition 
-        enter-active-class="transition duration-300 ease-out" 
-        enter-from-class="transform -translate-y-4 opacity-0" 
-        enter-to-class="transform translate-y-0 opacity-100"
-        leave-active-class="transition duration-200 ease-in" 
-        leave-from-class="transform translate-y-0 opacity-100" 
-        leave-to-class="transform -translate-y-4 opacity-0"
-      >
-        <div v-if="showPasswordSection" class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-gray-900">Change Password</h2>
-             <a href="#" class="text-sm text-[#280559] hover:underline">Need help?</a>
-          </div>
+      <hr class="border-gray-100" />
 
-          <form @submit.prevent="handleChangePassword" class="space-y-5">
-             <div>
-               <label class="block text-gray-700 text-sm font-medium mb-1.5">Current Password</label>
-               <input type="password" placeholder="Enter current password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition">
-             </div>
+      <PersonalDetails v-model="form" />
 
-             <div>
-               <label class="block text-gray-700 text-sm font-medium mb-1.5">New Password</label>
-               <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition">
-               <div class="mt-2 flex items-center gap-1" v-if="newPassword">
-                 <div class="h-1 flex-1 rounded-full transition-all duration-300" :class="passwordStrength > 0 ? 'bg-red-400' : 'bg-gray-200'"></div>
-                 <div class="h-1 flex-1 rounded-full transition-all duration-300" :class="passwordStrength > 1 ? 'bg-yellow-400' : 'bg-gray-200'"></div>
-                 <div class="h-1 flex-1 rounded-full transition-all duration-300" :class="passwordStrength > 2 ? 'bg-green-500' : 'bg-gray-200'"></div>
-               </div>
-               <p class="text-xs text-gray-400 mt-1" v-if="newPassword">{{ passwordStrengthText }}</p>
-             </div>
+      <hr class="border-gray-100 mx-8" />
 
-             <div>
-               <label class="block text-gray-700 text-sm font-medium mb-1.5">Re-enter Password</label>
-               <input type="password" placeholder="Confirm new password" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition">
-             </div>
+      <AddressList
+        :addresses="addresses"
+        @add-address="handleAddAddress"
+        @delete-address="handleDeleteAddress"
+      />
 
-             <button type="submit" class="w-full bg-[#2E0249] text-white font-medium py-3 rounded-xl hover:bg-purple-900 transition shadow-md">
-               Save Changes
-             </button>
-          </form>
-        </div>
-      </transition>
+      <hr class="border-gray-100 mx-8" />
 
+      <PaymentList
+        :credit-cards="creditCards"
+        @add-card="handleAddCard"
+        @delete-card="handleDeleteCard"
+      />
     </div>
 
-    <div class="w-full xl:w-2/3">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 h-full">
-        
-        <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-          <h2 class="text-xl font-bold text-gray-900">Profile Update</h2>
-          <button class="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-            Edit Profile
-          </button>
-        </div>
+    <div
+      v-if="showPasswordModal"
+      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+    >
+      <div class="bg-white rounded-2xl w-full max-w-md p-8 shadow-2xl transform transition-all">
+        <h3 class="text-xl font-bold text-[#280559] mb-6">Change Password</h3>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+        <form @submit.prevent="savePasswordChange" class="space-y-4">
           <div>
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">First Name</label>
-            <input v-model="form.firstName" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition font-medium text-gray-900">
-          </div>
-          <div>
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">Last Name</label>
-            <input v-model="form.lastName" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition font-medium text-gray-900">
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">Email Address</label>
-            <div class="relative">
-              <input v-model="form.email" type="email" readonly class="w-full bg-gray-100 border border-gray-200 rounded-lg px-4 py-3 text-gray-500 cursor-not-allowed font-medium">
-              <span class="absolute right-4 top-3.5 text-xs text-green-600 font-medium bg-green-100 px-2 py-0.5 rounded border border-green-200">Verified</span>
-            </div>
-          </div>
-
-          <div>
-             <label class="block text-gray-700 text-sm font-medium mb-1.5">Phone Number</label>
-             <div class="relative flex">
-               <div class="absolute left-0 top-0 h-full px-3 flex items-center bg-gray-100 border border-r-0 border-gray-200 rounded-l-lg">
-                 <span class="text-lg">🇰🇭</span>
-               </div>
-               <input v-model="form.phoneNumber" type="text" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-14 pr-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition font-medium" placeholder="+855 ...">
-             </div>
-          </div>
-
-          <div>
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">Gender</label>
-            <div class="relative">
-              <select class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition appearance-none cursor-pointer font-medium text-gray-700">
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-              <div class="absolute right-4 top-4 pointer-events-none text-gray-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">Date of Birth</label>
-            <input v-model="form.dateOfBirth" type="date" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition text-gray-600 font-medium">
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">Address</label>
-            <input v-model="form.street" type="text" placeholder="Street address, apartment, suite" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition font-medium">
-          </div>
-
-          <div>
-            <label class="block text-gray-700 text-sm font-medium mb-1.5">City</label>
-            <input v-model="form.city" type="text" placeholder="Phnom Penh" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition font-medium">
+            <label class="block text-xs font-bold text-gray-700 mb-1">Current Password</label>
+            <input
+              v-model="passwordForm.currentPassword"
+              type="password"
+              required
+              class="w-full bg-gray-50 border-gray-200 rounded-lg px-4 py-3 text-sm focus:ring-[#280559]"
+            />
           </div>
           <div>
-             <label class="block text-gray-700 text-sm font-medium mb-1.5">Country</label>
-             <input v-model="form.country" type="text" placeholder="Cambodia" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#280559] outline-none transition font-medium">
+            <label class="block text-xs font-bold text-gray-700 mb-1">New Password</label>
+            <input
+              v-model="passwordForm.newPassword"
+              type="password"
+              required
+              minlength="8"
+              class="w-full bg-gray-50 border-gray-200 rounded-lg px-4 py-3 text-sm focus:ring-[#280559]"
+            />
           </div>
-          
-          <div class="md:col-span-2 pt-6 border-t border-gray-100">
-            <label class="block text-gray-700 text-sm font-medium mb-3">Saved Cards</label>
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                 <div class="w-10 h-6 bg-red-500 rounded text-white text-[10px] flex items-center justify-center font-bold tracking-wider">VISA</div>
-                 <span class="font-medium text-gray-900 text-sm">•••• •••• •••• 4444</span>
-              </div>
-              <button class="text-gray-400 hover:text-red-500 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-            </div>
-             <button class="mt-3 text-sm text-[#280559] font-medium hover:underline flex items-center gap-1">
-               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-               Add New Card
-             </button>
-          </div>
-
-          <div class="md:col-span-2 mt-4 text-right">
-             <button @click="saveChanges" class="bg-[#2E0249] text-white px-10 py-3 rounded-xl hover:bg-purple-900 transition font-medium shadow-lg shadow-purple-100 transform active:scale-95">
-               Save Changes
-             </button>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Confirm New Password</label>
+            <input
+              v-model="passwordForm.confirmPassword"
+              type="password"
+              required
+              class="w-full bg-gray-50 border-gray-200 rounded-lg px-4 py-3 text-sm focus:ring-[#280559]"
+            />
           </div>
 
-        </div>
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              @click="showPasswordModal = false"
+              class="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="flex-1 py-3 bg-[#280559] text-white font-bold rounded-xl hover:bg-[#1e0342] transition shadow-md"
+            >
+              Update Password
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import userService from '@/services/userService';
+import { ref, onMounted } from 'vue'
+import userService, { type Address, type CreditCard } from '@/services/userService'
+import PersonalDetails from '@/components/profile/PersonalDetails.vue'
+import AddressList from '@/components/profile/AddressList.vue'
+import PaymentList from '@/components/profile/PaymentList.vue'
 
-// State Management
-const showPasswordSection = ref(false);
-const newPassword = ref('');
-
+const isLoading = ref(true)
+const isSaving = ref(false)
+const showPasswordModal = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+const previewImage = ref<string | null>(null);
+const addresses = ref<Address[]>([])
+const creditCards = ref<CreditCard[]>([])
 const form = ref({
   firstName: '',
   lastName: '',
   email: '',
   phoneNumber: '',
   dateOfBirth: '',
-  street: '',
-  city: '',
-  country: '',
-  imageUrl: ''
-});
+  imageUrl: '',
+})
+
+const passwordForm = ref({ currentPassword: '', newPassword: '', confirmPassword: '' })
 
 // Fetch Data
-onMounted(async () => {
+const fetchProfile = async () => {
+  isLoading.value = true
   try {
-    const res = await userService.getProfile();
-    const user = res.data;
-    
-    form.value = {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phoneNumber: user.phoneNumber || '',
-      dateOfBirth: user.dateOfBirth || '',
-      imageUrl: user.imageUrl || '',
-      street: user.addresses?.[0]?.street || '',
-      city: user.addresses?.[0]?.city || '', // Assuming this exists
-      country: user.addresses?.[0]?.country || '' // Assuming this exists
-    };
+    const res = await userService.getProfile()
+    const user = res.data
+    form.value = { ...user }
+    addresses.value = user.addresses || []
+    creditCards.value = user.creditCards || []
   } catch (error) {
-    console.error("Failed to load profile", error);
+    console.error(error)
+  } finally {
+    isLoading.value = false
   }
-});
+}
 
-// Save Logic
-const saveChanges = async () => {
+const getFullImageUrl = (path: string) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return path; 
+};
+
+// Profile Actions
+const saveProfileInfo = async () => {
+  isSaving.value = true
   try {
-    // You might need to restructure address into array before sending
-    await userService.updateProfile(form.value);
-    alert('Profile updated successfully!');
-  } catch (error) {
-    alert('Failed to update profile.');
+    await userService.updateProfile(form.value)
+    alert('Profile saved!')
+  } catch (e) {
+    alert('Error saving profile.')
+  } finally {
+    isSaving.value = false
+  }
+}
+
+// Address Actions
+const handleAddAddress = async (newAddr: Address) => {
+  try {
+    const res = await userService.addAddress(newAddr)
+    addresses.value = res.data.addresses
+  } catch (e) {
+    alert('Error adding address')
+  }
+}
+
+const handleDeleteAddress = async (addr: Address) => { 
+  if (!addr.id) return; 
+  if(confirm("Are you sure you want to remove this address?")) {
+    try {
+      const res = await userService.deleteAddress(addr.id);
+      addresses.value = res.data.addresses; 
+    } catch (e) { alert("Failed to delete address"); }
   }
 };
 
-const handleChangePassword = () => {
-  alert("Password update logic here");
+// Payment Actions
+const handleAddCard = async (newCard: CreditCard) => {
+  try {
+    const res = await userService.addCreditCard(newCard)
+    creditCards.value = res.data.creditCards
+  } catch (e) {
+    alert('Error adding card')
+  }
+}
+
+const handleDeleteCard = async (card: CreditCard) => { 
+  if (!card.id) return;
+  if(confirm("Are you sure you want to remove this card?")) {
+    try {
+      const res = await userService.deleteCreditCard(card.id);
+      creditCards.value = res.data.creditCards;
+    } catch (e) { alert("Failed to delete card"); }
+  }
 };
 
-const passwordStrength = computed(() => {
-  let score = 0;
-  if (newPassword.value.length > 5) score++;
-  if (newPassword.value.length > 8) score++;
-  if (/[A-Z]/.test(newPassword.value) && /[0-9]/.test(newPassword.value)) score++;
-  return score;
-});
+// Avatar Upload Logic
+const triggerFileInput = () => {
+  fileInput.value?.click()
+}
 
-const passwordStrengthText = computed(() => {
-  if (passwordStrength.value === 1) return 'Weak';
-  if (passwordStrength.value === 2) return 'Medium';
-  if (passwordStrength.value === 3) return 'Strong';
-  return '';
-});
+const handleFileChange = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+
+  previewImage.value = URL.createObjectURL(file);
+
+  try {
+    const res = await userService.uploadAvatar(file);
+    form.value.imageUrl = res.data; 
+  } catch (error) {
+    alert("Failed to upload image");
+  }
+};
+
+// Password Change Logic
+const savePasswordChange = async () => {
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    alert('New passwords do not match!')
+    return
+  }
+
+  try {
+    await userService.changePassword({
+      currentPassword: passwordForm.value.currentPassword,
+      newPassword: passwordForm.value.newPassword,
+    })
+    alert('Password updated successfully!')
+    showPasswordModal.value = false
+    passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
+  } catch (error) {
+    alert('Failed to update password. Check your current password.')
+  }
+}
+
+onMounted(fetchProfile)
 </script>

@@ -39,6 +39,26 @@ class UserService {
   addCreditCard(card: CreditCard) {
     return api.post('/users/card', card);
   }
+
+  uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/users/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+
+  changePassword(data: any) {
+    return api.post('/users/change-password', data);
+  }
+
+  deleteAddress(addressId: string) {
+    return api.delete(`/users/address/${addressId}`);
+  }
+
+  deleteCreditCard(cardId: string) {
+    return api.delete(`/users/card/${cardId}`);
+  }
 }
 
 export default new UserService();

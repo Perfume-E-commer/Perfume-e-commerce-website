@@ -2,22 +2,22 @@
   <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 mb-6 transition-all hover:shadow-md">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
       
-      <div class="lg:col-span-4 flex gap-6">
-        <div class="w-24 h-32 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
-          <img 
-            :src="getImageUrl(order.items[0]?.imageUrl)" 
-            alt="Product" 
-            class="w-full h-full object-cover"
-          >
-        </div>
-        <div class="space-y-1">
-          <h3 class="text-lg font-serif font-bold text-gray-900">{{ order.items[0]?.name }}</h3>
-          <p class="text-sm text-gray-500">{{ order.items[0]?.brand }}</p>
-          <p class="text-xs text-gray-400 mt-2">{{ order.items[0]?.variant }}</p>
-          <p v-if="order.items.length > 1" class="text-xs text-indigo-600 font-medium mt-1">
-            + {{ order.items.length - 1 }} other items
-          </p>
-        </div>
+      <div class="lg:col-span-4">
+        <OrderProduct 
+          v-if="order.items && order.items.length > 0" 
+          :item="order.items[0]" 
+        />
+        
+        <p v-if="order.items.length > 1" class="text-xs text-indigo-600 font-medium mt-3 ml-2">
+          + {{ order.items.length - 1 }} other items
+        </p>
+
+        <OrderPayment :method="order.paymentMethod" />
+
+        <OrderAddress 
+          v-if="order.shippingAddress" 
+          :address="order.shippingAddress" 
+        />
       </div>
 
       <div class="lg:col-span-4 flex flex-col justify-between">
@@ -94,18 +94,10 @@
           </div>
         </div>
 
-        <div class="mt-6 mb-6">
-          <p class="text-xs font-semibold text-gray-900 mb-2">Payment Information</p>
-          <div class="flex items-center gap-2 text-sm text-gray-600 bg-white p-2 rounded-lg border border-gray-200">
-            <svg class="w-6 h-6 text-indigo-900" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4z"/></svg>
-            <span>{{ order.paymentMethod || 'Credit Card' }}</span>
-          </div>
-        </div>
-
         <button 
           v-if="order.status === 'PENDING' || order.status === 'PLACED'"
           @click="$emit('cancel-order', order.id)"
-          class="w-full bg-[#280559] hover:bg-[#1e0342] text-white py-3 rounded-full text-sm font-medium transition-colors shadow-lg shadow-indigo-100"
+          class="w-full mt-6 bg-[#280559] hover:bg-[#1e0342] text-white py-3 rounded-full text-sm font-medium transition-colors shadow-lg shadow-indigo-100"
         >
           Proceed to Cancel
         </button>
@@ -118,12 +110,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { getImageUrl } from '../../../utils/imageHelper';
+import OrderProduct from './OrderProduct.vue';
+import OrderPayment from './OrderPayment.vue';
+import OrderAddress from './OrderAddress.vue';
+
+// Updated interfaces to match child component expectations
+interface Product {
+  name: string;
+  brand?: string;
+  variance?: string;
+  imageUrl: string;
+  category?: string;
+  occasion?: string;
+}
 
 interface OrderItem {
-  name: string;
-  brand: string;
-  variant: string;
-  imageUrl: string;
+  price: number;
+  quantity: number;
+  product: Product;
+}
+
+interface Address {
+  fullName: string;
+  houseNumber: string;
+  street: string;
+  village: string;
+  community: string;
+  district: string;
+  city: string;
+  phoneNumber: string;
 }
 
 interface Order {
@@ -140,6 +155,7 @@ interface Order {
   shippedDate?: string;
   estimatedArrivalDate?: string;
   items: OrderItem[];
+  shippingAddress?: Address; // Added address field
 }
 
 const props = defineProps<{

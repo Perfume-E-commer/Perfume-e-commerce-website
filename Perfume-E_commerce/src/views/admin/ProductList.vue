@@ -11,7 +11,7 @@
           class="w-full sm:w-auto"
         >
           <RouterLink
-            to="/maindashboard/product/add"
+            to="/admin/products/add"
             class="flex items-center justify-center gap-2"
           >
             <svg 
@@ -185,12 +185,12 @@
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button
-                  @click="editProduct(product.id)"
+                <router-link
+                  :to="`/admin/products/edit/${product.id}`"
                   class="text-indigo-600 hover:text-indigo-900 mr-4"
                 >
                   Edit
-                </button>
+                </router-link>
                 <button
                   @click="confirmDelete(product.id)"
                   class="text-red-600 hover:text-red-900"

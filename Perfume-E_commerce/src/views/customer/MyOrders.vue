@@ -1,5 +1,6 @@
 <template>
-  <div> <div v-if="loading" class="flex justify-center py-20">
+  <div> 
+    <div v-if="loading" class="flex justify-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#280559]"></div>
     </div>
 
@@ -17,14 +18,27 @@
     </div>
 
     <div v-else>
-      <h2 class="text-xl font-bold text-gray-900 mb-6">Active Orders ({{ orders.length }})</h2>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">Active Orders ({{ orders.length }})</h2>
+        <button 
+          @click="fetchOrders" 
+          class="text-sm text-indigo-900 hover:text-indigo-700 font-medium flex items-center gap-1"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh
+        </button>
+      </div>
       
-      <OrderCard 
-        v-for="order in orders" 
-        :key="order.id" 
-        :order="order" 
-        @cancel-order="handleCancelOrder"
-      />
+      <div class="space-y-6">
+        <OrderCard 
+          v-for="order in orders" 
+          :key="order.id" 
+          :order="order" 
+          @cancel-order="handleCancelOrder"
+        />
+      </div>
     </div>
 
   </div>
@@ -42,6 +56,8 @@ const fetchOrders = async () => {
   loading.value = true;
   try {
     orders.value = await orderService.getMyOrders();
+    // Sort by most recent first
+    orders.value.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
   } catch (error) {
     console.error("Failed to fetch orders:", error);
   } finally {
@@ -50,8 +66,16 @@ const fetchOrders = async () => {
 };
 
 const handleCancelOrder = async (orderId: string) => {
-  if (confirm("Are you sure you want to cancel this order?")) {
-    alert("Cancel request sent for order: " + orderId);
+  if (!confirm("Are you sure you want to cancel this order?")) return;
+
+  try {
+    await orderService.cancelOrder(orderId);
+    // Optimistic update or refetch
+    alert("Order cancelled successfully");
+    await fetchOrders();
+  } catch (error) {
+    console.error("Failed to cancel order:", error);
+    alert("Failed to cancel order. Please try again.");
   }
 };
 

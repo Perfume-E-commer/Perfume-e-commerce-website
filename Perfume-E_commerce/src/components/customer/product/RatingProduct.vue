@@ -2,7 +2,7 @@
 import { Plus } from 'lucide-vue-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import PopupFormReview from './PopupFormReview.vue'
-import { productService } from '@/Services/productService'
+import productService from '@/services/productService'
 import { useAuthStore } from '@/stores/authStore'
 
 interface Rating {

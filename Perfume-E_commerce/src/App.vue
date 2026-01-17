@@ -3,6 +3,8 @@ import { RouterView, useRouter } from 'vue-router'
 import Loading from './components/layout/Loading.vue'
 import { ref } from 'vue'
 import Navbar from '@/components/layout/Navbar.vue'
+import Scrolldown from '@/components/layout/Scrolldown.vue'
+import ScrollProgress from '@/components/layout/ScrollProgress.vue'
 
 const isLoading = ref(true)
 const router = useRouter()
@@ -18,7 +20,6 @@ router.afterEach(() => {
 
 <template>
   <div class="min-h-screen bg-gray-50 text-gray-900 font-sans">
-    
     <!-- <Navbar /> -->
 
     <main>
@@ -28,9 +29,10 @@ router.afterEach(() => {
         <Transition name="fade" mode="out-in">
           <component :is="Component" />
         </Transition>
+        <ScrollProgress />
+        <Scrolldown />
       </router-view>
     </main>
-    
   </div>
 </template>
 

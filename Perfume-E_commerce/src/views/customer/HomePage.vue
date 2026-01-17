@@ -15,6 +15,7 @@ import { onMounted, watch, ref, computed } from 'vue'
 import Loading from '@/components/layout/Loading.vue'
 import EditionComponent from '@/components/customer/landingpage/EditionComponent.vue'
 import { storeToRefs } from 'pinia'
+import ScrollProgress from '@/components/layout/ScrollProgress.vue'
 
 const productStore = useProductStore()
 
@@ -158,7 +159,6 @@ const limitedBanners = [
     <footer class="bg-gray-50 z-50">
       <Footer />
     </footer>
-    <Scrolldown />
     <Loading v-if="loading" />
   </div>
 </template>

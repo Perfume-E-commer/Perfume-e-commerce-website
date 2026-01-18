@@ -227,17 +227,18 @@
                   />
                 </div>
 
+                <!-- Min Stock -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
-                    >Min Stock</label
+                    >Low Stock Alert</label
                   >
                   <input
                     v-model.number="variant.minStock"
                     type="number"
                     min="0"
-                    placeholder="5"
-                    class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
+                    placeholder="Default: 5"
+                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm outline-none"
                   />
                 </div>
               </div>

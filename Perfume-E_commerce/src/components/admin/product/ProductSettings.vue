@@ -8,14 +8,15 @@
           <p class="font-medium text-gray-900 text-sm">Active Status</p>
           <p class="text-xs text-gray-500 mt-0.5">Show in shop</p>
         </div>
+        
         <button 
           type="button"
-          @click="updateField('isActive', !modelValue.isActive)"
-          :class="modelValue.isActive ? 'bg-green-500' : 'bg-gray-200'"
+          @click="toggleStatus"
+          :class="isOn ? 'bg-green-500' : 'bg-gray-200'"
           class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
         >
           <span 
-            :class="modelValue.isActive ? 'translate-x-5' : 'translate-x-0'"
+            :class="isOn ? 'translate-x-5' : 'translate-x-0'"
             class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
           ></span>
         </button>
@@ -26,7 +27,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Product } from '@/types/adminProduct'
+import { computed } from 'vue'
+import type { Product } from '../../../types/adminProduct'
 
 const props = defineProps<{
   modelValue: Product
@@ -34,7 +36,19 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue'])
 
-const updateField = (field: keyof Product, value: any) => {
-  emit('update:modelValue', { ...props.modelValue, [field]: value })
+const isOn = computed(() => {
+  const p = props.modelValue as any
+  return p.isActive ?? p.active ?? false
+})
+
+const toggleStatus = () => {
+  const newValue = !isOn.value
+  
+  const updatedProduct = {
+    ...props.modelValue,
+    isActive: newValue,
+  };
+  (updatedProduct as any).active = newValue
+  emit('update:modelValue', updatedProduct)
 }
 </script>

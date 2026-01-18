@@ -240,7 +240,7 @@
                 Low Stock
               </h3>
             </div>
-            <div class="p-4 space-y-3">
+            <div class="p-4 space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
               <div v-if="lowStockItems.length === 0" class="text-center text-gray-400 text-xs py-4">
                 All items well stocked.
               </div>
@@ -290,29 +290,51 @@
           </div>
 
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-indigo-50">
-              <h3 class="font-bold text-indigo-800">Active Promotions</h3>
+            <div
+              class="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center"
+            >
+              <h3 class="font-bold text-indigo-800">Active Discounts</h3>
             </div>
-            <div class="p-4 space-y-3">
+            <div class="p-4 space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
               <div
-                v-if="dashboardData.activePromotions.length === 0"
+                v-if="activePromotions.length === 0"
                 class="text-center text-gray-400 text-xs py-4"
               >
-                No active campaigns.
+                No products currently on discount.
               </div>
+
               <div
-                v-for="promo in dashboardData.activePromotions"
-                :key="promo.id"
-                class="flex justify-between items-center border-b border-gray-50 pb-2 last:border-0 last:pb-0"
+                v-for="product in activePromotions"
+                :key="product.id"
+                @click="router.push(`/admin/products/edit/${product.id}`)"
+                class="flex items-center gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-gray-50 transition-colors p-2 -mx-2 rounded-lg group"
               >
-                <div>
-                  <p class="font-mono font-bold text-indigo-700 text-sm">{{ promo.code }}</p>
-                  <p class="text-[10px] text-gray-400">
-                    Expires: {{ formatDate(promo.validUntil) }}
-                  </p>
+                <div
+                  class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200 group-hover:border-indigo-200 transition-colors"
+                >
+                  <img
+                    :src="product.imageUrl"
+                    :alt="product.name"
+                    class="w-full h-full object-cover"
+                  />
                 </div>
-                <span class="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">
-                  {{ promo.discountPercentage }}% OFF
+
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{{ product.name }}</p>
+                  <div class="flex items-center gap-2 text-xs">
+                    <span class="font-bold text-indigo-700">{{
+                      formatCurrency(product.discountedPrice)
+                    }}</span>
+                    <span class="text-gray-400 line-through">{{
+                      formatCurrency(product.price)
+                    }}</span>
+                  </div>
+                </div>
+
+                <span
+                  class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded whitespace-nowrap"
+                >
+                  {{ calculateDiscount(product.price, product.discountedPrice) }}% OFF
                 </span>
               </div>
             </div>
@@ -327,6 +349,9 @@
 import { ref, onMounted, computed } from 'vue'
 import adminService, { type AdminDashboardResponse } from '../../services/adminService'
 import ApexCharts from '../components/ApexCharts.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const isLoading = ref(true)
 const dashboardData = ref<AdminDashboardResponse>({
@@ -341,6 +366,18 @@ const dashboardData = ref<AdminDashboardResponse>({
 })
 
 const products = ref<any[]>([])
+
+const activePromotions = computed(() => {
+  if (!products.value) return []
+  return products.value.filter(
+    (p) => p.discountedPrice && p.discountedPrice > 0 && p.discountedPrice < p.price,
+  )
+})
+
+const calculateDiscount = (price: number, discounted: number) => {
+  if (!price || !discounted) return 0
+  return Math.round(((price - discounted) / price) * 100)
+}
 
 const currentDate = computed(() => {
   return new Date().toLocaleDateString('en-US', {
@@ -439,5 +476,18 @@ onMounted(() => {
 }
 .animate-fade-in {
   animation: fade-in 0.4s ease-out;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

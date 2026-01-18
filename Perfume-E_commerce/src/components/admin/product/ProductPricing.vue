@@ -19,8 +19,8 @@
       </div>
     </div>
 
-    <!-- Base Pricing Section -->
-    <div class="mb-10">
+    <!-- Base Product Information (Variant #0) -->
+    <div v-if="baseVariant" class="mb-10">
       <h3 class="text-sm font-semibold text-gray-700 mb-5">Base Product Information</h3>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -31,8 +31,8 @@
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
             <input
-              :value="modelValue.price"
-              @input="updatePrice('price', $event)"
+              v-model.number="baseVariant.price"
+              @input="syncPriceToRoot"
               type="number"
               min="0.01"
               step="0.01"
@@ -56,7 +56,12 @@
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
             <input
               :value="modelValue.discountedPrice"
-              @input="updatePrice('discountedPrice', $event)"
+              @input="
+                updateField(
+                  'discountedPrice',
+                  parseFloat(($event.target as HTMLInputElement).value),
+                )
+              "
               type="number"
               min="0"
               step="0.01"
@@ -70,83 +75,64 @@
           <label class="block text-sm font-semibold text-gray-700 mb-2">Base Size</label>
           <div class="relative">
             <input
-              :value="modelValue.baseSize"
-              @input="(e) => updateField('baseSize', (e.target as HTMLInputElement).value)"
+              v-model="baseVariant.size"
               type="text"
               placeholder="e.g. 100 ml"
-            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-colors"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Base Stock <span class="text-xs text-gray-500">(Main Variant)</span></label
-          >
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Base Stock</label>
           <input
-            v-model.number="baseStock"
+            v-model.number="baseVariant.stock"
+            @input="recalculateTotalStock"
             type="number"
             min="0"
             placeholder="0"
-            @input="syncTotalStock"
             class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-colors"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Base Min Stock</label>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Low Stock Alert</label>
           <input
-            :value="modelValue.minStockLevel"
-            @input="
-              updateField('minStockLevel', parseInt(($event.target as HTMLInputElement).value) || 5)
-            "
+            v-model.number="baseVariant.minStock"
             type="number"
             min="0"
             placeholder="5"
             class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-colors"
           />
         </div>
-      </div>
 
-      <div
-        class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200"
-      >
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2"
-            >Total Stock <span class="text-xs text-gray-500">(Calculated)</span></label
+            >Total Stock <span class="text-xs text-gray-500">(Auto-calculated)</span></label
           >
-          <div class="flex gap-3">
+          <div class="relative">
             <input
+              :value="totalStock"
+              readonly
               type="number"
-              :value="modelValue.stock"
-              @input="
-                updateField('stock', parseInt(($event.target as HTMLInputElement).value) || 0)
-              "
-              min="0"
-              placeholder="0"
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white font-bold text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-900 font-bold focus:outline-none cursor-not-allowed"
             />
-            <button
-              type="button"
-              @click="syncTotalStock"
-              class="px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 text-sm font-bold transition-colors whitespace-nowrap border border-indigo-200"
-              title="Sum Base Stock + All Variants"
+            <div
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 font-medium"
             >
-              Auto Sync
-            </button>
+              {{ totalStock }} units
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Variants Section -->
+    <!-- Additional Variants Section -->
     <div class="border-t border-gray-100 pt-8">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h3 class="text-sm font-semibold text-gray-700 mb-1">Product Variants (Sizes)</h3>
-          <p class="text-sm text-gray-500">
-            Define different bottle sizes with individual pricing and images
-          </p>
+          <h3 class="text-sm font-semibold text-gray-700 mb-1">Additional Variants</h3>
+          <p class="text-sm text-gray-500">Define different bottle sizes with individual pricing</p>
         </div>
         <button
           @click="addVariant"
@@ -161,13 +147,13 @@
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Add Size
+          Add Variant
         </button>
       </div>
 
       <!-- Empty State -->
       <div
-        v-if="!modelValue.variants || modelValue.variants.length === 0"
+        v-if="variants.length <= 1"
         class="text-center py-10 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50"
       >
         <svg
@@ -184,14 +170,14 @@
           />
         </svg>
         <p class="text-sm text-gray-500">
-          No specific sizes added. Product is sold as a single unit.
+          No additional variants. Product only available in base size.
         </p>
       </div>
 
       <!-- Variants List -->
-      <div v-else class="space-y-4">
+      <div v-if="variants.length > 1" class="space-y-4">
         <div
-          v-for="(variant, index) in modelValue.variants"
+          v-for="(variant, index) in additionalVariants"
           :key="index"
           class="p-4 border border-gray-200 rounded-xl bg-gray-50/50 hover:border-green-200 transition-colors relative"
         >
@@ -234,10 +220,13 @@
                     >Price ($)</label
                   >
                   <input
-                    v-model.number="variant.price"
+                    :value="variant.price"
+                    @input="
+                      variant.price = parseFloat(($event.target as HTMLInputElement).value) || 0
+                    "
                     type="number"
                     step="0.01"
-                    placeholder="0.00"
+                    placeholder="Enter price"
                     class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
                   />
                 </div>
@@ -249,15 +238,14 @@
                   >
                   <input
                     v-model.number="variant.stock"
+                    @input="recalculateTotalStock"
                     type="number"
                     min="0"
                     placeholder="0"
-                    @input="syncTotalStock"
                     class="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-1 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
                   />
                 </div>
 
-                <!-- Min Stock -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
@@ -274,12 +262,13 @@
               </div>
             </div>
 
+            <!-- Right Column: Variant-specific Image -->
             <div class="lg:col-span-4">
               <div class="flex flex-col gap-4">
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
-                    >Image Preview</label
+                    >Variant Image (Optional)</label
                   >
                   <div
                     class="h-40 w-full bg-white rounded-xl border-2 border-dashed border-gray-300 overflow-hidden flex items-center justify-center relative group"
@@ -304,7 +293,7 @@
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <p>No image set</p>
+                      <p>Uses product main image</p>
                     </div>
 
                     <button
@@ -326,17 +315,13 @@
                 </div>
 
                 <div class="space-y-2">
-                  <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                    >Variant Image</label
-                  >
-
                   <div class="flex gap-2 mb-1">
                     <button
                       type="button"
-                      @click="toggleVariantInputType(index, 'url')"
+                      @click="toggleVariantInputType(index + 1, 'url')"
                       :class="[
                         'text-[10px] font-bold uppercase px-2 py-1 rounded',
-                        variantInputTypes[index] === 'url'
+                        variantInputTypes[index + 1] === 'url'
                           ? 'bg-green-100 text-green-700'
                           : 'text-gray-400 hover:text-gray-600',
                       ]"
@@ -345,10 +330,10 @@
                     </button>
                     <button
                       type="button"
-                      @click="toggleVariantInputType(index, 'upload')"
+                      @click="toggleVariantInputType(index + 1, 'upload')"
                       :class="[
                         'text-[10px] font-bold uppercase px-2 py-1 rounded',
-                        variantInputTypes[index] === 'upload'
+                        variantInputTypes[index + 1] === 'upload'
                           ? 'bg-green-100 text-green-700'
                           : 'text-gray-400 hover:text-gray-600',
                       ]"
@@ -358,7 +343,7 @@
                   </div>
 
                   <input
-                    v-if="variantInputTypes[index] === 'url'"
+                    v-if="variantInputTypes[index + 1] === 'url'"
                     v-model="variant.imageUrl"
                     placeholder="https://..."
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-1 focus:ring-green-500 outline-none hover:border-gray-400 transition-colors"
@@ -368,11 +353,11 @@
                     <input
                       type="file"
                       accept="image/*"
-                      @change="(e) => handleVariantUpload(e, index)"
+                      @change="(e) => handleVariantUpload(e, index + 1)"
                       class="block w-full text-sm text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer border border-gray-300 rounded-lg focus:ring-1 focus:ring-green-500 outline-none"
                     />
                     <span
-                      v-if="uploadingIndex === index"
+                      v-if="uploadingIndex === index + 1"
                       class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-green-600 font-medium animate-pulse"
                       >Uploading...</span
                     >
@@ -381,24 +366,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div v-if="hasVariants" class="mt-8 pt-6 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-700">Variant Summary</p>
-            <p class="text-xs text-gray-500">
-              {{ modelValue.variants?.length }} sizes • Total stock: {{ totalVariantStock }}
-            </p>
-          </div>
-          <button
-            @click="syncTotalStock"
-            type="button"
-            class="text-xs text-indigo-600 font-medium hover:text-indigo-800 flex items-center gap-1"
-          >
-            Sync Total Stock
-          </button>
         </div>
       </div>
     </div>
@@ -424,11 +391,31 @@ const emit = defineEmits(['update:modelValue'])
 
 const variantInputTypes = reactive<Record<number, 'url' | 'upload'>>({})
 const uploadingIndex = ref<number | null>(null)
-const baseStock = ref(0)
 
-const hasVariants = computed(
-  () => props.modelValue.variants && props.modelValue.variants.length > 0,
-)
+const updateField = (field: keyof Product, value: any) => {
+  console.log('Updating:', field, 'with:', value)
+  emit('update:modelValue', { ...props.modelValue, [field]: value })
+}
+
+const variants = computed(() => {
+  console.log('variants computed:', props.modelValue.variants)
+  return props.modelValue.variants || []
+})
+
+const baseVariant = computed(() => {
+  if (variants.value.length > 0) return variants.value[0]
+  return null
+})
+
+const additionalVariants = computed(() => {
+  const result = variants.value.length > 1 ? variants.value.slice(1) : []
+  console.log('additionalVariants computed:', result)
+  return result
+})
+
+const totalStock = computed(() => {
+  return variants.value.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+})
 
 const discountPercentage = computed(() => {
   const price = props.modelValue.price
@@ -439,65 +426,57 @@ const discountPercentage = computed(() => {
   return 0
 })
 
-const totalVariantStock = computed(() => {
-  if (!props.modelValue.variants) return 0
-  return props.modelValue.variants.reduce((sum, v) => sum + (v.stock || 0), 0)
+onMounted(() => {
+  if (!props.modelValue.variants || props.modelValue.variants.length === 0) {
+    const initVariants: ProductVariant[] = [
+      {
+        size: '',
+        price: props.modelValue.price || 0,
+        stock: props.modelValue.stock || 0,
+        minStock: props.modelValue.minStockLevel || 5,
+        imageUrl: '',
+      },
+    ]
+    updateField('variants', initVariants)
+  }
 })
 
-const variantsSum = computed(() => {
-  return (props.modelValue.variants || []).reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
-})
-
-const updateField = (field: keyof Product, value: any) => {
-  emit('update:modelValue', { ...props.modelValue, [field]: value })
+const syncPriceToRoot = () => {
+  if (baseVariant.value) {
+    updateField('price', baseVariant.value.price)
+  }
 }
 
-const updatePrice = (field: 'price' | 'discountedPrice', event: Event) => {
-  const val = parseFloat((event.target as HTMLInputElement).value)
-  updateField(field, isNaN(val) ? 0 : val)
+// Recalculate total stock whenever any variant stock changes
+const recalculateTotalStock = () => {
+  updateField('stock', totalStock.value)
 }
 
 const addVariant = () => {
-  const currentVariants = props.modelValue.variants ? [...props.modelValue.variants] : []
-
-  if (currentVariants.length === 0) {
-    const baseVariant: ProductVariant = {
-      size: props.modelValue.baseSize || 'Standard',
-      price: props.modelValue.price || 0,
-      stock: props.modelValue.stock || 0,
-      minStock: props.modelValue.minStockLevel || 5,
-      imageUrl: props.modelValue.imageUrl || '',
-    }
-    currentVariants.push(baseVariant)
-    variantInputTypes[0] = 'url'
-  }
-
   const newVariant: ProductVariant = {
     size: '',
-    price: props.modelValue.price || 0,
+    price: 0,
     stock: 0,
     minStock: 5,
     imageUrl: '',
   }
 
-  currentVariants.push(newVariant)
-  updateField('variants', currentVariants)
+  const updatedList = [...(props.modelValue.variants || []), newVariant]
+  console.log('Updated variants:', updatedList)
+  updateField('variants', updatedList)
+  variantInputTypes[updatedList.length - 1] = 'url'
 
-  variantInputTypes[currentVariants.length - 1] = 'url'
-
-  syncTotalStock()
+  setTimeout(() => {
+    recalculateTotalStock()
+  }, 0)
 }
 
-const removeVariant = (index: number) => {
-  const currentVariants = [...(props.modelValue.variants || [])]
-  currentVariants.splice(index, 1)
-  updateField('variants', currentVariants)
-  syncTotalStock()
-}
-
-const syncTotalStock = () => {
-  const total = (baseStock.value || 0) + variantsSum.value
-  updateField('stock', total)
+const removeVariant = (offsetIndex: number) => {
+  const realIndex = offsetIndex + 1
+  const updatedList = [...variants.value]
+  updatedList.splice(realIndex, 1)
+  updateField('variants', updatedList)
+  recalculateTotalStock()
 }
 
 const toggleVariantInputType = (index: number, type: 'url' | 'upload') => {
@@ -525,7 +504,8 @@ const handleVariantUpload = async (event: Event, index: number) => {
     }
     reader.readAsDataURL(file)
   } finally {
-    uploadingIndex.value = null(event.target as HTMLInputElement).value = ''
+    uploadingIndex.value = null
+    ;(event.target as HTMLInputElement).value = ''
   }
 }
 
@@ -534,10 +514,4 @@ const handleImageError = (event: Event, index: number) => {
   img.src =
     'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGRkZGRkUiLz48cGF0aCBkPSJNNTAgNTAgTDE1MCA1MCAxNTAgMTUwIDUwIDE1MFoiIHN0cm9rZT0iI0U1RTVFNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTcwIDcwIEwxMzAgNzAgMTMwIDEzMCA3MCAxMzBaIiBzdHJva2U9IiNFNUU1RTUiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iMjAiIHN0cm9rZT0iI0U1RTVFNSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+'
 }
-
-onMounted(() => {
-  const total = props.modelValue.stock || 0
-  const vSum = variantsSum.value
-  baseStock.value = Math.max(0, total - vSum)
-})
 </script>

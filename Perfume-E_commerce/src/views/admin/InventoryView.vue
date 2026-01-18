@@ -269,15 +269,17 @@ const confirmRestock = async () => {
 }
 
 const handleToggleStatus = async (product: any) => {
+  const originalStatus = product.active
+  const newStatus = !originalStatus
+
   try {
-    const newStatus = !product.active
     const p = products.value.find(item => item.id === product.id)
     if (p) p.active = newStatus
-    
-    await productService.updateProduct(product.id, { ...product, active: newStatus })
-  } catch (e) {
-    alert("Failed to update status")
-    fetchProducts()
+    await adminService.updateProductStatus(product.id, newStatus)
+  } catch (error) {
+    const p = products.value.find(item => item.id === product.id)
+    if (p) p.active = originalStatus
+    alert("Failed to update status. Please try again.")
   }
 }
 

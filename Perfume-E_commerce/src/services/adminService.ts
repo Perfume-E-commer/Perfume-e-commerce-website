@@ -115,6 +115,10 @@ export const adminService = {
     });
   },
 
+  updateProductStatus(id: string, isActive: boolean) {
+    return api.patch(`/products/${id}`, { isActive });
+  },
+
   getProductHistory(productId: string) {
     return api.get(`/admin/products/${productId}/history`);
   },

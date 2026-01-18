@@ -67,20 +67,19 @@ const quantity = ref<number>(1)
 const selectedVariant = ref<ProductVariant | null>(null)
 const currentImage = ref<string>('')
 
-// --- Methods ---
 const initialize = () => {
   if (parsedVariants.value && parsedVariants.value.length > 0) {
     selectedVariant.value = parsedVariants.value[0] as ProductVariant
-    currentImage.value = selectedVariant.value!.imageUrl
+    currentImage.value = selectedVariant.value!.imageUrl || props.image
   } else {
     selectedVariant.value = {
       id: 'default',
       size: 'Standard',
-      imageUrl: selectedVariant.value ? selectedVariant.value.imageUrl : props.image,
+      imageUrl: props.image,
       price: props.price || 0,
       stock: props.stock || 0,
     }
-    currentImage.value = selectedVariant.value ? selectedVariant.value.imageUrl : props.image
+    currentImage.value = props.image
   }
 }
 
@@ -138,12 +137,12 @@ watch(
           <img
             v-for="(variant, index) in parsedVariants"
             :key="index"
-            :src="variant.imageUrl"
+            :src="variant.imageUrl || image"
             :alt="variant.size"
-            @click="handleImagePreview(variant.imageUrl)"
+            @click="handleImagePreview(variant.imageUrl || image)"
             class="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-md border cursor-pointer shrink-0 transition-all duration-300"
             :class="
-              currentImage === variant.imageUrl
+              currentImage === (variant.imageUrl || image)
                 ? 'border-[#280559] opacity-100 ring-1 ring-[#280559]'
                 : 'border-transparent opacity-60 hover:opacity-100'
             "
@@ -196,7 +195,7 @@ watch(
                 :class="selectedVariant?.id === variant.id ? 'bg-gray-100' : ''"
               >
                 <img
-                  :src="variant.imageUrl"
+                  :src="variant.imageUrl || image"
                   :alt="variant.size"
                   class="w-12 h-12 md:w-16 md:h-16 object-contain transition-transform duration-300 group-hover:scale-105"
                 />

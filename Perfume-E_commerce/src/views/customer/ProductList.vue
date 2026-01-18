@@ -13,11 +13,11 @@ import { storeToRefs } from 'pinia'
 
 const productStore = useProductStore()
 
-const { products, loading } = storeToRefs(productStore)
+const { products, loading, pagination } = storeToRefs(productStore)
 const { fetchAllProducts, fetchProducts, updateFilters, updateSort } = productStore
 
 onMounted(() => {
-  fetchProducts(0, 12)
+  fetchProducts(0, 4)
   console.log('perfume list: ', productStore.products)
 })
 
@@ -28,13 +28,13 @@ watch(products, () => {
 const handleFilterChange = (filters: Record<string, any>) => {
   console.log('Filters applied:', filters)
   updateFilters(filters)
-  fetchProducts(0, 12) 
+  fetchProducts(0, 4) 
 }
 
 const handleSortChange = (sortOption: string) => {
   console.log('Sort applied:', sortOption)
   updateSort(sortOption)
-  fetchProducts(0, 12)
+  fetchProducts(0, 4)
 }
 
 const SpecialOffer = [

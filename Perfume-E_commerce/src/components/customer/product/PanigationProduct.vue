@@ -4,23 +4,21 @@ import { storeToRefs } from 'pinia'
 import { ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { useProductStore } from '@/stores/productStore'
 
-// 1. Connect to Store
 const productStore = useProductStore()
 const { pagination } = storeToRefs(productStore)
 const { fetchProducts } = productStore
 
-// 2. Handle Page Changes
 const changePage = (newPage: number) => {
   if (newPage >= 0 && newPage < pagination.value.totalPages) {
     fetchProducts(newPage, pagination.value.size)
-    // Optional: Scroll to top of product list
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
+
 const visiblePages = computed(() => {
   const total = pagination.value.totalPages
   const current = pagination.value.page + 1
-  const delta = 2 // How many pages to show around current page
+  const delta = 2 
 
   const range = []
   for (let i = 1; i <= total; i++) {

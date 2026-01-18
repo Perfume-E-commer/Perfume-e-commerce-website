@@ -59,9 +59,6 @@ const selectedProduct = computed<Product | undefined>(() => {
   return products.value.find((p) => String(p.id) === id)
 })
 
-/* =========================
-   PRODUCT INFO
-========================= */
 const productTitle = computed(() => selectedProduct.value?.name || '')
 </script>
 

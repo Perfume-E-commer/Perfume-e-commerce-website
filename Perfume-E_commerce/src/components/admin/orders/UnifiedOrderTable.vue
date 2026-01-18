@@ -61,7 +61,7 @@
             <td class="px-6 py-4">
               <div class="flex flex-col items-center gap-1">
                 <span :class="['px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wide', getPaymentStatusClasses(order.paymentStatus)]">
-                  {{ order.paymentStatus || 'PAID' }}
+                  {{ order.paymentStatus || 'PAID' }}DTO to match the rich data structure your Frontend expects (Recent Orders, Charts, etc.).
                 </span>
                 <span class="text-[10px] text-gray-400 uppercase">{{ order.paymentMethod || 'Credit Card' }}</span>
               </div>
@@ -94,12 +94,8 @@ defineProps<{
   isLoading: boolean
 }>();
 
-// Emits
 defineEmits(['open-modal']);
 
-// --- Helpers ---
-
-// ✅ FIX 2: Check shippingAddress.fullName first (matches your JSON data)
 const getCustomerName = (order: any) => {
   if (order.shippingAddress && order.shippingAddress.fullName) {
     return order.shippingAddress.fullName;
@@ -110,7 +106,6 @@ const getCustomerName = (order: any) => {
   return 'Guest Customer';
 };
 
-// Robust Email Logic
 const getCustomerEmail = (order: any) => {
   if (order.userEmail) return order.userEmail;
   if (order.email) return order.email;

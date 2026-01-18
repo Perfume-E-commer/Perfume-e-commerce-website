@@ -9,6 +9,7 @@ export interface Product {
   occasion?: string
   gender?: string
   summary?: string
+  baseSize?: string;
   price: number
   discountedPrice?: number
   stock: number
@@ -61,9 +62,11 @@ export interface ProductPage {
 
 export interface ProductVariant {
   size: string
-  volume: string
+  volume?: string
   price: number
   stock: number
+  imageUrl?: string
+  minStock?: number
 }
 
 export interface ProductStory {

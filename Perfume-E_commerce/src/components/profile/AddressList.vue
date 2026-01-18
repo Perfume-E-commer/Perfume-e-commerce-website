@@ -48,8 +48,8 @@
                
                <p class="text-sm text-gray-600 leading-relaxed mb-3">
                   <span class="block">#{{ addr.houseNumber }}, {{ addr.street }}</span>
-                  <span class="block">{{ addr.village }}, {{ addr.community }}</span>
-                  <span class="block text-gray-500 text-xs mt-1">{{ addr.district }}, {{ addr.city }} - <span class="font-mono">{{ addr.zipCode }}</span></span>
+                  <span class="block">{{ addr.village }}, {{ addr.district }}</span>
+                  <span class="block text-gray-500 text-xs mt-1">{{ addr.community }}, {{ addr.city }} - <span class="font-mono">{{ addr.zipCode }}</span></span>
                </p>
 
                <div class="flex items-center justify-between border-t border-gray-200/60 pt-3 mt-3">
@@ -87,8 +87,8 @@
            <input v-model="newAddress.houseNumber" placeholder="House No." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
            <input v-model="newAddress.street" placeholder="Street" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
            <input v-model="newAddress.village" placeholder="Village (Phum)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
-           <input v-model="newAddress.community" placeholder="Community (Sangkat)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
-           <input v-model="newAddress.district" placeholder="District (Khan)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.community" placeholder="District (Sangkat)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.district" placeholder="Community (Khan)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
            <div class="flex gap-4">
               <input v-model="newAddress.city" placeholder="City / Province" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
               <input v-model="newAddress.zipCode" placeholder="Zip" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">

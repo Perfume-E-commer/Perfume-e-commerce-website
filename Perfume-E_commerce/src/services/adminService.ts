@@ -82,7 +82,7 @@ export interface AdminProfile {
 
 export const adminService = {
   getDashboardStats() {
-    return api.get<DashboardStats>('/admin/dashboard');
+    return api.get<DashboardStats>('/admin/dashboard-stats');
   },
 
   getAllOrders(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {
@@ -93,6 +93,10 @@ export const adminService = {
         search: params.search
       }
     });
+  },
+
+  getAllProducts(page: number, size: number, search: string = '') {
+    return this.getProducts({ page, size, search });
   },
 
   getProducts(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {

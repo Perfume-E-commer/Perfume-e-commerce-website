@@ -23,7 +23,6 @@ export default defineComponent({
       type: [Number, String],
       default: 350,
     },
-    // ✅ NEW: Accept dynamic data from parent
     data: {
       type: Array as () => number[], // Revenue numbers
       default: () => []
@@ -35,16 +34,12 @@ export default defineComponent({
   },
   setup(props) {
     const { data, labels } = toRefs(props)
-
-    // ✅ Computed Series: Updates automatically when 'data' prop changes
     const chartSeries = computed(() => [
       {
         name: 'Revenue',
         data: data.value, 
       }
     ])
-
-    // ✅ Computed Options: Updates automatically when 'labels' prop changes
     const chartOptions = computed(() => ({
       chart: {
         id: 'revenue-chart',

@@ -115,6 +115,10 @@ export const adminService = {
     });
   },
 
+  getProductHistory(productId: string) {
+    return api.get(`/admin/products/${productId}/history`);
+  },
+
   getBillingRecords() {
     return api.get<BillingRecord[]>('/admin/billing');
   },

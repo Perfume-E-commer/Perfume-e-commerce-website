@@ -23,7 +23,7 @@
     <div class="mb-10">
       <h3 class="text-sm font-semibold text-gray-700 mb-5">Base Product Information</h3>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2"
             >Base Price ($) <span class="text-red-500">*</span></label
@@ -67,6 +67,19 @@
         </div>
 
         <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Base Size</label>
+          <div class="relative">
+            <input
+              :value="modelValue.baseSize"
+              @input="(e) => updateField('baseSize', (e.target as HTMLInputElement).value)"
+              type="text"
+              placeholder="e.g. 100 ml"
+              class="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-900/20 focus:border-indigo-900 transition-all outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">Total Stock</label>
           <div class="flex gap-3">
             <input
@@ -81,7 +94,7 @@
             />
             <button
               v-if="hasVariants"
-              @click="syncStockFromVariants"
+              @click="syncStock"
               type="button"
               class="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors whitespace-nowrap"
               title="Sum all variant stocks"
@@ -173,8 +186,6 @@
             <!-- Left Column: Inputs -->
             <div class="lg:col-span-8">
               <div class="space-y-4">
-                <!-- Changed from grid grid-cols-1 md:grid-cols-4 gap-4 -->
-                <!-- Size Label -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
@@ -188,7 +199,6 @@
                   />
                 </div>
 
-                <!-- Price -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
@@ -203,7 +213,6 @@
                   />
                 </div>
 
-                <!-- Stock -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
@@ -218,7 +227,6 @@
                   />
                 </div>
 
-                <!-- Min Stock -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1"
@@ -235,10 +243,8 @@
               </div>
             </div>
 
-            <!-- Right Column: Image -->
             <div class="lg:col-span-4">
               <div class="flex flex-col gap-4">
-                <!-- Image Preview - Made larger -->
                 <div>
                   <label
                     class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
@@ -288,13 +294,11 @@
                   </div>
                 </div>
 
-                <!-- Image Input -->
                 <div class="space-y-2">
                   <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider"
                     >Variant Image</label
                   >
 
-                  <!-- Input Mode Toggle -->
                   <div class="flex gap-2 mb-1">
                     <button
                       type="button"
@@ -322,7 +326,6 @@
                     </button>
                   </div>
 
-                  <!-- URL Input -->
                   <input
                     v-if="variantInputTypes[index] === 'url'"
                     v-model="variant.imageUrl"
@@ -330,7 +333,6 @@
                     class="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:ring-1 focus:ring-green-500 outline-none hover:border-gray-400 transition-colors"
                   />
 
-                  <!-- File Upload -->
                   <div v-else class="relative">
                     <input
                       type="file"
@@ -351,7 +353,6 @@
         </div>
       </div>
 
-      <!-- Variant Summary -->
       <div v-if="hasVariants" class="mt-8 pt-6 border-t border-gray-200">
         <div class="flex items-center justify-between">
           <div>
@@ -361,9 +362,9 @@
             </p>
           </div>
           <button
-            @click="syncStockFromVariants"
+            @click="syncStock"
             type="button"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+            class="text-xs text-indigo-600 font-medium hover:text-indigo-800 flex items-center gap-1"
           >
             Sync Total Stock
           </button>
@@ -371,7 +372,6 @@
       </div>
     </div>
 
-    <!-- Product Settings Section -->
     <ProductSetting
       :modelValue="modelValue"
       @update:modelValue="$emit('update:modelValue', $event)"
@@ -391,11 +391,9 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue'])
 
-// State
 const variantInputTypes = reactive<Record<number, 'url' | 'upload'>>({})
 const uploadingIndex = ref<number | null>(null)
 
-// Computed Properties
 const hasVariants = computed(
   () => props.modelValue.variants && props.modelValue.variants.length > 0,
 )
@@ -414,7 +412,6 @@ const totalVariantStock = computed(() => {
   return props.modelValue.variants.reduce((sum, v) => sum + (v.stock || 0), 0)
 })
 
-// Logic
 const updateField = (field: keyof Product, value: any) => {
   emit('update:modelValue', { ...props.modelValue, [field]: value })
 }
@@ -435,8 +432,6 @@ const addVariant = () => {
   const currentVariants = props.modelValue.variants ? [...props.modelValue.variants] : []
   currentVariants.push(newVariant)
   updateField('variants', currentVariants)
-
-  // Set default input type for new variant
   variantInputTypes[currentVariants.length - 1] = 'url'
 }
 
@@ -446,10 +441,13 @@ const removeVariant = (index: number) => {
   updateField('variants', currentVariants)
 }
 
-const syncStockFromVariants = () => {
-  if (!props.modelValue.variants) return
-  const total = totalVariantStock.value
-  updateField('stock', total)
+const syncStock = () => {
+  if (props.modelValue.variants && props.modelValue.variants.length > 0) {
+    const total = props.modelValue.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+    updateField('stock', total)
+  } else {
+    alert('No variants to sync from.')
+  }
 }
 
 const toggleVariantInputType = (index: number, type: 'url' | 'upload') => {
@@ -463,14 +461,12 @@ const handleVariantUpload = async (event: Event, index: number) => {
   uploadingIndex.value = index
 
   try {
-    // Upload to server
     const res = await adminService.uploadImage(file)
     const currentVariants = [...(props.modelValue.variants || [])]
     currentVariants[index].imageUrl = res.data.url
     updateField('variants', currentVariants)
   } catch (error) {
     console.error('Variant upload failed', error)
-    // Fallback to local base64
     const reader = new FileReader()
     reader.onload = (e) => {
       const currentVariants = [...(props.modelValue.variants || [])]
@@ -479,10 +475,7 @@ const handleVariantUpload = async (event: Event, index: number) => {
     }
     reader.readAsDataURL(file)
   } finally {
-    uploadingIndex.value = null(
-      // Clear the input so same file can be selected again
-      event.target as HTMLInputElement,
-    ).value = ''
+    uploadingIndex.value = null(event.target as HTMLInputElement).value = ''
   }
 }
 

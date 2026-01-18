@@ -9,6 +9,7 @@ export interface Product {
   occasion?: string
   gender?: string
   summary?: string
+  baseVolume?: string;
   price: number
   discountedPrice?: number
   stock: number

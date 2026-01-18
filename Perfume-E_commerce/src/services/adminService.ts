@@ -95,6 +95,10 @@ export const adminService = {
     });
   },
 
+  getAllProducts(page: number, size: number, search: string = '') {
+    return this.getProducts({ page, size, search });
+  },
+
   getProducts(params: { page: number; size: number; search: string } = { page: 0, size: 10, search: '' }) {
     return api.get('/admin/products', { 
       params: {

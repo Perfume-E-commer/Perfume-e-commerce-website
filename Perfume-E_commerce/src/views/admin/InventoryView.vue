@@ -132,6 +132,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import productService from '../../services/productService' 
+import adminService from '../../services/adminService'
 import InventoryFilterBar from '../../components/admin/inventory/InventoryFilterBar.vue'
 import InventoryTable from '../../components/admin/inventory/InventoryTable.vue'
 import { generateInventoryReport } from '../../utils/inventoryReportGenerator'
@@ -159,7 +160,7 @@ const historyLogs = ref<any[]>([])
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const res = await productService.getAllProducts(0, 1000) 
+    const res = await adminService.getAllProducts(0, 1000) 
     if (res.data && res.data.content) {
       products.value = res.data.content
     }
@@ -169,7 +170,6 @@ const fetchProducts = async () => {
     loading.value = false
   }
 }
-
 const uniqueBrands = computed(() => {
   const apiBrands = Array.from(new Set(products.value.map(p => p.brand))).sort()
   return [...new Set([...localBrands.value, ...apiBrands])]
@@ -302,16 +302,24 @@ const generatePDF = () => {
   generateInventoryReport(filteredProducts.value)
 }
 
-const openHistoryModal = (product: any) => {
+const openHistoryModal = async (product: any) => {
   selectedProduct.value = product
   showHistoryModal.value = true
-  
-  historyLogs.value = [
-    { date: '2026-01-18', reason: 'Restock (Manual)', change: 50 },
-    { date: '2026-01-15', reason: 'Order #ORD-9928', change: -1 },
-    { date: '2026-01-14', reason: 'Order #ORD-1102', change: -2 },
-    { date: '2026-01-10', reason: 'Initial Import', change: 100 },
-  ]
+  historyLogs.value = [] 
+
+  try {
+    const res = await adminService.getProductHistory(product.id)
+    if (res.data) {
+      historyLogs.value = res.data.map((log: any) => ({
+         date: new Date(log.createdAt).toLocaleDateString() + ' ' + new Date(log.createdAt).toLocaleTimeString(),
+         reason: log.reason,
+         change: log.quantityChange
+      }))
+    }
+  } catch (e) {
+    console.error("Failed to load history", e)
+    historyLogs.value = []
+  }
 }
 
 onMounted(fetchProducts)

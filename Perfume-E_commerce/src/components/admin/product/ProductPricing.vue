@@ -370,13 +370,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Product Settings Section -->
+    <ProductSetting
+      :modelValue="modelValue"
+      @update:modelValue="$emit('update:modelValue', $event)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
-import type { Product, ProductVariant } from '@/types/Product'
-import adminService from '@/services/adminService'
+import type { Product, ProductVariant } from '../../../types/adminProduct'
+import adminService from '../../../services/adminService'
+import ProductSetting from './ProductSettings.vue'
 
 const props = defineProps<{
   modelValue: Product
@@ -472,9 +479,10 @@ const handleVariantUpload = async (event: Event, index: number) => {
     }
     reader.readAsDataURL(file)
   } finally {
-    uploadingIndex.value = null
-    // Clear the input so same file can be selected again
-    (event.target as HTMLInputElement).value = ''
+    uploadingIndex.value = null(
+      // Clear the input so same file can be selected again
+      event.target as HTMLInputElement,
+    ).value = ''
   }
 }
 

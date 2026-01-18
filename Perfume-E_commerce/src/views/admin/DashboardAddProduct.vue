@@ -34,7 +34,7 @@
 
     <div class="flex flex-col lg:flex-row gap-8">
       
-      <div class="hidden lg:block w-64 flex-shrink-0 space-y-1 sticky top-6 self-start">
+      <div class="hidden lg:block w-64 flex-shrink-0 space-y-1 sticky top-20 self-start">
         <a href="#basic" class="block px-4 py-2 font-medium text-indigo-900 bg-indigo-50 rounded-lg">Basic Info</a>
         <a href="#media" class="block px-4 py-2 font-medium text-gray-600 hover:bg-gray-50 rounded-lg">Media & Gallery</a>
         <a href="#pricing" class="block px-4 py-2 font-medium text-gray-600 hover:bg-gray-50 rounded-lg">Pricing & Stock</a>

@@ -187,7 +187,6 @@
 import { ref } from 'vue';
 import adminService from '@/services/adminService';
 
-// Props matching your JSON structure exactly
 const props = defineProps<{
   modelValue: {
     scentNotes: Array<{ type: string; scent: string; imageUrl: string }>;
@@ -201,15 +200,12 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
-// Local UI State
 const uploadingIndex = ref<number | null>(null);
 const noteInputTypes = ref<Record<number, 'url' | 'upload'>>({});
 
-// --- Scent Note Logic ---
 const addScentNote = () => {
   const newNotes = [...props.modelValue.scentNotes, { type: 'Top Note', scent: '', imageUrl: '' }];
   updateModel('scentNotes', newNotes);
-  // Default new note to URL input
   noteInputTypes.value[newNotes.length - 1] = 'url';
 };
 
@@ -230,7 +226,6 @@ const handleNoteUpload = async (event: Event, index: number) => {
   uploadingIndex.value = index;
   try {
     const res = await adminService.uploadImage(file);
-    // Update the specific note's imageUrl
     const newNotes = [...props.modelValue.scentNotes];
     newNotes[index].imageUrl = res.data.url;
     updateModel('scentNotes', newNotes);

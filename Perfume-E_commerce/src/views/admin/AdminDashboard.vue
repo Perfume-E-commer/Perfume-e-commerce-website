@@ -190,7 +190,7 @@
               <tbody class="divide-y divide-gray-100">
                 <tr
                   v-for="order in dashboardData.recentOrders"
-                  :key="order.orderNumber"
+                  :key="order.id"
                   class="hover:bg-gray-50"
                 >
                   <td class="px-6 py-4 font-mono text-indigo-600 font-bold text-xs">

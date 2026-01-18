@@ -1,29 +1,65 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
+// Updated Interface to handle Variants
+interface ProductVariant {
+  size: string;
+  stock: number;
+  minStock?: number;
+}
+
 interface Product {
   name: string;
   brand: string;
   category: string;
   stock: number;
+  minStockLevel?: number;
+  variants?: ProductVariant[];
 }
 
 export const generateInventoryReport = (products: Product[]) => {
   const doc = new jsPDF()
   const today = new Date().toLocaleDateString()
+
+  // --- 1. FLATTEN DATA (Handle Variants) ---
+  // Convert hierarchical products into a flat list of SKUs
+  const flatInventory = products.flatMap(p => {
+    // If product has variants, create a row for each variant
+    if (p.variants && p.variants.length > 0) {
+      return p.variants.map(v => ({
+        name: `${p.name} - ${v.size}`, // e.g. "Sauvage Dior - 100ml"
+        brand: p.brand,
+        category: p.category,
+        stock: v.stock,
+        minStock: v.minStock || p.minStockLevel || 5
+      }))
+    } 
+    // Otherwise, just use the base product
+    else {
+      return [{
+        name: p.name,
+        brand: p.brand,
+        category: p.category,
+        stock: p.stock,
+        minStock: p.minStockLevel || 5
+      }]
+    }
+  })
   
-  // --- 1. CALCULATE METRICS ---
-  const totalProducts = products.length
-  const totalStock = products.reduce((sum, p) => sum + p.stock, 0)
-  const lowStockItems = products.filter(p => p.stock > 0 && p.stock <= 5).length
-  const outOfStockItems = products.filter(p => p.stock === 0).length
-  const inStockItems = totalProducts - lowStockItems - outOfStockItems
+  // --- 2. CALCULATE METRICS (Based on SKUs, not parent products) ---
+  const totalSKUs = flatInventory.length
+  const totalStock = flatInventory.reduce((sum, item) => sum + item.stock, 0)
+  
+  const lowStockItems = flatInventory.filter(item => item.stock > 0 && item.stock <= item.minStock).length
+  const outOfStockItems = flatInventory.filter(item => item.stock === 0).length
+  const inStockItems = totalSKUs - lowStockItems - outOfStockItems
 
   // Calculate Brand Breakdown
   const brandCounts: Record<string, number> = {}
-  products.forEach(p => {
-    brandCounts[p.brand] = (brandCounts[p.brand] || 0) + p.stock
+  flatInventory.forEach(item => {
+    brandCounts[item.brand] = (brandCounts[item.brand] || 0) + item.stock
   })
+  
   // Get Top 3 Brands
   const topBrands = Object.entries(brandCounts)
     .sort(([, a], [, b]) => b - a)
@@ -31,7 +67,7 @@ export const generateInventoryReport = (products: Product[]) => {
     .map(([brand, count]) => `${brand} (${count})`)
     .join(', ')
 
-  // --- 2. HEADER SECTION ---
+  // --- 3. HEADER SECTION ---
   doc.setFontSize(22)
   doc.setTextColor(40, 5, 89) // Brand Purple
   doc.text("ScentHaven", 14, 20)
@@ -42,18 +78,20 @@ export const generateInventoryReport = (products: Product[]) => {
   
   doc.setFontSize(10)
   doc.text(`Generated: ${today}`, 196, 20, { align: 'right' })
-  doc.text(`Total SKU: ${totalProducts}`, 196, 25, { align: 'right' })
+  doc.text(`Total SKU: ${totalSKUs}`, 196, 25, { align: 'right' })
   doc.text(`Total Units: ${totalStock}`, 196, 30, { align: 'right' })
 
   doc.setLineWidth(0.5)
   doc.setDrawColor(200, 200, 200)
   doc.line(14, 35, 196, 35)
 
-  // --- 3. SUMMARY DASHBOARD (Fixed: No Emojis, Added Colors) ---
+  // --- 4. SUMMARY DASHBOARD ---
+  const avgStock = totalSKUs > 0 ? (totalStock / totalSKUs).toFixed(1) : '0'
+  
   const summaryData = [
-    ['In Stock', `${inStockItems} products`, 'Top Brands (by units)'],
-    ['Low Stock (<= 5)', `${lowStockItems} products`, topBrands],
-    ['Out of Stock', `${outOfStockItems} products`, `Avg Stock/Item: ${(totalStock/totalProducts || 0).toFixed(1)}`]
+    ['In Stock', `${inStockItems} SKUs`, 'Top Brands (by units)'],
+    ['Low Stock', `${lowStockItems} SKUs`, topBrands],
+    ['Out of Stock', `${outOfStockItems} SKUs`, `Avg Stock/SKU: ${avgStock}`]
   ]
 
   autoTable(doc, {
@@ -64,11 +102,10 @@ export const generateInventoryReport = (products: Product[]) => {
     styles: { fontSize: 10, cellPadding: 3 },
     headStyles: { fontStyle: 'bold', textColor: [80, 80, 80] },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 40 }, // Metric Name
-      1: { cellWidth: 40 }, // Count
-      2: { fontStyle: 'italic' } // Insights
+      0: { fontStyle: 'bold', cellWidth: 40 },
+      1: { cellWidth: 40 },
+      2: { fontStyle: 'italic' }
     },
-    // ✅ NEW: Add color logic to the Summary Table
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 0) {
         const text = data.cell.raw as string
@@ -79,27 +116,26 @@ export const generateInventoryReport = (products: Product[]) => {
     }
   })
 
-  // --- 4. DETAILED INVENTORY TABLE ---
+  // --- 5. DETAILED INVENTORY TABLE ---
   
-  // Prepare Table Rows
-  const tableRows = products.map((p, index) => {
+  const tableRows = flatInventory.map((item, index) => {
     let status = 'In Stock'
     let action = '-'
     
-    if (p.stock === 0) {
+    if (item.stock === 0) {
       status = 'Out of Stock'
       action = 'RESTOCK ASAP'
-    } else if (p.stock <= 5) {
+    } else if (item.stock <= item.minStock) {
       status = 'Low Stock'
       action = 'Restock Recommended'
     }
 
     return [
       index + 1,
-      p.name,
-      p.brand,
-      p.category,
-      p.stock,
+      item.name,
+      item.brand,
+      item.category,
+      item.stock,
       status,
       action
     ]
@@ -110,7 +146,7 @@ export const generateInventoryReport = (products: Product[]) => {
 
   doc.setFontSize(14)
   doc.setTextColor(40, 5, 89)
-  doc.text("Detailed Stock List", 14, finalY - 5)
+  doc.text("Detailed Stock List (Including Variants)", 14, finalY - 5)
 
   autoTable(doc, {
     startY: finalY,
@@ -118,7 +154,7 @@ export const generateInventoryReport = (products: Product[]) => {
     body: tableRows,
     theme: 'grid',
     headStyles: { 
-      fillColor: [40, 5, 89], // Brand Purple
+      fillColor: [40, 5, 89],
       textColor: 255,
       fontSize: 9,
       halign: 'left'
@@ -130,22 +166,21 @@ export const generateInventoryReport = (products: Product[]) => {
     },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 60 }, // Name
-      4: { halign: 'right', fontStyle: 'bold' }, // Stock
+      1: { cellWidth: 70 }, // Name (wider for variants)
+      4: { halign: 'right', fontStyle: 'bold' },
     },
-    // Dynamic styling for Status/Action cells
     didParseCell: (data) => {
       if (data.section === 'body') {
-        const stock = data.row.raw[4] as number 
+        const stock = (data.row.raw as any)[4] as number
         
         // Color the Status Text
         if (data.column.index === 5) { 
-          if (stock === 0) data.cell.styles.textColor = [220, 38, 38] // Red
-          else if (stock <= 5) data.cell.styles.textColor = [217, 119, 6] // Orange
-          else data.cell.styles.textColor = [5, 150, 105] // Green
+          if (stock === 0) data.cell.styles.textColor = [220, 38, 38]
+          else if (stock <= 5) data.cell.styles.textColor = [217, 119, 6] 
+          else data.cell.styles.textColor = [5, 150, 105]
         }
 
-        // Bold the Action Text if Urgent
+        // Bold Action Text
         if (data.column.index === 6 && stock === 0) {
             data.cell.styles.fontStyle = 'bold'
             data.cell.styles.textColor = [220, 38, 38]
@@ -154,7 +189,7 @@ export const generateInventoryReport = (products: Product[]) => {
     }
   })
 
-  // --- 5. FOOTER ---
+  // --- 6. FOOTER ---
   const pageCount = doc.getNumberOfPages()
   for(let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
@@ -168,7 +203,7 @@ export const generateInventoryReport = (products: Product[]) => {
     )
   }
 
-  // --- 6. SAVE ---
+  // --- 7. SAVE ---
   const timestamp = new Date().toISOString().slice(0, 10)
   doc.save(`ScentHaven_Inventory_Report_${timestamp}.pdf`)
 }

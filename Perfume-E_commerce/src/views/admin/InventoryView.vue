@@ -25,6 +25,7 @@
       @sort="handleSort"
       @restock="openRestockModal"
       @toggleStatus="handleToggleStatus"
+      @viewHistory="openHistoryModal"
     />
 
     <div v-if="showRestockModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -83,6 +84,48 @@
         </div>
     </div>
 
+    <div v-if="showHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">Stock History</h3>
+            <p class="text-sm text-gray-500">Recent movements for <span class="font-medium text-gray-900">{{ selectedProduct?.name }}</span></p>
+          </div>
+          <button @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        
+        <div class="overflow-y-auto p-0">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase sticky top-0">
+              <tr>
+                <th class="px-6 py-3">Date</th>
+                <th class="px-6 py-3">Action</th>
+                <th class="px-6 py-3 text-right">Change</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="(log, i) in historyLogs" :key="i" class="hover:bg-gray-50">
+                <td class="px-6 py-3 text-gray-600">{{ log.date }}</td>
+                <td class="px-6 py-3 font-medium text-gray-900">{{ log.reason }}</td>
+                <td class="px-6 py-3 text-right font-mono font-bold" :class="log.change > 0 ? 'text-green-600' : 'text-red-600'">
+                  {{ log.change > 0 ? '+' : '' }}{{ log.change }}
+                </td>
+              </tr>
+              <tr v-if="historyLogs.length === 0">
+                <td colspan="3" class="px-6 py-8 text-center text-gray-400">No recent history found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 bg-gray-50 text-right">
+          <button @click="showHistoryModal = false" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 text-gray-700">Close</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -93,7 +136,6 @@ import InventoryFilterBar from '../../components/admin/inventory/InventoryFilter
 import InventoryTable from '../../components/admin/inventory/InventoryTable.vue'
 import { generateInventoryReport } from '../../utils/inventoryReportGenerator'
 
-// State
 const products = ref<any[]>([])
 const loading = ref(true)
 const searchQuery = ref('')
@@ -101,17 +143,18 @@ const activeBrand = ref('All')
 const activeCategory = ref('All')
 const activeStatus = ref('All')
 
-// Restock State
 const showRestockModal = ref(false)
 const selectedProduct = ref<any>(null)
 const selectedVariant = ref<any>(null) 
 const restockAmount = ref(10)
 const isUpdating = ref(false)
 
-// Brand Modal State
 const showAddBrandModal = ref(false)
 const newBrandName = ref('')
 const localBrands = ref<string[]>([])
+
+const showHistoryModal = ref(false)
+const historyLogs = ref<any[]>([])
 
 const fetchProducts = async () => {
   loading.value = true
@@ -127,7 +170,6 @@ const fetchProducts = async () => {
   }
 }
 
-// Derived State for Filters
 const uniqueBrands = computed(() => {
   const apiBrands = Array.from(new Set(products.value.map(p => p.brand))).sort()
   return [...new Set([...localBrands.value, ...apiBrands])]
@@ -139,22 +181,33 @@ const uniqueCategories = computed(() => {
 
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
-                          p.brand.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchesBrand = activeBrand.value === 'All' || p.brand === activeBrand.value
-    const matchesCategory = activeCategory.value === 'All' || p.category === activeCategory.value
+    const query = searchQuery.value.toLowerCase().trim();
+    const matchesSearch = !query || 
+                          p.name.toLowerCase().includes(query) || 
+                          p.brand.toLowerCase().includes(query);
+
+    const matchesBrand = activeBrand.value === 'All' || p.brand === activeBrand.value;
+
+    const matchesCategory = activeCategory.value === 'All' || p.category === activeCategory.value;
     
-    // Status Filter Logic (Simplified for global status)
-    let matchesStatus = true
+    let matchesStatus = true;
+    
+    const effectiveStock = (p.variants && p.variants.length > 0) 
+        ? p.variants.reduce((acc: number, v: any) => acc + v.stock, 0)
+        : p.stock;
+
+    const threshold = p.minStockLevel || 5;
+
     if (activeStatus.value !== 'All') {
-       const isLow = p.stock <= (p.minStockLevel || 5)
-       const isOut = p.stock === 0
-       if (activeStatus.value === 'Low Stock') matchesStatus = isLow && !isOut
-       if (activeStatus.value === 'Out of Stock') matchesStatus = isOut
-       if (activeStatus.value === 'In Stock') matchesStatus = !isLow && !isOut
+       const isOut = effectiveStock === 0;
+       const isLow = effectiveStock <= threshold && !isOut;
+       
+       if (activeStatus.value === 'Low Stock') matchesStatus = isLow;
+       else if (activeStatus.value === 'Out of Stock') matchesStatus = isOut;
+       else if (activeStatus.value === 'In Stock') matchesStatus = !isLow && !isOut;
     }
 
-    return matchesSearch && matchesBrand && matchesCategory && matchesStatus
+    return matchesSearch && matchesBrand && matchesCategory && matchesStatus;
   })
 })
 
@@ -166,7 +219,7 @@ const handleSort = (field: string) => {
 }
 
 const openRestockModal = (product: any, variant: any = null) => {
-  selectedProduct.value = JSON.parse(JSON.stringify(product)) // Deep copy to avoid direct mutation
+  selectedProduct.value = JSON.parse(JSON.stringify(product))
   selectedVariant.value = variant ? JSON.parse(JSON.stringify(variant)) : null
   restockAmount.value = 10
   showRestockModal.value = true
@@ -247,6 +300,18 @@ const resetFilters = () => {
 
 const generatePDF = () => {
   generateInventoryReport(filteredProducts.value)
+}
+
+const openHistoryModal = (product: any) => {
+  selectedProduct.value = product
+  showHistoryModal.value = true
+  
+  historyLogs.value = [
+    { date: '2026-01-18', reason: 'Restock (Manual)', change: 50 },
+    { date: '2026-01-15', reason: 'Order #ORD-9928', change: -1 },
+    { date: '2026-01-14', reason: 'Order #ORD-1102', change: -2 },
+    { date: '2026-01-10', reason: 'Initial Import', change: 100 },
+  ]
 }
 
 onMounted(fetchProducts)

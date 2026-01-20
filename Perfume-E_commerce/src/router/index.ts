@@ -122,35 +122,30 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: '', 
-        redirect: '/account/profile'
+        path: '',
+        redirect: '/account/profile',
       },
       {
-        path: 'profile', 
+        path: 'profile',
         name: 'My Profile',
         component: () => import('../views/customer/UserProfile.vue'),
       },
       {
-        path: 'orders', 
+        path: 'orders',
         name: 'My Orders',
         component: () => import('../views/customer/MyOrders.vue'),
       },
       // {
-      //   path: 'returns', 
-      //   name: 'My Returns',
-      //   component: () => import('@/views/customer/MyReturns.vue'),
-      // },
-      // {
-      //   path: 'wishlist', 
+      //   path: 'wishlist',
       //   name: 'My Wishlist',
       //   component: () => import('@/views/customer/MyWishlist.vue'),
       // },
-      // {
-      //   path: 'history',
-      //   name: 'Order History',
-      //   component: () => import('@/views/customer/OrderHistory.vue'),
-      // }
-    ]
+      {
+        path: 'history',
+        name: 'Order History',
+        component: () => import('@/views/customer/OrderHistory.vue'),
+      }
+    ],
   },
 
   // ADMIN DASHBOARD (Layout Wrapper)

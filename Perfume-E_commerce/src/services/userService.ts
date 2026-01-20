@@ -43,7 +43,7 @@ class UserService {
   uploadAvatar(file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/users/avatar', formData, {
+    return api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 interface Article {
   image: string
   title: string
@@ -8,6 +10,13 @@ interface Article {
 defineProps<{
   articles: Article[]
 }>()
+
+const router = useRouter()
+
+const navigateToArticle = (index: number) => {
+  // Article IDs are 1-based
+  router.push(`/article/${index + 1}`)
+}
 </script>
 <template>
   <div class="container mx-auto px-4 py-8 mt-10 mb-10">
@@ -21,7 +30,8 @@ defineProps<{
       <div
         v-for="(article, index) in articles"
         :key="index"
-        class="overflow-hidden flex flex-col gap-10 hover:border-2 hover:border-[#280559] p-5"
+        class="overflow-hidden flex flex-col gap-10 hover:border-2 hover:border-[#280559] p-5 cursor-pointer transition-all duration-300"
+        @click="navigateToArticle(index)"
       >
         <img :src="article.image" :alt="article.title" class="w-full h-3/4 object-cover" />
         <div class="flex flex-col gap-1 mt-2">
@@ -33,7 +43,8 @@ defineProps<{
           </p>
         </div>
         <button
-          class="luxurious-roman-regular bg-[#280559] text-white w-fit px-6 py-2 rounded-[14px] text-sm cursor-pointer"
+          @click.stop="navigateToArticle(index)"
+          class="luxurious-roman-regular bg-[#280559] text-white w-fit px-6 py-2 rounded-[14px] text-sm cursor-pointer hover:bg-[#3a0770] transition-colors"
         >
           Read More
         </button>

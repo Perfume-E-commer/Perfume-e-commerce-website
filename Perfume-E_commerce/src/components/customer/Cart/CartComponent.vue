@@ -17,7 +17,6 @@ onMounted(() => {
 })
 
 const formatPrice = (value: number) => {
-  // Ensure we handle potential null/undefined/non-number values gracefully
   if (typeof value !== 'number' || isNaN(value)) return '$0.00'
 
   return new Intl.NumberFormat('en-US', {
@@ -30,24 +29,23 @@ const formatPrice = (value: number) => {
 
 const decreaseQuantity = (productId: string, currentQuantity: number, size?: string) => {
   if (currentQuantity > 1) {
-    cartStore.updateQuantity({ 
-      productId, 
-      quantity: currentQuantity - 1, 
-      size 
-    }) 
+    cartStore.updateQuantity({
+      productId,
+      quantity: currentQuantity - 1,
+      size,
+    })
   } else {
     cartStore.removeFromCart(productId, size)
   }
 }
 
 const increaseQuantity = (productId: string, currentQuantity: number, size?: string) => {
-  cartStore.updateQuantity({ 
-    productId, 
-    quantity: currentQuantity + 1, 
-    size 
+  cartStore.updateQuantity({
+    productId,
+    quantity: currentQuantity + 1,
+    size,
   })
 }
-
 </script>
 
 <template>

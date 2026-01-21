@@ -14,10 +14,10 @@ import { storeToRefs } from 'pinia'
 const productStore = useProductStore()
 
 const { products, loading } = storeToRefs(productStore)
-const { fetchAllProducts, updateFilters, updateSort } = productStore
+const { fetchProducts, updateFilters, updateSort } = productStore
 
 onMounted(() => {
-  fetchAllProducts()
+  fetchProducts(0, 12)
   console.log('perfume list: ', productStore.products)
 })
 
@@ -31,7 +31,6 @@ const handleFilterChange = (filters: Record<string, any>) => {
   updateFilters(filters)
 }
 
-// Handle sort changes from MenuFilter component
 const handleSortChange = (sortOption: string) => {
   console.log('Sort applied:', sortOption)
   updateSort(sortOption)

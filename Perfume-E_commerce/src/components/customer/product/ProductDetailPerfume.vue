@@ -2,11 +2,11 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { Heart } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
-// Assuming these types exist in your project based on your code
 import type { ProductVariant, StorySection, KeyNote } from '@/types/clientProduct'
 import { useCartStore, type AddToCartPayload } from '@/stores/cartStore'
+import { useToastStore } from '@/stores/toastStore'
+import { useWishlistStore } from '@/stores/wishlistStore'
 
-// --- Types ---
 type ScentNote = {
   type: string
   scent: string
@@ -21,7 +21,6 @@ type ProductStorysType = {
   scentNotes: ScentNote[]
 }
 
-// --- Props ---
 const props = defineProps<{
   id: string | number | undefined
   name: string
@@ -33,9 +32,9 @@ const props = defineProps<{
   story: ProductStorysType | string | null
   averageRating?: number
   totalReviews?: number
+  category?: string
 }>()
 
-// --- Computed ---
 const parsedVariants = computed<ProductVariant[]>(() => {
   if (!props.variants) return []
   if (typeof props.variants === 'string') {
@@ -60,14 +59,14 @@ const parsedStory = computed<ProductStorysType | null>(() => {
   return props.story as ProductStorysType
 })
 
-// --- Store & State ---
 const cartStore = useCartStore()
+const toastStore = useToastStore()
+const wishlistStore = useWishlistStore()
 const router = useRouter()
 const quantity = ref<number>(1)
 const selectedVariant = ref<ProductVariant | null>(null)
 const currentImage = ref<string>('')
 
-// --- Methods ---
 const initialize = () => {
   if (parsedVariants.value && parsedVariants.value.length > 0) {
     selectedVariant.value = parsedVariants.value[0] as ProductVariant
@@ -96,26 +95,54 @@ const handleVariantClick = (variant: ProductVariant) => {
 
 const addToCartHandler = async () => {
   if (!selectedVariant.value || !props.id || quantity.value < 1) {
-    console.error('Invalid variant or product ID or quantity')
+    toastStore.showToast('Please select a valid product and quantity', 'error')
     return
   }
 
   const payload: AddToCartPayload = {
     productId: props.id as string,
-    variantId: selectedVariant.value.id,
+    size: selectedVariant.value.size,
     quantity: quantity.value,
   }
 
   try {
     await cartStore.addToCart(payload)
-    console.log('Added to cart:', payload)
-    router.push('/cart')
+    toastStore.showToast(`${props.name} has been added to your bag!`, 'success')
   } catch (error) {
     console.error('Failed to add to cart:', error)
+    toastStore.showToast('Failed to add item to bag. Please try again.', 'error')
   }
 }
 
-// --- Lifecycle ---
+const isInWishlist = computed(() => {
+  return props.id ? wishlistStore.isInWishlist(String(props.id)) : false
+})
+
+const handleWishlistToggle = () => {
+  if (!props.id) {
+    toastStore.showToast('Unable to add to wishlist', 'error')
+    return
+  }
+
+  const product = {
+    id: String(props.id),
+    name: props.name,
+    price: selectedVariant.value?.price || props.price,
+    image: currentImage.value || props.image,
+    category: props.category,
+    size: selectedVariant.value?.size,
+    description: props.description,
+  }
+
+  if (isInWishlist.value) {
+    wishlistStore.removeFromWishlist(String(props.id))
+    toastStore.showToast(`${props.name} has been removed from your wishlist`, 'info')
+  } else {
+    wishlistStore.addToWishlist(product)
+    toastStore.showToast(`${props.name} has been added to your wishlist!`, 'success')
+  }
+}
+
 onMounted(() => {
   initialize()
 })
@@ -156,7 +183,7 @@ watch(
           <img
             :src="currentImage"
             :alt="name"
-            class="w-full h-auto max-h-[500px] lg:max-h-[600px] object-contain mix-blend-multiply transition-opacity duration-300"
+            class="w-full h-auto max-h-125 lg:max-h-150 object-contain mix-blend-multiply transition-opacity duration-300"
           />
         </div>
       </div>
@@ -228,9 +255,11 @@ watch(
             Add to Bag
           </button>
           <button
-            class="flex-1 bg-[#280559] text-white py-3.5 hover:bg-opacity-90 flex justify-center items-center gap-2 uppercase rounded-lg luxurious-roman-regular tracking-widest text-sm transition-all duration-300 shadow-md"
+            @click="handleWishlistToggle"
+            class="flex-1 py-3.5 flex justify-center items-center gap-2 uppercase rounded-lg luxurious-roman-regular tracking-widest text-sm transition-all duration-300 shadow-md bg-[#280559] text-white hover:bg-opacity-90"
           >
-            Wish List <Heart class="w-4 h-4" />
+            Wish List
+            <Heart class="w-4 h-4" />
           </button>
         </div>
       </div>

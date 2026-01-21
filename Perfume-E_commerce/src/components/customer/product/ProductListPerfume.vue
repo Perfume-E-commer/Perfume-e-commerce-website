@@ -7,7 +7,7 @@ const props = defineProps<{
 }>()
 
 const activeProducts = computed(() => {
-  return props.detailsItem.filter(item => {
+  return props.detailsItem.filter((item) => {
     const isActive = (item as any).active ?? (item as any).isActive ?? true
     return isActive !== false
   })
@@ -33,15 +33,13 @@ const activeProducts = computed(() => {
         <img
           :src="item.image"
           :alt="item.name"
-          class="w-full h-[180px] md:h-[300px] object-contain hover:scale-105 transition-transform duration-300"
+          class="w-full h-45 md:h-75 object-contain hover:scale-105 transition-transform duration-300"
         />
         <div class="flex flex-col items-center gap-1 md:gap-2 mt-2 md:mt-4 text-center">
           <h2 class="luxurious-roman-regular text-sm md:text-xl text-[#280559] line-clamp-2">
             {{ item.name }}
           </h2>
-          <p class="luxurious-roman-regular text-xs md:text-lg text-[#280559]">
-            ${{ item.price }}
-          </p>
+          <p class="luxurious-roman-regular text-xs md:text-lg text-[#280559]">${{ item.price }}</p>
         </div>
       </div>
     </div>

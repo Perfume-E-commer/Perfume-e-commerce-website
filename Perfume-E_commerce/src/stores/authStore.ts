@@ -39,7 +39,7 @@ export const useAuthStore = defineStore('auth', {
 
         // Load user-specific wishlist after login
         const wishlistStore = useWishlistStore()
-        wishlistStore.loadUserWishlist()
+        await wishlistStore.loadUserWishlist()
 
         if (data.role === 'ADMIN') {
           router.push({ name: 'admin-dashboard' })

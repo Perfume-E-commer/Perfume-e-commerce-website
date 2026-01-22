@@ -26,7 +26,7 @@ onMounted(async () => {
     try {
       await cartStore.fetchCart()
     } catch (error) {
-      console.error('Failed to fetch cart:', error)
+      console.warn('Initial cart fetch failed (likely session expired).')
     }
   }
 })

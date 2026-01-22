@@ -22,7 +22,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const authStore = useAuthStore()
 const currentUserId = ref<string | null>(null)
 const showReviewPopup = ref(false)
 const showDeleteConfirm = ref(false)
@@ -55,22 +54,11 @@ const handleShowLess = () => {
   reviewsToShow.value = 3 
 }
 
-const handleDeleteReview = async () => {
-  if (!props.productId || !confirm('Are you sure you want to delete your review?')) return
-
-  isSubmitting.value = true 
+const handleDeleteReview = (review: Rating) => {
+  if (!authStore.isAuthenticated) return
   
-  try {
-    await productService.deleteProductReview(String(props.productId))
-    submitMessage.value = { type: 'success', text: 'Review deleted successfully' }
-    await fetchReviews() 
-  } catch (error: any) {
-    console.error('Error deleting review:', error)
-    submitMessage.value = { type: 'error', text: error.response?.data || 'Failed to delete review' }
-  } finally {
-    isSubmitting.value = false
-    setTimeout(() => { submitMessage.value = null }, 3000)
-  }
+  reviewToDelete.value = review
+  showDeleteConfirm.value = true
 }
 
 onMounted(async () => {
@@ -115,11 +103,6 @@ const isOwnReview = (review: Rating) => {
   return String(review.userId) === String(currentUserId.value)
 }
 
-const handleDeleteReview = (review: Rating) => {
-  reviewToDelete.value = review
-  showDeleteConfirm.value = true
-}
-
 const cancelDelete = () => {
   showDeleteConfirm.value = false
   reviewToDelete.value = null
@@ -130,8 +113,7 @@ const confirmDelete = async () => {
 
   isDeleting.value = true
   try {
-    const ratingId =
-      reviewToDelete.value.id || reviewToDelete.value.ratingId || reviewToDelete.value.userId
+    const ratingId = reviewToDelete.value.id || reviewToDelete.value.ratingId
     await productService.deleteProductReview(String(props.productId), String(ratingId))
 
     submitMessage.value = { type: 'success', text: 'Review deleted successfully!' }
@@ -192,6 +174,11 @@ const fetchReviews = async () => {
 }
 
 const handleAddReview = () => {
+  if (!authStore.isAuthenticated) {
+    submitMessage.value = { type: 'error', text: 'Please log in to submit a review.' }
+    setTimeout(() => { submitMessage.value = null }, 3000)
+    return
+  }
   showReviewPopup.value = true
 }
 

@@ -56,12 +56,13 @@ const productService = {
     return api.post(`/products/${productId}/ratings`, reviewData)
   },
 
-  getProductReviews(productId: string) {
-    return api.get(`/products/${productId}/reviews`)
+  async getProductReviews(productId: string) {
+    const response = await api.get(`/products/${productId}`)
+    return { data: response.data.ratings || [] }
   },
 
-  deleteProductReview(productId: string, ratingId: string) {
-    return api.delete(`/products/${productId}/ratings/${ratingId}`)
+  deleteProductReview(productId: string) {
+    return api.delete(`/products/${productId}/ratings`)
   },
 
   getFilterProducts(filters: Record<string, any>) {

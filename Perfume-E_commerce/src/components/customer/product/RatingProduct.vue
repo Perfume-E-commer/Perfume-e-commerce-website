@@ -7,13 +7,12 @@ import { useAuthStore } from '@/stores/authStore'
 import userService from '@/services/userService'
 
 interface Rating {
-  id?: string
-  ratingId?: string
   userId: string
   userName: string
   stars: number
   comment: string
   createdAt: string
+  id?: string
 }
 
 interface Props {
@@ -47,16 +46,16 @@ const hasMoreReviews = computed(() => {
 })
 
 const handleLoadMore = () => {
-  reviewsToShow.value = reviews.value.length 
+  reviewsToShow.value = reviews.value.length
 }
 
 const handleShowLess = () => {
-  reviewsToShow.value = 3 
+  reviewsToShow.value = 3
 }
 
 const handleDeleteReview = (review: Rating) => {
   if (!authStore.isAuthenticated) return
-  
+
   reviewToDelete.value = review
   showDeleteConfirm.value = true
 }
@@ -81,7 +80,6 @@ const fetchCurrentUser = async () => {
           currentUserId.value = rawId.$oid
         } else {
           const str = JSON.stringify(rawId)
-
           const hexMatch = str.match(/[a-f0-9]{24}/i)
           if (hexMatch) {
             currentUserId.value = hexMatch[0]
@@ -113,24 +111,23 @@ const confirmDelete = async () => {
 
   isDeleting.value = true
   try {
-    const ratingId = reviewToDelete.value.id || reviewToDelete.value.ratingId
-    await productService.deleteProductReview(String(props.productId), String(ratingId))
+    await productService.deleteProductReview(props.productId.toString())
 
-    submitMessage.value = { type: 'success', text: 'Review deleted successfully!' }
-    await fetchReviews()
-
-    setTimeout(() => {
-      submitMessage.value = null
-    }, 2000)
-  } catch (error: any) {
-    console.error('Error deleting review:', error)
-    submitMessage.value = {
-      type: 'error',
-      text: error.response?.data?.message || 'Failed to delete review. Please try again.',
+    if (currentUserId.value) {
+      reviews.value = reviews.value.filter((r) => String(r.userId) !== String(currentUserId.value))
+    } else {
+      await fetchReviews()
     }
+
+    submitMessage.value = { type: 'success', text: 'Review deleted successfully' }
+    showDeleteConfirm.value = false
+
+    await fetchReviews()
+  } catch (err) {
+    console.error('Delete error:', err)
+    submitMessage.value = { type: 'error', text: 'Failed to delete review' }
   } finally {
     isDeleting.value = false
-    showDeleteConfirm.value = false
     reviewToDelete.value = null
   }
 }
@@ -144,30 +141,24 @@ watch(
 )
 
 const fetchReviews = async () => {
-  if (!props.productId) {
-    console.warn('No productId provided')
-    loadingReviews.value = false
-    return
-  }
+  if (!props.productId) return
 
   loadingReviews.value = true
   fetchError.value = null
 
   try {
-    console.log('Fetching product with ID:', props.productId)
-    const response = await productService.getProductById(String(props.productId))
-    const product = response.data
+    const response = await productService.getProductReviews(props.productId.toString())
+    reviews.value = Array.isArray(response.data) ? response.data : response.data.content || []
 
-    console.log('Product data received:', product)
-
-    reviews.value = product.ratings || []
-    averageRating.value = product.averageRating || 0
-
-    console.log('Reviews extracted:', reviews.value)
-    console.log('Average rating:', averageRating.value)
-  } catch (error: any) {
-    console.error('Error fetching reviews:', error)
-    fetchError.value = error.response?.data?.message || error.message || 'Failed to load reviews'
+    if (reviews.value.length > 0) {
+      const total = reviews.value.reduce((sum, r) => sum + r.stars, 0)
+      averageRating.value = total / reviews.value.length
+    } else {
+      averageRating.value = 0
+    }
+  } catch (err) {
+    console.error('Fetch error:', err)
+    fetchError.value = 'Could not load reviews'
   } finally {
     loadingReviews.value = false
   }
@@ -176,7 +167,9 @@ const fetchReviews = async () => {
 const handleAddReview = () => {
   if (!authStore.isAuthenticated) {
     submitMessage.value = { type: 'error', text: 'Please log in to submit a review.' }
-    setTimeout(() => { submitMessage.value = null }, 3000)
+    setTimeout(() => {
+      submitMessage.value = null
+    }, 3000)
     return
   }
   showReviewPopup.value = true
@@ -186,37 +179,23 @@ const handleClosePopup = () => {
   showReviewPopup.value = false
 }
 
-const handleSubmitReview = async (reviewData: any) => {
-  if (!props.productId) {
-    submitMessage.value = { type: 'error', text: 'Product ID not found' }
-    return
-  }
+const handleSubmitReview = async (formData: { rating: number; comment: string }) => {
+  if (!props.productId || !authStore.isAuthenticated) return
 
   isSubmitting.value = true
-  submitMessage.value = null
-
   try {
-    const ratingData = {
-      stars: reviewData.rating,
-      comment: reviewData.comment,
-    }
+    await productService.submitProductReview(props.productId.toString(), {
+      stars: formData.rating,
+      comment: formData.comment,
+    })
 
-    const response = await productService.submitProductReview(String(props.productId), ratingData)
-
-    console.log('Review submitted successfully:', response.data)
     submitMessage.value = { type: 'success', text: 'Review submitted successfully!' }
+    showReviewPopup.value = false
 
     await fetchReviews()
-
-    setTimeout(() => {
-      showReviewPopup.value = false
-      submitMessage.value = null
-    }, 1500)
-  } catch (error: any) {
-    console.error('Error submitting review:', error)
-    const errorMessage =
-      error.response?.data?.message || error.message || 'Failed to submit review. Please try again.'
-    submitMessage.value = { type: 'error', text: errorMessage }
+  } catch (err: any) {
+    const msg = err.response?.data?.message || 'Failed to submit review'
+    submitMessage.value = { type: 'error', text: msg }
   } finally {
     isSubmitting.value = false
   }
@@ -393,12 +372,10 @@ const getStarDisplay = (stars: number) => {
           </div>
 
           <div class="flex flex-col luxurious-roman-regular flex-1">
-            <!-- Stars and Delete Button Row -->
             <div class="flex justify-between items-start">
               <div class="flex text-[#280559] text-xl mb-2">
                 {{ getStarDisplay(review.stars) }}
               </div>
-              <!-- Delete button - only visible for user's own reviews -->
               <div v-if="authStore.isAuthenticated && isOwnReview(review)" class="flex gap-2">
                 <button
                   @click="handleDeleteReview(review)"
@@ -410,12 +387,10 @@ const getStarDisplay = (stars: number) => {
               </div>
             </div>
 
-            <!-- Comment -->
             <p class="text-gray-800 italic leading-relaxed mb-3">
               {{ review.comment }}
             </p>
 
-            <!-- Name and date -->
             <div class="flex flex-col md:flex-row md:items-center gap-1 md:gap-10 mt-1">
               <span class="font-bold text-gray-900">{{ review.userName }}</span>
               <span class="text-gray-500 text-sm">{{ formatDate(review.createdAt) }}</span>

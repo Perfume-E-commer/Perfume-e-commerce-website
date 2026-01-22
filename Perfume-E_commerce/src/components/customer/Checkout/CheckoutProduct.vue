@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { reactive, onMounted, computed } from 'vue'
+import { reactive, onMounted, computed, ref } from 'vue'
 import { useCartStore } from '@/stores/cartStore'
+import userService from '@/services/userService'
+import type { Address } from '@/services/userService'
 
-// --- Assuming types are imported or defined as below ---
 interface CheckoutFormData {
   email: string
   firstName: string
@@ -11,12 +12,20 @@ interface CheckoutFormData {
   phone: string
   payment: string
 }
+
+interface PickupFormData {
+  email: string
+  firstName: string
+  lastName: string
+  location: string
+  phone: string
+  payment: string
+}
+
 type DeliveryType = 'ship' | 'pickup'
-// ----------------------------------------------------
 
 const cartStore = useCartStore()
 
-// Initial State Definition
 const initialFormData: CheckoutFormData = {
   email: '',
   firstName: '',
@@ -26,21 +35,48 @@ const initialFormData: CheckoutFormData = {
   payment: '',
 }
 
+const initialPickupData: PickupFormData = {
+  email: '',
+  firstName: '',
+  lastName: '',
+  location: '',
+  phone: '',
+  payment: '',
+}
+
 const checkoutData = reactive<{
   deliveryType: DeliveryType
   formData: CheckoutFormData
+  pickupFormData: PickupFormData
   isProcessing: boolean
 }>({
   deliveryType: 'ship',
   formData: initialFormData,
+  pickupFormData: initialPickupData,
   isProcessing: false,
 })
 
+const savedAddresses = ref<Address[]>([])
+const loadingAddresses = ref(false)
+const showAddressSelector = ref(false)
+
 onMounted(() => {
   cartStore.fetchCart()
+  fetchUserAddresses()
 })
 
-// --- Computed Properties for Order Summary ---
+const fetchUserAddresses = async () => {
+  try {
+    loadingAddresses.value = true
+    const response = await userService.getProfile()
+    savedAddresses.value = response.data.addresses || []
+  } catch (error) {
+    console.error('Failed to fetch addresses:', error)
+  } finally {
+    loadingAddresses.value = false
+  }
+}
+
 const estimatedShipping = computed(() => 0.0)
 const estimatedTax = computed(() => 0.0)
 
@@ -48,7 +84,6 @@ const total = computed(() => {
   return cartStore.cart.totalPrice + estimatedShipping.value + estimatedTax.value
 })
 
-// --- Utility Functions ---
 const formatPrice = (value: number): string => {
   if (typeof value !== 'number' || isNaN(value)) return '$0.00'
   return new Intl.NumberFormat('en-US', {
@@ -59,34 +94,59 @@ const formatPrice = (value: number): string => {
   }).format(value)
 }
 
-// --- Final Checkout Handler ---
+const selectAddress = (address: Address) => {
+  checkoutData.formData.firstName = address.fullName.split(' ')[0] || ''
+  checkoutData.formData.lastName = address.fullName.split(' ').slice(1).join(' ') || ''
+  checkoutData.formData.address = `${address.houseNumber}, ${address.street}, ${address.village}, ${address.district}`
+  checkoutData.formData.phone = address.phoneNumber || ''
+  showAddressSelector.value = false
+}
+
 const handleCheckout = async (): Promise<void> => {
   if (checkoutData.isProcessing || cartStore.isLoading) return
 
-  const requiredFields: (keyof CheckoutFormData)[] = [
-    'email',
-    'firstName',
-    'address',
-    'phone',
-    'payment',
-  ]
-  const isFormValid = requiredFields.every((key) => !!checkoutData.formData[key])
+  let requiredFields: string[] = []
+  let formPayload: any
 
-  if (!isFormValid) {
-    alert('Please fill in all required fields.')
-    return
+  if (checkoutData.deliveryType === 'ship') {
+    requiredFields = ['email', 'firstName', 'address', 'phone', 'payment']
+    const isFormValid = requiredFields.every(
+      (key) => !!checkoutData.formData[key as keyof CheckoutFormData],
+    )
+
+    if (!isFormValid) {
+      alert('Please fill in all required fields.')
+      return
+    }
+
+    formPayload = {
+      ...checkoutData.formData,
+      deliveryType: checkoutData.deliveryType,
+      cartItems: cartStore.cart.items,
+    }
+  } else {
+    requiredFields = ['email', 'firstName', 'location', 'phone', 'payment']
+    const isFormValid = requiredFields.every(
+      (key) => !!checkoutData.pickupFormData[key as keyof PickupFormData],
+    )
+
+    if (!isFormValid) {
+      alert('Please fill in all required fields.')
+      return
+    }
+
+    formPayload = {
+      ...checkoutData.pickupFormData,
+      deliveryType: checkoutData.deliveryType,
+      cartItems: cartStore.cart.items,
+    }
   }
 
   checkoutData.isProcessing = true
 
   try {
-    console.log('Final Order Payload:', {
-      ...checkoutData.formData,
-      deliveryType: checkoutData.deliveryType,
-      cartItems: cartStore.cart.items,
-    })
+    console.log('Final Order Payload:', formPayload)
 
-    // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1500))
 
     alert('Order placed successfully! Total: ' + formatPrice(total.value))
@@ -171,54 +231,112 @@ const handleCheckout = async (): Promise<void> => {
             Order Checkout
           </button>
 
-          <input
-            type="email"
-            placeholder="Email"
-            v-model="checkoutData.formData.email"
-            class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
-            required
-          />
+          <!-- Shipping Form -->
+          <div v-if="checkoutData.deliveryType === 'ship'">
+            <!-- Address Selector -->
+            <div v-if="savedAddresses.length > 0" class="mb-6">
+              <button
+                type="button"
+                @click="showAddressSelector = !showAddressSelector"
+                class="w-full border-2 border-dashed border-gray-300 px-4 py-3 rounded-lg mb-4 text-sm font-medium text-gray-600 hover:border-gray-400 transition luxurious-roman-regular"
+              >
+                {{ showAddressSelector ? 'Hide Saved Addresses' : '+ Select from Saved Addresses' }}
+              </button>
 
-          <div class="flex gap-4 mb-4">
+              <div v-if="showAddressSelector" class="mb-6 grid grid-cols-1 gap-3">
+                <div
+                  v-if="loadingAddresses"
+                  class="text-center text-sm text-gray-500 py-4 luxurious-roman-regular"
+                >
+                  Loading addresses...
+                </div>
+                <button
+                  v-else
+                  v-for="(address, index) in savedAddresses"
+                  :key="index"
+                  type="button"
+                  @click="selectAddress(address)"
+                  class="text-left p-3 border border-gray-300 rounded-lg hover:border-black hover:bg-gray-50 transition luxurious-roman-regular text-sm"
+                >
+                  <p class="font-medium text-gray-900">{{ address.fullName }}</p>
+                  <p class="text-gray-600 text-xs mt-1">
+                    {{ address.houseNumber }}, {{ address.street }}, {{ address.village }},
+                    {{ address.district }}
+                  </p>
+                  <p class="text-gray-500 text-xs">{{ address.phoneNumber }}</p>
+                </button>
+              </div>
+            </div>
+
             <input
-              type="text"
-              placeholder="First Name"
-              v-model="checkoutData.formData.firstName"
-              class="w-full border rounded-lg border-gray-300 p-3 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+              type="email"
+              placeholder="Email"
+              v-model="checkoutData.formData.email"
+              class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
               required
             />
+
+            <div class="flex gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="First Name"
+                v-model="checkoutData.formData.firstName"
+                class="w-full border rounded-lg border-gray-300 p-3 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                v-model="checkoutData.formData.lastName"
+                class="w-full border rounded-lg border-gray-300 p-3 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+                required
+              />
+            </div>
+
             <input
               type="text"
-              placeholder="Last Name"
-              v-model="checkoutData.formData.lastName"
-              class="w-full border rounded-lg border-gray-300 p-3 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+              placeholder="Enter shipping address"
+              v-model="checkoutData.formData.address"
+              class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+              required
+            />
+
+            <input
+              type="tel"
+              placeholder="Phone Number"
+              v-model="checkoutData.formData.phone"
+              class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+              required
+            />
+
+            <input
+              type="text"
+              placeholder="Payment Information"
+              v-model="checkoutData.formData.payment"
+              class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
               required
             />
           </div>
 
-          <input
-            type="text"
-            placeholder="Select your address"
-            v-model="checkoutData.formData.address"
-            class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
-            required
-          />
-
-          <input
-            type="tel"
-            placeholder="Phone Number"
-            v-model="checkoutData.formData.phone"
-            class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
-            required
-          />
-
-          <input
-            type="text"
-            placeholder="Select Payment"
-            v-model="checkoutData.formData.payment"
-            class="w-full border rounded-lg border-gray-300 p-3 mb-4 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
-            required
-          />
+          <!-- Pickup Form -->
+          <div v-else>
+            <div class="mb-4">
+              <p class="text-sm text-gray-600 mb-3 luxurious-roman-regular">
+                Select a location to pick up your order
+              </p>
+              <input
+                type="text"
+                placeholder="Enter address or postal code"
+                v-model="checkoutData.pickupFormData.location"
+                class="w-full border rounded-lg border-gray-300 p-3 mb-2 placeholder-gray-500 focus:ring-0 focus:border-gray-500 transition luxurious-roman-regular"
+                required
+              />
+              <p class="text-xs text-gray-500 luxurious-roman-regular">
+                Using a specific location such as a home address or postcode will get the most
+                accurate results.
+              </p>
+            </div>
+          </div>
 
           <button
             type="submit"

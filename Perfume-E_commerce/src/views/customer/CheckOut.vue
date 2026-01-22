@@ -9,11 +9,11 @@ import CheckoutProduct from '../../components/customer/Checkout/CheckoutProduct.
     <header class="sticky top-0 z-50">
       <Navbar />
     </header>
-    
-    <main class="flex-grow">
+
+    <main class="grow">
       <CheckoutProduct />
     </main>
-    
+
     <footer class="mt-auto">
       <Footer />
     </footer>

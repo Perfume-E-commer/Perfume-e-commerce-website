@@ -14,7 +14,7 @@
         </div>
 
         <div class="w-full h-px bg-gray-100"></div>
-        <OrderPayment :method="order.paymentMethod" />
+        <OrderPayment :payment-method="order.paymentMethod" />
         <div class="w-full h-px bg-gray-100"></div>
         
         <OrderAddress 

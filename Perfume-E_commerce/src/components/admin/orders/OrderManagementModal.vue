@@ -201,15 +201,29 @@
                       getPaymentClass(order.paymentStatus),
                     ]"
                   >
-                    {{ order.paymentStatus || 'PAID' }}
+                    {{ order.paymentStatus === 'PENDING' ? 'UNPAID' : order.paymentStatus }}
                   </span>
+
                   <button
+                    v-if="canTogglePayment(order)"
                     @click="togglePayment"
                     :disabled="isUpdating"
                     class="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline px-2"
                   >
-                    Toggle
+                    Toggle to {{ order.paymentStatus === 'PAID' ? 'Unpaid' : 'Paid' }}
                   </button>
+
+                  <span v-else class="text-xs text-gray-400 px-2 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    Verified
+                  </span>
                 </div>
               </div>
 
@@ -266,17 +280,17 @@ import { ref } from 'vue'
 import { generateInvoice } from '../../../utils/invoiceGenerator'
 
 const props = defineProps<{
-  order: any;
-  show: boolean;
-}>();
+  order: any
+  show: boolean
+}>()
 
 const downloadInvoice = () => {
   if (!props.order) return
   try {
     generateInvoice(props.order)
   } catch (e) {
-    console.error("Invoice Error:", e)
-    alert("Failed to generate invoice. Please try again.")
+    console.error('Invoice Error:', e)
+    alert('Failed to generate invoice. Please try again.')
   }
 }
 
@@ -286,16 +300,15 @@ const onStatusChange = (event: Event) => {
   emit('update-status', props.order.id, newStatus)
 }
 
-const emit = defineEmits([
-  'close',
-  'refresh',
-  'update-status',
-  'toggle-payment',
-])
+const canTogglePayment = (order: any) => {
+  const method = order.paymentMethod || 'Credit Card';
+  return method.toLowerCase().includes('cash');
+}
+
+const emit = defineEmits(['close', 'refresh', 'update-status', 'toggle-payment'])
 
 const isUpdating = ref(false)
 
-// --- Helpers ---
 const formatCurrency = (val: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val || 0)
 
@@ -354,13 +367,17 @@ const togglePayment = async () => {
   const current = props.order.paymentStatus || 'PAID'
   const newStatus = current === 'PAID' ? 'PENDING' : 'PAID'
 
-  if (!confirm(`Update payment status to ${newStatus}?`)) {
+  if (!canTogglePayment(props.order) && newStatus === 'PENDING') {
+      alert("You cannot mark a Credit Card order as Unpaid.");
+      return;
+  }
+
+  if (!confirm(`Update payment status to ${newStatus === 'PENDING' ? 'Unpaid' : 'Paid'}?`)) {
     return
   }
 
   isUpdating.value = true
   try {
-    // Emit event to parent component
     emit('toggle-payment', props.order.id, newStatus)
   } finally {
     isUpdating.value = false

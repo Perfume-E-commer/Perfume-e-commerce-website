@@ -40,10 +40,13 @@ export interface Order {
   orderDate: string;
   status: string;
   subtotal: number;
+  discountAmount?: number;
+  promoCode?: string;
   totalItems: number;
   shippingCost: number;
   total: number;
   paymentMethod: string;
+  customerEmail?: string;
   placedDate: string;
   shippedDate?: string;
   estimatedArrivalDate?: string;

@@ -141,83 +141,33 @@
       </div>
 
       <div v-else class="bg-gray-50 rounded-2xl p-8 border border-gray-200 animate-slide-down">
-        <h4
-          class="text-sm font-bold text-[#280559] mb-6 uppercase tracking-wide flex items-center gap-2"
-        >
-          <span class="w-2 h-2 bg-[#280559] rounded-full"></span> New Shipping Details
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-          <input
-            v-model="newAddress.fullName"
-            placeholder="Receiver Name"
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <input
-            v-model="newAddress.phoneNumber"
-            placeholder="Phone Number"
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <input
-            v-model="newAddress.houseNumber"
-            placeholder="House No."
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <input
-            v-model="newAddress.street"
-            placeholder="Street"
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <input
-            v-model="newAddress.village"
-            placeholder="Village (Phum)"
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <input
-            v-model="newAddress.community"
-            placeholder="District (Sangkat)"
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <input
-            v-model="newAddress.district"
-            placeholder="Community (Khan)"
-            class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-          />
-          <div class="flex gap-4">
-            <input
-              v-model="newAddress.city"
-              placeholder="City / Province"
-              class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-            />
-            <input
-              v-model="newAddress.zipCode"
-              placeholder="Zip"
-              class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium"
-            />
-          </div>
-        </div>
-        <div class="flex items-center gap-3 mb-8">
-          <label class="flex items-center cursor-pointer relative">
-            <input v-model="newAddress.isDefault" type="checkbox" class="sr-only peer" />
-            <div
-              class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#280559]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#280559]"
-            ></div>
-            <span class="ml-3 text-sm font-bold text-gray-700">Set as default address</span>
-          </label>
-        </div>
-        <div class="flex gap-4">
-          <button
-            @click="handleAdd"
-            class="bg-[#280559] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-purple-900/10 hover:bg-[#1e0342] hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-          >
-            Save Address
-          </button>
-          <button
-            @click="cancelForm"
-            class="text-gray-500 px-6 py-3 text-sm font-bold hover:text-gray-900 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
+         <h4 class="text-sm font-bold text-[#280559] mb-6 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-2 h-2 bg-[#280559] rounded-full"></span> New Shipping Details
+         </h4>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+           <input v-model="newAddress.fullName" placeholder="Receiver Name" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.phoneNumber" placeholder="Phone Number" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.houseNumber" placeholder="House No." class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.street" placeholder="Street" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.village" placeholder="Village (Phum)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.district" placeholder="District (Sangkat)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <input v-model="newAddress.community" placeholder="Community (Khan)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           <div class="flex gap-4">
+              <input v-model="newAddress.city" placeholder="City / Province" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+              <input v-model="newAddress.zipCode" placeholder="Zip" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-[#280559]/20 focus:border-[#280559] outline-none transition-all duration-300 placeholder-gray-400 font-medium">
+           </div>
+         </div>
+         <div class="flex items-center gap-3 mb-8">
+           <label class="flex items-center cursor-pointer relative">
+             <input v-model="newAddress.isDefault" type="checkbox" class="sr-only peer">
+             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#280559]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#280559]"></div>
+             <span class="ml-3 text-sm font-bold text-gray-700">Set as default address</span>
+           </label>
+         </div>
+         <div class="flex gap-4">
+           <button @click="handleAdd" class="bg-[#280559] text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-purple-900/10 hover:bg-[#1e0342] hover:shadow-xl transition-all transform hover:-translate-y-0.5">Save Address</button>
+           <button @click="cancelForm" class="text-gray-500 px-6 py-3 text-sm font-bold hover:text-gray-900 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Cancel</button>
+         </div>
       </div>
     </div>
   </div>

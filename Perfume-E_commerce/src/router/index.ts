@@ -140,21 +140,16 @@ const routes: RouteRecordRaw[] = [
         name: 'My Orders',
         component: () => import('../views/customer/MyOrders.vue'),
       },
-      // {
-      //   path: 'returns',
-      //   name: 'My Returns',
-      //   component: () => import('@/views/customer/MyReturns.vue'),
-      // },
+      {
+        path: 'history',
+        name: 'Order History',
+        component: () => import('@/views/customer/OrderHistory.vue'),
+      }
       {
         path: 'wishlist',
         name: 'My Wishlist',
         component: () => import('@/views/customer/MyWishlist.vue'),
       },
-      // {
-      //   path: 'history',
-      //   name: 'Order History',
-      //   component: () => import('@/views/customer/OrderHistory.vue'),
-      // }
     ],
   },
 

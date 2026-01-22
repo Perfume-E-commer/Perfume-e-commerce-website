@@ -147,7 +147,7 @@ interface Order {
   orderDate: string;
   status: string;
   subtotal: number;
-  discountAmount: number; 
+  discountAmount?: number; 
   promoCode?: string;     
   totalItems: number;
   shippingCost: number;

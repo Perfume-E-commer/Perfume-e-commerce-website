@@ -33,13 +33,28 @@
           @click="$emit('toggle')"
           aria-label="Close sidebar"
         >
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
               d="M6 18L18 6M6 6l12 12"
             ></path>
+          </svg> -->
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M14.5 3.5V20.5H13.5V3.5H14.5ZM10.5 15.793L6.70703 12L10.5 8.20703V15.793Z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M18 3V21" stroke="currentColor" stroke-width="2" />
           </svg>
         </button>
       </div>
@@ -135,12 +150,12 @@ onMounted(async () => {
       adminProfile.value = {
         name: `${response.data.firstName} ${response.data.lastName}`,
         email: response.data.email,
-        avatar: response.data.imageUrl || response.data.avatarUrl || '',
+        avatar: response.data.avatarUrl || '',
       }
     }
   } catch (error) {
     console.error('Sidebar: Failed to load profile', error)
-    adminProfile.value.email = "Error loading profile"
+    adminProfile.value.email = 'Error loading profile'
   }
 })
 

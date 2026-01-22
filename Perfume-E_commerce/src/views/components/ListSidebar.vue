@@ -31,7 +31,7 @@ export default {
   emits: ['item-click'],
   props: {
     menuItems: {
-      type: Array as () => { name: string; link: string }[],
+      type: Array as () => { name: string; link: string; icon?: string }[],
       required: true,
     },
   },
@@ -40,7 +40,7 @@ export default {
 
     const isActive = (link: string) => {
       if (link === '/admin/dashboard' && route.path !== '/admin/dashboard') {
-          return false;
+        return false
       }
       return route.path.startsWith(link)
     }

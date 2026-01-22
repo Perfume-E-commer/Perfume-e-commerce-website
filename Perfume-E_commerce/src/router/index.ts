@@ -122,26 +122,26 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: '', 
-        redirect: '/account/profile'
+        path: '',
+        redirect: '/account/profile',
       },
       {
-        path: 'profile', 
+        path: 'profile',
         name: 'My Profile',
         component: () => import('../views/customer/UserProfile.vue'),
       },
       {
-        path: 'orders', 
+        path: 'orders',
         name: 'My Orders',
         component: () => import('../views/customer/MyOrders.vue'),
       },
       // {
-      //   path: 'returns', 
+      //   path: 'returns',
       //   name: 'My Returns',
       //   component: () => import('@/views/customer/MyReturns.vue'),
       // },
       // {
-      //   path: 'wishlist', 
+      //   path: 'wishlist',
       //   name: 'My Wishlist',
       //   component: () => import('@/views/customer/MyWishlist.vue'),
       // },
@@ -150,14 +150,14 @@ const routes: RouteRecordRaw[] = [
       //   name: 'Order History',
       //   component: () => import('@/views/customer/OrderHistory.vue'),
       // }
-    ]
+    ],
   },
 
   // ADMIN DASHBOARD (Layout Wrapper)
   {
     path: '/admin',
     component: () => import('../views/admin/MainDashboard.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, role: 'ADMIN' },
     children: [
       {
         path: '',
@@ -232,16 +232,39 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = authService.isAuthenticated()
-  const requiresAuth = to.meta.requiresAuth
+  const requiresAuth = to.meta?.requiresAuth
   const isLoginPage = to.name === 'login'
+  const requiredRole = (to.meta as any)?.role
 
+  // read user role from localStorage (saved on login)
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const userRole = user?.role
+
+  // If already authenticated and trying to visit login page, redirect by role
   if (isAuthenticated && isLoginPage) {
-    next({ name: 'admindashboard' })
-  } else if (requiresAuth && !isAuthenticated) {
-    next({ name: 'login' })
-  } else {
-    next()
+    if (userRole === 'ADMIN') {
+      next({ name: 'admin-dashboard' })
+    } else {
+      next({ name: 'home' })
+    }
+
+    return
   }
+
+  // If route requires auth but user is not authenticated -> login
+  if (requiresAuth && !isAuthenticated) {
+    next({ name: 'login' })
+    return
+  }
+
+  // If route requires a specific role, block users without that role
+  if (requiredRole && userRole !== requiredRole) {
+    // Optionally you can route to a 403 page or home
+    next({ name: 'home' })
+    return
+  }
+
+  next()
 })
 
 export default router

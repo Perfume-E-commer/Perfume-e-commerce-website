@@ -60,7 +60,7 @@
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">
               Total Orders (30d)
             </p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">{{ dashboardData.totalOrders30d }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-2">{{ dashboardData.totalOrders30d }}</p>
           </div>
           <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,12 +74,13 @@
           </div>
         </router-link>
 
-        <div
+        <router-link
+          to="/admin/orders"
           class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition"
         >
           <div>
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Revenue (30d)</p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">
+            <p class="text-2xl font-bold text-gray-900 mt-2">
               {{ formatCurrency(dashboardData.revenue30d) }}
             </p>
           </div>
@@ -93,7 +94,7 @@
               />
             </svg>
           </div>
-        </div>
+        </router-link>
 
         <router-link
           to="/admin/inventory"
@@ -105,7 +106,7 @@
             >
               Low Stock Alerts
             </p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">{{ lowStockItems.length }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-2">{{ lowStockItems.length }}</p>
           </div>
           <div class="p-3 bg-red-50 text-red-600 rounded-lg">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +126,7 @@
         >
           <div>
             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Customers</p>
-            <p class="text-3xl font-bold text-gray-900 mt-2">{{ dashboardData.activeCustomers }}</p>
+            <p class="text-2xl font-bold text-gray-900 mt-2">{{ dashboardData.activeCustomers }}</p>
           </div>
           <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,20 +141,88 @@
         </router-link>
       </div>
 
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-lg font-bold text-gray-900">Sales Overview (Last 30 Days)</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 w-full">
+        <div class="bg-white p-6 lg:col-span-3 rounded-xl shadow-sm border border-gray-100">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-bold text-gray-900">Sales Overview (Last 30 Days)</h2>
+          </div>
+
+          <div
+            v-if="!dashboardData.salesChart || dashboardData.salesChart.length === 0"
+            class="h-96 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-lg bg-gray-50/50"
+          >
+            <p>No sales data available yet.</p>
+          </div>
+
+          <div v-else class="w-full">
+            <ApexCharts height="380" :data="chartComputed.revenue" :labels="chartComputed.dates" />
+          </div>
         </div>
 
         <div
-          v-if="!dashboardData.salesChart || dashboardData.salesChart.length === 0"
-          class="h-64 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-lg bg-gray-50/50"
+          class="bg-white rounded-xl lg:col-span-1 shadow-sm border border-gray-100 overflow-hidden h-fit"
         >
-          <p>No sales data available yet.</p>
-        </div>
+          <div class="p-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
+            <h3 class="font-bold text-red-800 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              Low Stock
+            </h3>
+          </div>
 
-        <div v-else class="w-full">
-          <ApexCharts height="300" :data="chartComputed.revenue" :labels="chartComputed.dates" />
+          <div class="p-4 space-y-3 max-h-[450px] overflow-y-auto custom-scrollbar">
+            <div v-if="lowStockItems.length === 0" class="text-center text-gray-400 text-xs py-4">
+              All items well stocked.
+            </div>
+
+            <div
+              v-else
+              v-for="(item, index) in lowStockItems"
+              :key="index"
+              class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200"
+              >
+                <img :src="item.imageUrl" :alt="item.name" class="w-full h-full object-cover" />
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ item.name }}</p>
+
+                <p v-if="item.lowVariant" class="text-xs text-red-600 font-medium">
+                  Variant <b>{{ item.lowVariant.size }}</b
+                  >: Only {{ item.lowVariant.stock }} left
+                </p>
+
+                <p v-else class="text-xs text-gray-500">
+                  Stock: <span class="text-red-600 font-bold">{{ item.stock }}</span>
+                  <span class="text-gray-300">/</span>
+                  Limit: {{ item.limit }}
+                </p>
+              </div>
+
+              <router-link
+                :to="`/admin/products/edit/${item.id}`"
+                class="p-1.5 text-gray-400 hover:text-indigo-600 bg-white border border-gray-100 shadow-sm rounded-md transition-all"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+              </router-link>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -189,7 +258,7 @@
               </thead>
               <tbody class="divide-y divide-gray-100">
                 <tr
-                  v-for="order in dashboardData.recentOrders"
+                  v-for="order in dashboardData.recentOrders.slice(0, 5)"
                   :key="order.id"
                   class="hover:bg-gray-50"
                 >
@@ -227,69 +296,6 @@
 
         <div class="space-y-6">
           <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
-              <h3 class="font-bold text-red-800 flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-                Low Stock
-              </h3>
-            </div>
-            <div class="p-4 space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-              <div v-if="lowStockItems.length === 0" class="text-center text-gray-400 text-xs py-4">
-                All items well stocked.
-              </div>
-
-              <div
-                v-else
-                v-for="(item, index) in lowStockItems"
-                :key="index"
-                class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors border border-transparent hover:border-gray-100"
-              >
-                <div
-                  class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200"
-                >
-                  <img :src="item.imageUrl" :alt="item.name" class="w-full h-full object-cover" />
-                </div>
-
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900 truncate">{{ item.name }}</p>
-
-                  <p v-if="item.lowVariant" class="text-xs text-red-600 font-medium">
-                    Variant <b>{{ item.lowVariant.size }}</b
-                    >: Only {{ item.lowVariant.stock }} left
-                  </p>
-
-                  <p v-else class="text-xs text-gray-500">
-                    Stock: <span class="text-red-600 font-bold">{{ item.stock }}</span>
-                    <span class="text-gray-300">/</span>
-                    Limit: {{ item.limit }}
-                  </p>
-                </div>
-
-                <router-link
-                  :to="`/admin/products/edit/${item.id}`"
-                  class="p-1.5 text-gray-400 hover:text-indigo-600 bg-white border border-gray-100 shadow-sm rounded-md transition-all"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                    />
-                  </svg>
-                </router-link>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div
               class="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center"
             >
@@ -304,7 +310,7 @@
               </div>
 
               <div
-                v-for="product in activePromotions"
+                v-for="product in activePromotions.slice(0, 5)"
                 :key="product.id"
                 @click="router.push(`/admin/products/edit/${product.id}`)"
                 class="flex items-center gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-gray-50 transition-colors p-2 -mx-2 rounded-lg group"
@@ -320,7 +326,11 @@
                 </div>
 
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">{{ product.name }}</p>
+                  <p
+                    class="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors"
+                  >
+                    {{ product.name }}
+                  </p>
                   <div class="flex items-center gap-2 text-xs">
                     <span class="font-bold text-indigo-700">{{
                       formatCurrency(product.discountedPrice)

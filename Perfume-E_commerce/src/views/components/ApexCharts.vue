@@ -1,9 +1,9 @@
 <template>
   <div class="w-full h-full">
-    <apexchart 
-      :height="height" 
-      type="area" 
-      :options="chartOptions" 
+    <apexchart
+      :height="height"
+      type="area"
+      :options="chartOptions"
       :series="chartSeries"
     ></apexchart>
   </div>
@@ -12,6 +12,7 @@
 <script lang="ts">
 import { defineComponent, computed, toRefs } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+import type { ApexOptions } from 'apexcharts'
 
 export default defineComponent({
   name: 'ApexCharts',
@@ -25,27 +26,53 @@ export default defineComponent({
     },
     data: {
       type: Array as () => number[], // Revenue numbers
-      default: () => []
+      default: () => [],
     },
     labels: {
       type: Array as () => string[], // Dates
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   setup(props) {
     const { data, labels } = toRefs(props)
     const chartSeries = computed(() => [
       {
         name: 'Revenue',
-        data: data.value, 
-      }
+        data: data.value,
+      },
     ])
-    const chartOptions = computed(() => ({
+    const chartOptions = computed<ApexOptions>(() => ({
       chart: {
         id: 'revenue-chart',
         type: 'area',
-        toolbar: { show: false },
-        zoom: { enabled: false }
+        // toolbar: { show: false },
+        // zoom: { enabled: false },
+        zoom: {
+          enabled: true,
+        },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true, // export PNG / SVG / CSV
+            selection: true,
+            zoom: true,
+            zoomin: true,
+            zoomout: true,
+            pan: true,
+            reset: true,
+          },
+          export: {
+            csv: {
+              filename: 'sales-data',
+            },
+            svg: {
+              filename: 'sales-chart',
+            },
+            png: {
+              filename: 'sales-chart',
+            },
+          },
+        },
       },
       colors: ['#4F46E5'], // Indigo-600
       stroke: {
@@ -73,7 +100,7 @@ export default defineComponent({
       yaxis: {
         labels: {
           formatter: (value: number) => {
-            return '$' + value;
+            return '$' + value
           },
           style: { colors: '#9CA3AF', fontSize: '12px' },
         },
@@ -86,9 +113,9 @@ export default defineComponent({
         y: {
           formatter: function (val: number) {
             return '$' + val.toFixed(2)
-          }
-        }
-      }
+          },
+        },
+      },
     }))
 
     return { chartOptions, chartSeries }

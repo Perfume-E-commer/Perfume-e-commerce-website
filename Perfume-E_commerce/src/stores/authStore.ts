@@ -3,13 +3,13 @@ import authService from '@/services/authService'
 import router from '@/router'
 
 interface User {
-  email: string;
-  role: 'USER' | 'ADMIN';
+  email: string
+  role: 'USER' | 'ADMIN'
 }
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: (JSON.parse(localStorage.getItem('user') || 'null')) as User | null,
+    user: JSON.parse(localStorage.getItem('user') || 'null') as User | null,
     token: localStorage.getItem('token') || '',
     loading: false,
     error: '',
@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated(): boolean {
       return !!this.token && !!this.user
-    }
+    },
   },
 
   actions: {
@@ -36,9 +36,9 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(this.user))
 
         if (data.role === 'ADMIN') {
-          router.push('/mainDashboard/admindashboard')
+          router.push({ name: 'admin-dashboard' })
         } else {
-          router.push('/')
+          router.push({ name: 'home' })
         }
 
         return true

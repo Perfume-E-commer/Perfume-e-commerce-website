@@ -33,7 +33,7 @@
 
     <!-- ✨ UPDATED: Added Search Bar with Low Stock Filter Button -->
     <div class="mb-6 flex flex-col sm:flex-row gap-4">
-      <div class="relative max-w-md">
+      <div class="relative max-w-md w-full">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -53,7 +53,7 @@
         />
       </div>
 
-      <div class="flex gap-2">
+      <!-- <div class="flex gap-2">
         <button
           @click="toggleLowStockFilter"
           :class="
@@ -65,7 +65,7 @@
         >
           ⚠️ Low Stock Only
         </button>
-      </div>
+      </div> -->
     </div>
 
     <!-- Success/Error Messages -->
@@ -110,7 +110,7 @@
               >
                 Category
               </th>
-              <th
+              <!-- <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Price
@@ -124,7 +124,7 @@
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Status
-              </th>
+              </th> -->
               <th
                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
@@ -164,10 +164,9 @@
                   {{ product.category }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <!-- <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">${{ product.price }}</div>
               </td>
-              <!-- ✨ UPDATED: Stock cell with low stock warning -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <span
@@ -196,7 +195,7 @@
                 >
                   {{ product.isActive ? 'Active' : 'Inactive' }}
                 </span>
-              </td>
+              </td> -->
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <router-link
                   :to="`/admin/products/edit/${product.id}`"

@@ -54,9 +54,13 @@
       </div>
 
       <!-- <div class="flex gap-2">
-        <button 
+        <button
           @click="toggleLowStockFilter"
-          :class="showLowStockOnly ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-700 border-gray-300'"
+          :class="
+            showLowStockOnly
+              ? 'bg-red-100 text-red-700 border-red-300'
+              : 'bg-white text-gray-700 border-gray-300'
+          "
           class="px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none transition-colors"
         >
           ⚠️ Low Stock Only
@@ -332,13 +336,13 @@ const loadProducts = async () => {
     isLoading.value = true
     errorMessage.value = ''
 
-    const params: { page: number; size: number; search: string } = {
-      page: currentPage.value ?? 0,
-      size: pageSize.value ?? 10,
-      search: searchQuery.value ?? '',
+    const params: { page?: number; size?: number; search?: string } = {
+      page: currentPage.value,
+      size: pageSize.value,
+      search: searchQuery.value,
     }
 
-    const response = await adminService.getProducts(params)
+    const response = await adminService.getProducts(params as any)
 
     products.value = Array.isArray(response.data) ? response.data : response.data.content || []
 
@@ -355,7 +359,6 @@ const loadProducts = async () => {
       totalPages.value = 1
       currentPage.value = 0
     }
-
   } catch (error: any) {
     errorMessage.value = error.response?.data?.message || 'Failed to load products'
     console.error('Error loading products:', error)
@@ -377,14 +380,14 @@ const toggleLowStockFilter = () => {
 
 const editProduct = (id: string | undefined) => {
   if (!id) {
-    console.error("Product ID is missing");
-    return;
+    console.error('Product ID is missing')
+    return
   }
   router.push(`/maindashboard/product/edit/${id}`)
 }
 
 const confirmDelete = async (id: string | undefined) => {
-  if (!id) return;
+  if (!id) return
 
   if (!confirm('Are you sure you want to delete this product?')) {
     return

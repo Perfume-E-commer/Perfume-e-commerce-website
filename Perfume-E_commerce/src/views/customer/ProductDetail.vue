@@ -19,13 +19,17 @@ const { products, currentProduct, loading } = storeToRefs(productStore)
 
 const productId = computed(() => String(route.params.id || ''))
 
+watch(
+  () => route.params.id,
+  async (newId) => {
+    if (newId) {
+      await productStore.fetchProductById(String(newId))
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(async () => {
-  const id = productId.value
-
-  if (id) {
-    await productStore.fetchProductById(id)
-  }
-
   if (!products.value || products.value.length === 0) {
     await productStore.fetchProducts(0, 12)
   }
@@ -69,7 +73,6 @@ const productTitle = computed(() => selectedProduct.value?.name || '')
     </header>
 
     <main>
-      <!-- Breadcrumb -->
       <section>
         <div class="flex flex-row text-black items-center mt-30 px-5 gap-1 luxurious-roman-regular">
           <a href="/">Home</a>
@@ -80,8 +83,11 @@ const productTitle = computed(() => selectedProduct.value?.name || '')
         </div>
       </section>
 
-      <!-- Product Detail -->
-      <section v-if="!loading && selectedProduct">
+      <section v-if="loading" class="flex justify-center items-center py-20">
+        <p class="text-gray-500">Loading product details...</p>
+      </section>
+
+      <section v-else-if="selectedProduct">
         <ProductDetailPerfume
           :id="selectedProduct.id"
           :name="selectedProduct.name"
@@ -93,7 +99,12 @@ const productTitle = computed(() => selectedProduct.value?.name || '')
           :stock="selectedProduct.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0"
           :average-rating="selectedProduct.averageRating || 0"
           :total-reviews="selectedProduct.totalReviews || 0"
+          :category="selectedProduct.category || ''"
         />
+      </section>
+
+      <section v-else class="flex justify-center items-center py-20">
+        <p class="text-gray-500">Product not found</p>
       </section>
 
       <section>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { Star, X } from 'lucide-vue-next'
 
 interface ReviewFormData {
-  username: string
   rating: number
   comment: string
 }
@@ -16,7 +15,6 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'submit'])
 
 const formData = ref<ReviewFormData>({
-  username: '',
   rating: 5,
   comment: '',
 })
@@ -31,7 +29,6 @@ const closeModal = () => {
 
 const resetForm = () => {
   formData.value = {
-    username: '',
     rating: 5,
     comment: '',
   }
@@ -41,9 +38,6 @@ const resetForm = () => {
 const validateForm = (): boolean => {
   errors.value = {}
 
-  if (!formData.value.username.trim()) {
-    errors.value.username = 'Please enter your name'
-  }
   if (!formData.value.comment.trim()) {
     errors.value.comment = 'Please share your thoughts'
   }
@@ -55,7 +49,7 @@ const submitReview = async () => {
   if (validateForm()) {
     isSubmitting.value = true
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300)) // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 300))
       emit('submit', formData.value)
       resetForm()
     } finally {
@@ -76,7 +70,6 @@ const getRatingStars = (rating: number) => {
     >
       <Transition name="modal-scale">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-          <!-- Header -->
           <div class="relative bg-linear-to-r from-[#280559] to-[#3a0770] px-8 py-10 text-white">
             <button
               @click="closeModal"
@@ -89,34 +82,7 @@ const getRatingStars = (rating: number) => {
             <p class="text-white/80 text-sm">Help others discover great products</p>
           </div>
 
-          <!-- Form -->
           <form @submit.prevent="submitReview" class="px-8 py-8 space-y-6">
-            <!-- Username Field -->
-            <div class="space-y-2">
-              <label for="username" class="block text-sm font-semibold text-gray-700">
-                Your Name
-              </label>
-              <input
-                type="text"
-                id="username"
-                v-model="formData.username"
-                placeholder="Enter your name"
-                :class="[
-                  'w-full px-4 py-3 bg-gray-50 border-2 rounded-lg transition-all focus:outline-none',
-                  errors.username
-                    ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
-                    : 'border-gray-200 focus:border-[#280559] focus:ring-2 focus:ring-purple-100',
-                ]"
-              />
-              <p
-                v-if="errors.username"
-                class="text-red-500 text-xs font-medium flex items-center gap-1"
-              >
-                <span>✕</span> {{ errors.username }}
-              </p>
-            </div>
-
-            <!-- Rating Field -->
             <div class="space-y-3">
               <label class="block text-sm font-semibold text-gray-700"> Your Rating </label>
               <div
@@ -144,7 +110,6 @@ const getRatingStars = (rating: number) => {
               </div>
             </div>
 
-            <!-- Comment Field -->
             <div class="space-y-2">
               <label for="comment" class="block text-sm font-semibold text-gray-700">
                 Your Review
@@ -172,7 +137,6 @@ const getRatingStars = (rating: number) => {
               </div>
             </div>
 
-            <!-- Buttons -->
             <div class="flex gap-3 pt-4">
               <button
                 type="button"
@@ -185,7 +149,7 @@ const getRatingStars = (rating: number) => {
               <button
                 type="submit"
                 :disabled="props.isSubmitting"
-                class="flex-1 px-6 py-3 bg-gradient-to-r from-[#280559] to-[#3a0770] text-white rounded-lg font-semibold hover:from-[#3a0770] hover:to-[#4a0980] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                class="flex-1 px-6 py-3 bg-linear-to-r from-[#280559] to-[#3a0770] text-white rounded-lg font-semibold hover:from-[#3a0770] hover:to-[#4a0980] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span v-if="!props.isSubmitting">Submit Review</span>
                 <span v-else class="flex items-center justify-center gap-2">

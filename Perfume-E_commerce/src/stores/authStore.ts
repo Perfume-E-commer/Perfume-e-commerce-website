@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import authService from '@/services/authService'
 import router from '@/router'
+import { useWishlistStore } from '@/stores/wishlistStore'
+import { useCartStore } from '@/stores/cartStore'
 
 interface User {
   email: string
@@ -34,6 +36,10 @@ export const useAuthStore = defineStore('auth', {
 
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(this.user))
+
+        // Load user-specific wishlist after login
+        const wishlistStore = useWishlistStore()
+        wishlistStore.loadUserWishlist()
 
         if (data.role === 'ADMIN') {
           router.push({ name: 'admin-dashboard' })
@@ -92,6 +98,10 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
+      // Reset wishlist before clearing user data
+      const wishlistStore = useWishlistStore()
+      wishlistStore.resetWishlist()
+
       this.user = null
       this.token = ''
       authService.logout()

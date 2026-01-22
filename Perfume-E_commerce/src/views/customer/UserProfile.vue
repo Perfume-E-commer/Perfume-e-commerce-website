@@ -255,20 +255,32 @@ const triggerFileInput = () => {
 }
 
 const handleFileChange = async (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (!file) return;
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
 
-  previewImage.value = URL.createObjectURL(file);
+  const previousImage = form.value.imageUrl
+  previewImage.value = URL.createObjectURL(file)
 
   try {
-    const res = await userService.uploadAvatar(file);
-    form.value.imageUrl = res.data; 
-  } catch (error) {
-    alert("Failed to upload image");
-  }
-};
+    const res = await userService.uploadAvatar(file)
+    
+    form.value.imageUrl = res.data.url;
 
-// Password Change Logic
+    console.log("Image URL set to:", form.value.imageUrl);
+    
+  } catch (error) {
+    console.error('Avatar upload failed:', error)
+    alert("Failed to upload image")
+    
+    previewImage.value = null
+    form.value.imageUrl = previousImage
+  } finally {
+    if (event.target instanceof HTMLInputElement) {
+      (event.target as HTMLInputElement).value = ''
+    }
+  }
+}
+
 const savePasswordChange = async () => {
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
     alert('New passwords do not match!')

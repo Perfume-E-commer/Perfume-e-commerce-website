@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+
 interface Offer {
   image: string
   title1: string
@@ -6,12 +8,19 @@ interface Offer {
   promotion: string
   description: string
 }
+
 defineProps<{
   SpecialOffer: Offer[]
 }>()
+
+const router = useRouter()
+
+const goToOfferDetail = (index: number) => {
+  router.push({ name: 'specialOfferDetail', params: { id: index } })
+}
 </script>
 <template>
-  <div class="w-full mx-auto mt-10 mb-10">
+  <div class="w-full mx-auto mt-10 mb-10 px-4 sm:px-6 lg:px-8">
     <h1
       class="luxurious-roman-regular font-bold text-3xl lg:text-4xl xl:text-5xl text-center text-[#280559] leading-tight"
     >
@@ -59,6 +68,7 @@ defineProps<{
             {{ offer.description }}
           </p>
           <button
+            @click="goToOfferDetail(index)"
             class="w-fit border text-black luxurious-roman-regular px-6 py-2 rounded-xl mt-5 lg:mt-10"
           >
             Know More

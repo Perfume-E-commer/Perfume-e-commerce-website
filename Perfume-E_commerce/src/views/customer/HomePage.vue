@@ -8,14 +8,12 @@ import ValuePerfume from '@/components/customer/landingpage/ValuePerfume.vue'
 import Collection from '@/components/customer/landingpage/Collection.vue'
 import Promotion from '@/components/customer/landingpage/Promotion.vue'
 import Articles from '@/components/customer/landingpage/Articles.vue'
-import Scrolldown from '@/components/layout/Scrolldown.vue'
 import ProductListPerfume from '@/components/customer/product/ProductListPerfume.vue'
 import { useProductStore } from '@/stores/productStore'
 import { onMounted, watch, ref, computed } from 'vue'
 import Loading from '@/components/layout/Loading.vue'
 import EditionComponent from '@/components/customer/landingpage/EditionComponent.vue'
 import { storeToRefs } from 'pinia'
-import ScrollProgress from '@/components/layout/ScrollProgress.vue'
 
 const productStore = useProductStore()
 

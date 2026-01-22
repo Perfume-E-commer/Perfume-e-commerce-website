@@ -1,19 +1,36 @@
 <script setup lang="ts">
 import { Handbag, UserRound, Search, Menu, X, Heart, CircleUserRound } from 'lucide-vue-next'
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useProductStore } from '@/stores/productStore'
+import { useCartStore } from '@/stores/cartStore'
+import { useWishlistStore } from '@/stores/wishlistStore'
 import NotificationBell from '@/components/ui/NotificationBell.vue'
 
 const authStore = useAuthStore()
 const productStore = useProductStore()
+const cartStore = useCartStore()
+const wishlistStore = useWishlistStore()
 const router = useRouter()
 const menuOpen = ref(false)
 const searchOpen = ref(false)
 const searchQuery = ref('')
 
-// Real-time search suggestions
+const cartItemCount = computed(() => cartStore.itemCount)
+
+const wishlistCount = computed(() => wishlistStore.wishlistCount)
+
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    try {
+      await cartStore.fetchCart()
+    } catch (error) {
+      console.error('Failed to fetch cart:', error)
+    }
+  }
+})
+
 const searchSuggestions = computed(() => {
   if (!searchQuery.value.trim()) return []
 
@@ -27,7 +44,7 @@ const searchSuggestions = computed(() => {
       const matchesBrand = product.brand && product.brand.toLowerCase().includes(lowerQuery)
       return matchesName || matchesBrand
     })
-    .slice(0, 5) // Show max 5 suggestions
+    .slice(0, 5)
 })
 
 function toggleMenu() {
@@ -40,10 +57,8 @@ function toggleSearch() {
   if (searchOpen.value) menuOpen.value = false
 }
 
-// Handle search functionality
 async function handleSearch() {
   if (searchQuery.value.trim()) {
-    // Ensure products are loaded before searching
     if (productStore.allProducts.length === 0) {
       await productStore.fetchAllProducts()
     }
@@ -144,10 +159,9 @@ const isLoggedIn = computed(() => !!authStore.token)
             <Search stroke-width="1" class="w-6 h-6 xl:w-8 xl:h-8" />
           </button>
 
-          <!-- Search Suggestions Dropdown -->
           <div
             v-if="searchQuery.trim() && searchSuggestions.length > 0"
-            class="absolute top-full left-1/2 transform -translate-x-[82%] mt-2 w-[93vw] bg-white border border-gray-200 rounded shadow-lg z-50 max-h-85 overflow-y-auto"
+            class="absolute top-full left-1/2 transform -translate-x-[42%] mt-2 w-[40vw] bg-white border border-gray-200 rounded shadow-lg z-50 max-h-85 overflow-y-auto"
           >
             <ul class="py-2 px-5">
               <p class="luxurious-roman-regular text-2xl text-gray-900 mb-5 mt-5">Popular Scents</p>
@@ -187,7 +201,6 @@ const isLoggedIn = computed(() => !!authStore.token)
             </ul>
           </div>
 
-          <!-- No results message -->
           <div
             v-else-if="searchQuery.trim() && searchSuggestions.length === 0"
             class="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg z-50 p-4 text-center"
@@ -220,6 +233,12 @@ const isLoggedIn = computed(() => !!authStore.token)
             class="text-black hover:text-[#280559] hover:scale-110 transition-all duration-300 relative"
           >
             <Handbag stroke-width="1.5" class="w-6 h-6 xl:w-8 xl:h-8" />
+            <span
+              v-if="cartItemCount > 0"
+              class="absolute -top-2 -right-2 bg-[#280559] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+            >
+              {{ cartItemCount > 99 ? '99+' : cartItemCount }}
+            </span>
           </router-link>
 
           <button
@@ -314,14 +333,32 @@ const isLoggedIn = computed(() => !!authStore.token)
                   class="flex gap-3 text-lg items-center hover:text-[#280559] transition-colors"
                   @click="menuOpen = false"
                 >
-                  <Handbag class="w-6 h-6" stroke-width="1.5" /> Bag
+                  <div class="relative">
+                    <Handbag class="w-6 h-6" stroke-width="1.5" />
+                    <span
+                      v-if="cartItemCount > 0"
+                      class="absolute -top-2 -right-2 bg-[#280559] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      {{ cartItemCount > 99 ? '99+' : cartItemCount }}
+                    </span>
+                  </div>
+                  Bag
                 </router-link>
                 <router-link
                   to="/wishlist"
                   class="flex gap-3 text-lg items-center hover:text-[#280559] transition-colors"
                   @click="menuOpen = false"
                 >
-                  <Heart class="w-6 h-6" stroke-width="1.5" /> Wishlist
+                  <div class="relative">
+                    <Heart class="w-6 h-6" stroke-width="1.5" />
+                    <span
+                      v-if="wishlistCount > 0"
+                      class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    >
+                      {{ wishlistCount > 99 ? '99+' : wishlistCount }}
+                    </span>
+                  </div>
+                  Wishlist
                 </router-link>
               </div>
             </div>
@@ -361,7 +398,6 @@ const isLoggedIn = computed(() => !!authStore.token)
                 <Search stroke-width="1.5" class="w-6 h-6" />
               </button>
 
-              <!-- Mobile Search Suggestions Dropdown -->
               <div
                 v-if="searchQuery.trim() && searchSuggestions.length > 0"
                 class="absolute top-full transform mt-2 w-[93vw] bg-white border border-gray-200 rounded shadow-lg z-50 max-h-80 overflow-y-auto"
@@ -388,7 +424,6 @@ const isLoggedIn = computed(() => !!authStore.token)
                 </ul>
               </div>
 
-              <!-- Mobile No results message -->
               <div
                 v-else-if="searchQuery.trim() && searchSuggestions.length === 0"
                 class="absolute top-full w-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg z-50 p-4 text-center"

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Product, ProductPage } from '@/types/clientProduct'
-import  productService  from '@/services/productService'
+import type { Product } from '@/types/clientProduct'
+import productService from '@/services/productService'
 
 function transformBackendProduct(backendData: any): Product {
   return {
@@ -40,14 +40,14 @@ function transformBackendProduct(backendData: any): Product {
 export const useProductStore = defineStore('product', () => {
   // State
   const products = ref<Product[]>([])
-  const allProducts = ref<Product[]>([]) // Store all products for filtering
+  const allProducts = ref<Product[]>([])
   const currentProduct = ref<Product | null>(null)
   const activeFilters = ref<Record<string, string[]>>({})
   const sortOption = ref<string | null>(null)
 
   const pagination = ref({
     page: 0,
-    size: 10,
+    size: 12,
     totalElements: 0,
     totalPages: 0,
     last: false,
@@ -78,21 +78,111 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
-  async function fetchProducts(page: number = 0, size: number = 16) {
+  // async function fetchProducts(page: number = 0, size: number = 12) {
+  //   loading.value = true
+  //   error.value = null
+
+  //   try {
+  //     const response = await productService.getPaginationProducts(page, size)
+  //     const data = response.data
+
+  //     let products_content = data.content || data
+
+  //     let pageInfo = {
+  //       page: page,
+  //       size: size,
+  //       totalElements: 0,
+  //       totalPages: 0,
+  //       last: false,
+  //     }
+
+  //     if (data.page) {
+  //       let totalElements = data.page.totalElements ?? 0
+  //       let totalPages = data.page.totalPages ?? 0
+  //       if (products_content && Array.isArray(products_content) && products_content.length > 0) {
+  //         if (products_content.length < size && page > 0) {
+  //           totalElements = page * size + products_content.length
+  //           totalPages = Math.ceil(totalElements / size)
+  //         }
+  //       }
+
+  //       pageInfo = {
+  //         page: data.page.number ?? page,
+  //         size: data.page.size ?? size,
+  //         totalElements: totalElements,
+  //         totalPages: totalPages,
+  //         last: data.page.last ?? false,
+  //       }
+  //     } else {
+  //       pageInfo = {
+  //         page: page,
+  //         size: data.size ?? size,
+  //         totalElements: data.totalElements ?? 0,
+  //         totalPages: data.totalPages ?? 0,
+  //         last: data.last ?? false,
+  //       }
+  //     }
+
+  //     const transformedProducts = products_content.map(transformBackendProduct)
+  //     products.value = transformedProducts
+
+  //     if (page === 0) {
+  //       allProducts.value = transformedProducts
+  //     }
+
+  //     pagination.value = pageInfo
+  //   } catch (err: any) {
+  //     console.error('Error fetching products:', err)
+  //     error.value = err.response?.data?.message || 'Failed to fetch products'
+  //   } finally {
+  //     loading.value = false
+  //   }
+  // }
+
+  async function fetchProducts(page: number = 0, size: number = 12) {
     loading.value = true
     error.value = null
 
     try {
       const response = await productService.getPaginationProducts(page, size)
-      const data: ProductPage = response.data
+      const data = response.data
 
-      products.value = data.content.map(transformBackendProduct)
+      console.log(`Debug Page ${page}:`, data)
+
+      // 1. Extract content safely
+      let products_content = data.content || data || []
+
+      // 2. Extract pagination info safely
+      let currentTotalPages = 0
+      let currentTotalElements = 0
+      let isLast = false
+
+      if (data.page) {
+        currentTotalPages = data.page.totalPages ?? 0
+        currentTotalElements = data.page.totalElements ?? 0
+        isLast = data.page.last ?? false
+      } else {
+        currentTotalPages = data.totalPages ?? 0
+        currentTotalElements = data.totalElements ?? 0
+        isLast = data.last ?? false
+      }
+
+      if (products_content.length === 0 && page > 0) {
+        console.warn('Backend returned no products for page', page)
+      }
+
+      const transformedProducts = products_content.map(transformBackendProduct)
+      products.value = transformedProducts
+
+      if (page === 0) {
+        allProducts.value = transformedProducts
+      }
       pagination.value = {
-        page: data.number,
-        size: data.size,
-        totalElements: data.totalElements,
-        totalPages: data.totalPages,
-        last: data.last,
+        page: page,
+        size: size,
+        totalElements: currentTotalElements,
+        totalPages: currentTotalPages,
+        last: isLast,
       }
     } catch (err: any) {
       console.error('Error fetching products:', err)
@@ -179,7 +269,6 @@ export const useProductStore = defineStore('product', () => {
     sortOption.value = sort
     applyFiltersAndSort()
   }
-
   function clearFilters() {
     activeFilters.value = {}
     sortOption.value = null
@@ -188,7 +277,6 @@ export const useProductStore = defineStore('product', () => {
 
   function searchProductsByNameOrBrand(query: string) {
     const lowerQuery = query.toLowerCase()
-    // If allProducts is empty, use products array as fallback
     const searchSource = allProducts.value.length > 0 ? allProducts.value : products.value
     const searchResults = searchSource.filter((product) => {
       const matchesName = product.name.toLowerCase().includes(lowerQuery)

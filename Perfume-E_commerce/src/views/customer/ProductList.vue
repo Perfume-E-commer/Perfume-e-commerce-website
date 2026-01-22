@@ -13,11 +13,11 @@ import { storeToRefs } from 'pinia'
 
 const productStore = useProductStore()
 
-const { products, loading, pagination } = storeToRefs(productStore)
-const { fetchAllProducts, fetchProducts, updateFilters, updateSort } = productStore
+const { products, loading } = storeToRefs(productStore)
+const { fetchProducts, updateFilters, updateSort } = productStore
 
 onMounted(() => {
-  fetchProducts(0, 4)
+  fetchProducts(0, 12)
   console.log('perfume list: ', productStore.products)
 })
 

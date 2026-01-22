@@ -10,19 +10,16 @@
           rounded="rounded-lg"
           class="w-full sm:w-auto"
         >
-          <RouterLink
-            to="/admin/products/add"
-            class="flex items-center justify-center gap-2"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              stroke-width="2" 
-              stroke-linecap="round" 
+          <RouterLink to="/admin/products/add" class="flex items-center justify-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
               stroke-linejoin="round"
             >
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -39,7 +36,12 @@
       <div class="relative max-w-md">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </div>
         <input
@@ -50,11 +52,15 @@
           placeholder="Search products by name..."
         />
       </div>
-      
+
       <div class="flex gap-2">
-        <button 
+        <button
           @click="toggleLowStockFilter"
-          :class="showLowStockOnly ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-700 border-gray-300'"
+          :class="
+            showLowStockOnly
+              ? 'bg-red-100 text-red-700 border-red-300'
+              : 'bg-white text-gray-700 border-gray-300'
+          "
           class="px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none transition-colors"
         >
           ⚠️ Low Stock Only
@@ -69,10 +75,7 @@
     >
       {{ successMessage }}
     </div>
-    <div
-      v-if="errorMessage"
-      class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded"
-    >
+    <div v-if="errorMessage" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
       {{ errorMessage }}
     </div>
 
@@ -132,7 +135,12 @@
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-if="displayedProducts.length === 0">
               <td colspan="8" class="px-6 py-4 text-center text-gray-500">
-                No products found. {{ showLowStockOnly ? 'Try turning off "Low Stock Only" filter.' : 'Click "Add New Product" to create one.' }}
+                No products found.
+                {{
+                  showLowStockOnly
+                    ? 'Try turning off "Low Stock Only" filter.'
+                    : 'Click "Add New Product" to create one.'
+                }}
               </td>
             </tr>
             <tr v-for="product in displayedProducts" :key="product.id" class="hover:bg-gray-50">
@@ -162,12 +170,17 @@
               <!-- ✨ UPDATED: Stock cell with low stock warning -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                  <span :class="{'text-red-600 font-bold': product.stock < 10, 'text-gray-900': product.stock >= 10}">
+                  <span
+                    :class="{
+                      'text-red-600 font-bold': product.stock < 10,
+                      'text-gray-900': product.stock >= 10,
+                    }"
+                  >
                     {{ product.stock }}
                   </span>
-                  
-                  <span 
-                    v-if="product.stock < 10" 
+
+                  <span
+                    v-if="product.stock < 10"
                     class="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded-full"
                   >
                     Low
@@ -191,45 +204,60 @@
                 >
                   Edit
                 </router-link>
-                <button
-                  @click="confirmDelete(product.id)"
-                  class="text-red-600 hover:text-red-900"
-                >
+                <button @click="confirmDelete(product.id)" class="text-red-600 hover:text-red-900">
                   Delete
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-        
+
         <!-- ✨ UPDATED: Added Pagination Footer -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div
+          class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+        >
           <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-gray-700">
                 Showing
                 <span class="font-medium">{{ currentPage * pageSize + 1 }}</span>
                 to
-                <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span>
+                <span class="font-medium">{{
+                  Math.min((currentPage + 1) * pageSize, totalElements)
+                }}</span>
                 of
                 <span class="font-medium">{{ totalElements }}</span>
                 results
               </p>
             </div>
             <div>
-              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <nav
+                class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                aria-label="Pagination"
+              >
                 <button
                   @click="changePage(currentPage - 1)"
                   :disabled="currentPage === 0"
                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span class="sr-only">Previous</span>
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  <svg
+                    class="h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
                 </button>
-                
-                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+
+                <span
+                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700"
+                >
                   Page {{ currentPage + 1 }} of {{ totalPages }}
                 </span>
 
@@ -239,8 +267,17 @@
                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span class="sr-only">Next</span>
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  <svg
+                    class="h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd"
+                    />
                   </svg>
                 </button>
               </nav>
@@ -257,7 +294,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ButtonRectangle from '../components/ButtonRectangle.vue'
 import { productService } from '../../services/apiProduct'
-import { adminService } from '../../services/adminService' 
+import { adminService } from '../../services/adminService'
 import type { Product } from '../../types/adminProduct'
 
 const router = useRouter()
@@ -283,14 +320,14 @@ let searchTimeout: ReturnType<typeof setTimeout>
 const handleSearch = (event?: Event) => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    currentPage.value = 0 
+    currentPage.value = 0
     loadProducts()
-  }, 300) 
+  }, 300)
 }
 
 const displayedProducts = computed(() => {
   if (showLowStockOnly.value) {
-    return products.value.filter(product => product.stock < 10)
+    return products.value.filter((product) => product.stock < 10)
   }
   return products.value
 })
@@ -299,16 +336,16 @@ const loadProducts = async () => {
   try {
     isLoading.value = true
     errorMessage.value = ''
-    
+
     const params: { page?: number; size?: number; search?: string } = {
       page: currentPage.value,
-      size: pageSize.value,  
-      search: searchQuery.value
+      size: pageSize.value,
+      search: searchQuery.value,
     }
-    
-    const response = await adminService.getProducts(params)
-    
-    products.value = Array.isArray(response.data) ? response.data : (response.data.content || [])
+
+    const response = await adminService.getProducts(params as any)
+
+    products.value = Array.isArray(response.data) ? response.data : response.data.content || []
 
     if (response.data.page) {
       totalElements.value = response.data.page.totalElements || 0
@@ -323,7 +360,6 @@ const loadProducts = async () => {
       totalPages.value = 1
       currentPage.value = 0
     }
-    
   } catch (error: any) {
     errorMessage.value = error.response?.data?.message || 'Failed to load products'
     console.error('Error loading products:', error)
@@ -345,14 +381,14 @@ const toggleLowStockFilter = () => {
 
 const editProduct = (id: string | undefined) => {
   if (!id) {
-    console.error("Product ID is missing");
-    return;
+    console.error('Product ID is missing')
+    return
   }
   router.push(`/maindashboard/product/edit/${id}`)
 }
 
 const confirmDelete = async (id: string | undefined) => {
-  if (!id) return; 
+  if (!id) return
 
   if (!confirm('Are you sure you want to delete this product?')) {
     return

@@ -24,8 +24,8 @@ const productService = {
     return api.get('/products')
   },
 
-  getPaginationProducts(page: number, limit: number) {
-    return api.get(`/products?page=${page}&limit=${limit}`)
+  getPaginationProducts(page: number, size: number) {
+    return api.get(`/products?page=${page}&size=${size}`)
   },
 
   getProductById(id: string) {
@@ -60,9 +60,18 @@ const productService = {
     return api.get(`/products/${productId}/reviews`)
   },
 
+  deleteProductReview(productId: string, ratingId: string) {
+    return api.delete(`/products/${productId}/ratings/${ratingId}`)
+  },
+
   getFilterProducts(filters: Record<string, any>) {
     const queryParams = new URLSearchParams(filters).toString()
     return api.get(`/products/filter?${queryParams}`)
+  },
+
+  getWishlistProducts(productIds: string[]) {
+    const idsParam = productIds.join(',')
+    return api.get(`/products/wishlist?ids=${idsParam}`)
   },
 }
 

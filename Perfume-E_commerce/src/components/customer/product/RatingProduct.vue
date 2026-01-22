@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { Plus } from 'lucide-vue-next'
+import { Plus, Trash2 } from 'lucide-vue-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import PopupFormReview from './PopupFormReview.vue'
 import productService from '@/services/productService'
 import { useAuthStore } from '@/stores/authStore'
+import userService from '@/services/userService'
 
 interface Rating {
+  id?: string
+  ratingId?: string
   userId: string
   userName: string
   stars: number
@@ -19,7 +22,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const authStore = useAuthStore()
+const currentUserId = ref<string | null>(null)
 const showReviewPopup = ref(false)
+const showDeleteConfirm = ref(false)
+const reviewToDelete = ref<Rating | null>(null)
+const isDeleting = ref(false)
 const isSubmitting = ref(false)
 const submitMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null)
 const reviews = ref<Rating[]>([])
@@ -29,7 +37,6 @@ const totalReviews = computed(() => reviews.value.length)
 const fetchError = ref<string | null>(null)
 const reviewsToShow = ref(3)
 
-// Computed property for displayed reviews
 const displayedReviews = computed(() => {
   return reviews.value.slice(0, reviewsToShow.value)
 })
@@ -39,16 +46,92 @@ const hasMoreReviews = computed(() => {
 })
 
 const handleLoadMore = () => {
-  reviewsToShow.value = reviews.value.length // Show all remaining reviews
+  reviewsToShow.value = reviews.value.length
 }
 
 const handleShowLess = () => {
-  reviewsToShow.value = 3 // Back to showing only 3 reviews
+  reviewsToShow.value = 3
 }
 
 onMounted(async () => {
   await fetchReviews()
+  await fetchCurrentUser()
 })
+
+const fetchCurrentUser = async () => {
+  if (authStore.isAuthenticated) {
+    try {
+      const response = await userService.getProfile()
+      const userData = response.data
+
+      let rawId = userData.id || userData._id || userData.userId
+
+      if (typeof rawId === 'string') {
+        currentUserId.value = rawId
+      } else if (rawId && typeof rawId === 'object') {
+        if (rawId.$oid) {
+          currentUserId.value = rawId.$oid
+        } else {
+          const str = JSON.stringify(rawId)
+
+          const hexMatch = str.match(/[a-f0-9]{24}/i)
+          if (hexMatch) {
+            currentUserId.value = hexMatch[0]
+          } else {
+            currentUserId.value = null
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error)
+    }
+  }
+}
+
+const isOwnReview = (review: Rating) => {
+  if (!authStore.isAuthenticated) return false
+  if (!currentUserId.value) return false
+
+  return String(review.userId) === String(currentUserId.value)
+}
+
+const handleDeleteReview = (review: Rating) => {
+  reviewToDelete.value = review
+  showDeleteConfirm.value = true
+}
+
+const cancelDelete = () => {
+  showDeleteConfirm.value = false
+  reviewToDelete.value = null
+}
+
+const confirmDelete = async () => {
+  if (!reviewToDelete.value || !props.productId) return
+
+  isDeleting.value = true
+  try {
+    const ratingId =
+      reviewToDelete.value.id || reviewToDelete.value.ratingId || reviewToDelete.value.userId
+    await productService.deleteProductReview(String(props.productId), String(ratingId))
+
+    submitMessage.value = { type: 'success', text: 'Review deleted successfully!' }
+    await fetchReviews()
+
+    setTimeout(() => {
+      submitMessage.value = null
+    }, 2000)
+  } catch (error: any) {
+    console.error('Error deleting review:', error)
+    submitMessage.value = {
+      type: 'error',
+      text: error.response?.data?.message || 'Failed to delete review. Please try again.',
+    }
+  } finally {
+    isDeleting.value = false
+    showDeleteConfirm.value = false
+    reviewToDelete.value = null
+  }
+}
 
 watch(
   () => props.productId,
@@ -111,9 +194,6 @@ const handleSubmitReview = async (reviewData: any) => {
       comment: reviewData.comment,
     }
 
-    console.log('Submitting review to:', `/api/products/${props.productId}/ratings`)
-    console.log('Review data:', ratingData)
-
     const response = await productService.submitProductReview(String(props.productId), ratingData)
 
     console.log('Review submitted successfully:', response.data)
@@ -135,7 +215,6 @@ const handleSubmitReview = async (reviewData: any) => {
   }
 }
 
-// Format date to readable format
 const formatDate = (dateString: string) => {
   try {
     const date = new Date(dateString)
@@ -149,7 +228,6 @@ const formatDate = (dateString: string) => {
   }
 }
 
-// Get star display string
 const getStarDisplay = (stars: number) => {
   return '★'.repeat(stars) + '☆'.repeat(5 - stars)
 }
@@ -267,7 +345,6 @@ const getStarDisplay = (stars: number) => {
     </div>
 
     <div class="container w-full mx-auto mt-16 flex flex-col gap-10 px-5">
-      <!-- Loading state -->
       <div v-if="loadingReviews" class="text-center py-8">
         <div class="flex justify-center items-center gap-2">
           <div class="w-2 h-2 bg-[#280559] rounded-full animate-bounce"></div>
@@ -283,7 +360,6 @@ const getStarDisplay = (stars: number) => {
         <p class="text-gray-500 mt-3">Loading reviews...</p>
       </div>
 
-      <!-- Error state -->
       <div v-else-if="fetchError" class="text-center py-8 bg-red-50 rounded-lg p-4">
         <p class="text-red-600">{{ fetchError }}</p>
         <button @click="fetchReviews" class="mt-3 text-[#280559] hover:underline font-semibold">
@@ -291,19 +367,16 @@ const getStarDisplay = (stars: number) => {
         </button>
       </div>
 
-      <!-- No reviews state -->
       <div v-else-if="reviews.length === 0" class="text-center py-8 luxurious-roman-regular">
         <p class="text-gray-500 text-lg">No reviews yet. Be the first to share your experience!</p>
       </div>
 
-      <!-- Reviews list -->
       <div v-else class="max-h-96 overflow-y-auto">
         <div
           v-for="(review, index) in displayedReviews"
           :key="index"
           class="flex gap-4 md:gap-6 items-start pb-6 border-b border-gray-200 last:border-b-0"
         >
-          <!-- Avatar placeholder since backend doesn't provide avatars -->
           <div class="shrink-0">
             <div
               class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-linear-to-br from-[#280559] to-[#3a0770] flex items-center justify-center text-white font-bold text-lg"
@@ -313,9 +386,21 @@ const getStarDisplay = (stars: number) => {
           </div>
 
           <div class="flex flex-col luxurious-roman-regular flex-1">
-            <!-- Stars -->
-            <div class="flex text-[#280559] text-xl mb-2">
-              {{ getStarDisplay(review.stars) }}
+            <!-- Stars and Delete Button Row -->
+            <div class="flex justify-between items-start">
+              <div class="flex text-[#280559] text-xl mb-2">
+                {{ getStarDisplay(review.stars) }}
+              </div>
+              <!-- Delete button - only visible for user's own reviews -->
+              <div v-if="authStore.isAuthenticated && isOwnReview(review)" class="flex gap-2">
+                <button
+                  @click="handleDeleteReview(review)"
+                  class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors duration-200"
+                  title="Delete your review"
+                >
+                  <Trash2 class="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <!-- Comment -->
@@ -351,7 +436,6 @@ const getStarDisplay = (stars: number) => {
       </div>
     </div>
 
-    <!-- Success/Error Message -->
     <Transition name="fade">
       <div
         v-if="submitMessage"
@@ -364,13 +448,50 @@ const getStarDisplay = (stars: number) => {
       </div>
     </Transition>
 
-    <!-- Review Popup Form -->
     <PopupFormReview
       :visible="showReviewPopup"
       :is-submitting="isSubmitting"
       @close="handleClosePopup"
       @submit="handleSubmitReview"
     />
+
+    <!-- Delete Confirmation Modal -->
+    <Transition name="fade">
+      <div
+        v-if="showDeleteConfirm"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        @click.self="cancelDelete"
+      >
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+          <h3 class="text-xl font-bold text-gray-900 mb-4 luxurious-roman-regular">
+            Delete Review
+          </h3>
+          <p class="text-gray-600 mb-6">
+            Are you sure you want to delete your review? This action cannot be undone.
+          </p>
+          <div class="flex justify-end gap-3">
+            <button
+              @click="cancelDelete"
+              class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              :disabled="isDeleting"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDelete"
+              class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center gap-2"
+              :disabled="isDeleting"
+            >
+              <span
+                v-if="isDeleting"
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></span>
+              {{ isDeleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 

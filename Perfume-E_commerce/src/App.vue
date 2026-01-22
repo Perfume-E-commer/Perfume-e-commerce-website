@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView, useRouter } from 'vue-router'
 import Loading from './components/layout/Loading.vue'
+import ToastContainer from './components/layout/ToastContainer.vue'
 import { ref } from 'vue'
 import Navbar from '@/components/layout/Navbar.vue'
 import Scrolldown from '@/components/layout/Scrolldown.vue'
@@ -20,7 +21,7 @@ router.afterEach(() => {
 
 <template>
   <div class="min-h-screen bg-gray-50 text-gray-900 font-sans">
-    <!-- <Navbar /> -->
+    <ToastContainer />
 
     <main>
       <Loading v-if="isLoading" />

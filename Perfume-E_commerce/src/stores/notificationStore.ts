@@ -54,6 +54,17 @@ export const useNotificationStore = defineStore('notifications', {
                 console.error('Failed to mark all as read', err);
                 this.fetchNotifications(); 
             }
+        },
+
+        async deleteNotification(id: string) {
+            this.notifications = this.notifications.filter(n => n.id !== id);
+
+            try {
+                await notificationService.deleteNotification(id);
+            } catch (err) {
+                console.error('Failed to delete notification', err);
+                this.fetchNotifications();
+            }
         }
     }
 });

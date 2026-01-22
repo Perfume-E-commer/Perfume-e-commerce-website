@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { storeToRefs } from 'pinia'
-import { Bell } from 'lucide-vue-next'
+import { Bell, X } from 'lucide-vue-next'
 
 const store = useNotificationStore()
 const { unreadCount, sortedNotifications } = storeToRefs(store)
@@ -36,7 +36,6 @@ const timeAgo = (dateString: string) => {
 const getTypeConfig = (type: string) => {
   const configs = {
     ORDER_UPDATE: {
-      // Clean, flat backgrounds instead of gradients
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-700',
       label: 'Order Update',
@@ -64,6 +63,13 @@ const getTypeConfig = (type: string) => {
 
 const markAsRead = (id: string) => {
   store.markRead(id)
+}
+
+const deleteNotification = async (event: Event, id: string) => {
+  event.preventDefault()
+  event.stopPropagation()
+
+  await store.deleteNotification(id)
 }
 
 onMounted(() => {
@@ -137,12 +143,20 @@ onUnmounted(() => {
           <a
             href="#"
             @click.prevent="markAsRead(note.id)"
-            class="group block px-6 py-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0 relative"
+            class="group block px-6 py-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0 relative pr-12"
           >
             <div
               v-if="!note.isRead"
               class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#280559]"
             ></div>
+
+            <button
+              @click="(e) => deleteNotification(e, note.id)"
+              class="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+              title="Delete notification"
+            >
+              <X class="w-4 h-4" />
+            </button>
 
             <div class="flex items-start space-x-4">
               <div

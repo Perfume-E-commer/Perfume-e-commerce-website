@@ -5,6 +5,7 @@
     </div>
 
     <div
+    
       v-else-if="orders.length === 0"
       class="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-100"
     >
@@ -21,12 +22,12 @@
       <h3 class="text-xl font-bold text-gray-900 mb-2">No active orders</h3>
       <p class="text-gray-500 mb-8">You don't have any orders in progress right now.</p>
 
-      <router-link
-        to="/products"
-        class="px-8 py-3 bg-[#280559] text-white rounded-full font-medium hover:bg-opacity-90 transition"
-      >
-        Start Shopping
-      </router-link>
+      <router-link 
+  to="/productlist" 
+  class="px-8 py-3 bg-[#280559] text-white rounded-full font-medium hover:bg-opacity-90 transition"
+> 
+  Start Shopping 
+</router-link>
     </div>
 
     <div v-else>

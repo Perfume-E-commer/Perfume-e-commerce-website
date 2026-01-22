@@ -3,6 +3,7 @@ import authService from '@/services/authService'
 import router from '@/router'
 
 interface User {
+  id: string;
   email: string;
   role: 'USER' | 'ADMIN';
 }
@@ -30,7 +31,7 @@ export const useAuthStore = defineStore('auth', {
         const data = await authService.login(email, password)
 
         this.token = data.token
-        this.user = { email: data.email, role: data.role }
+        this.user = { id: data.id, email: data.email, role: data.role }
 
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(this.user))

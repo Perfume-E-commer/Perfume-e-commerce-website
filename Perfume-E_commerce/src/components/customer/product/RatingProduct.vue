@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Plus } from 'lucide-vue-next'
+import { Plus, Trash2 } from 'lucide-vue-next'
 import { ref, computed, onMounted, watch } from 'vue'
 import PopupFormReview from './PopupFormReview.vue'
 import productService from '@/services/productService'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '../../../stores/authStore'
 
 interface Rating {
   userId: string
@@ -28,8 +28,9 @@ const averageRating = ref(0)
 const totalReviews = computed(() => reviews.value.length)
 const fetchError = ref<string | null>(null)
 const reviewsToShow = ref(3)
+const authStore = useAuthStore()
+const deletingId = ref<string | null>(null)
 
-// Computed property for displayed reviews
 const displayedReviews = computed(() => {
   return reviews.value.slice(0, reviewsToShow.value)
 })
@@ -39,11 +40,29 @@ const hasMoreReviews = computed(() => {
 })
 
 const handleLoadMore = () => {
-  reviewsToShow.value = reviews.value.length // Show all remaining reviews
+  reviewsToShow.value = reviews.value.length 
 }
 
 const handleShowLess = () => {
-  reviewsToShow.value = 3 // Back to showing only 3 reviews
+  reviewsToShow.value = 3 
+}
+
+const handleDeleteReview = async () => {
+  if (!props.productId || !confirm('Are you sure you want to delete your review?')) return
+
+  isSubmitting.value = true 
+  
+  try {
+    await productService.deleteProductReview(String(props.productId))
+    submitMessage.value = { type: 'success', text: 'Review deleted successfully' }
+    await fetchReviews() 
+  } catch (error: any) {
+    console.error('Error deleting review:', error)
+    submitMessage.value = { type: 'error', text: error.response?.data || 'Failed to delete review' }
+  } finally {
+    isSubmitting.value = false
+    setTimeout(() => { submitMessage.value = null }, 3000)
+  }
 }
 
 onMounted(async () => {

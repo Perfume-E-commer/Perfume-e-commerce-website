@@ -60,6 +60,10 @@ const productService = {
     return api.get(`/products/${productId}/reviews`)
   },
 
+  deleteProductReview(productId: string) {
+    return api.delete(`/products/${productId}/ratings`)
+  },
+
   getFilterProducts(filters: Record<string, any>) {
     const queryParams = new URLSearchParams(filters).toString()
     return api.get(`/products/filter?${queryParams}`)

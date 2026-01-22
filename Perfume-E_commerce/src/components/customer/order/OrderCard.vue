@@ -77,7 +77,7 @@
               <span class="font-medium text-gray-900">${{ formatPrice(order.subtotal) }}</span>
             </div>
 
-            <div v-if="order.discountAmount > 0" class="flex justify-between text-emerald-600">
+            <div v-if="order.discountAmount && order.discountAmount > 0" class="flex justify-between text-emerald-600">
               <span>Discount <span v-if="order.promoCode">({{ order.promoCode }})</span></span>
               <span>-${{ formatPrice(order.discountAmount) }}</span>
             </div>
@@ -168,7 +168,7 @@ defineProps<{
 defineEmits(['cancel-order'])
 
 // Helpers
-const formatPrice = (price: number) => (price || 0).toFixed(2)
+const formatPrice = (price?: number) => (price || 0).toFixed(2)
 
 const formatDate = (dateString: string) => {
   if (!dateString) return ''

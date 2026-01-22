@@ -25,15 +25,16 @@ watch(products, () => {
   console.log('Perfume List', productStore.products)
 })
 
-// Handle filter changes from MenuFilter component
 const handleFilterChange = (filters: Record<string, any>) => {
   console.log('Filters applied:', filters)
   updateFilters(filters)
+  fetchProducts(0, 4) 
 }
 
 const handleSortChange = (sortOption: string) => {
   console.log('Sort applied:', sortOption)
   updateSort(sortOption)
+  fetchProducts(0, 4)
 }
 
 const SpecialOffer = [

@@ -19,7 +19,6 @@ const visiblePages = computed(() => {
   const total = Math.max(1, pagination.value.totalPages)
   const current = pagination.value.page + 1
   const delta = 2
-
   const range: (number | string)[] = []
 
   for (let i = 1; i <= total; i++) {

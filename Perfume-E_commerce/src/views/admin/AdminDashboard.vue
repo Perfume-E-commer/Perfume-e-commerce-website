@@ -141,8 +141,8 @@
         </router-link>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 w-full">
-        <div class="bg-white p-6 lg:col-span-3 rounded-xl shadow-sm border border-gray-100">
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-6 w-full">
+        <div class="bg-white p-6 lg:col-span-4 rounded-xl shadow-sm border border-gray-100">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-lg font-bold text-gray-900">Sales Overview (Last 30 Days)</h2>
           </div>
@@ -160,7 +160,7 @@
         </div>
 
         <div
-          class="bg-white rounded-xl lg:col-span-1 shadow-sm border border-gray-100 overflow-hidden h-fit"
+          class="bg-white rounded-xl lg:col-span-2 shadow-sm border border-gray-100 overflow-hidden h-fit"
         >
           <div class="p-4 border-b border-gray-100 bg-red-50 flex justify-between items-center">
             <h3 class="font-bold text-red-800 flex items-center gap-2">

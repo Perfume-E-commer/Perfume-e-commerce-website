@@ -118,7 +118,7 @@ const isInWishlist = computed(() => {
   return props.id ? wishlistStore.isInWishlist(String(props.id)) : false
 })
 
-const handleWishlistToggle = () => {
+const handleWishlistToggle = async () => {
   if (!props.id) {
     toastStore.showToast('Unable to add to wishlist', 'error')
     return
@@ -126,20 +126,27 @@ const handleWishlistToggle = () => {
 
   const product = {
     id: String(props.id),
-    name: props.name,
-    price: selectedVariant.value?.price || props.price,
-    image: currentImage.value || props.image,
-    category: props.category,
-    size: selectedVariant.value?.size,
-    description: props.description,
   }
 
-  if (isInWishlist.value) {
-    wishlistStore.removeFromWishlist(String(props.id))
-    toastStore.showToast(`${props.name} has been removed from your wishlist`, 'info')
-  } else {
-    wishlistStore.addToWishlist(product)
-    toastStore.showToast(`${props.name} has been added to your wishlist!`, 'success')
+  try {
+    if (isInWishlist.value) {
+      const success = await wishlistStore.removeFromWishlist(String(props.id))
+      if (success) {
+        toastStore.showToast(`${props.name} has been removed from your wishlist`, 'info')
+      } else {
+        toastStore.showToast('Failed to remove from wishlist', 'error')
+      }
+    } else {
+      const success = await wishlistStore.addToWishlist(product)
+      if (success) {
+        toastStore.showToast(`${props.name} has been added to your wishlist!`, 'success')
+      } else {
+        toastStore.showToast('Item is already in your wishlist', 'info')
+      }
+    }
+  } catch (error) {
+    console.error('Wishlist operation failed:', error)
+    toastStore.showToast('Failed to update wishlist. Please try again.', 'error')
   }
 }
 

@@ -144,7 +144,7 @@ const routes: RouteRecordRaw[] = [
         path: 'history',
         name: 'Order History',
         component: () => import('@/views/customer/OrderHistory.vue'),
-      }
+      },
       {
         path: 'wishlist',
         name: 'My Wishlist',

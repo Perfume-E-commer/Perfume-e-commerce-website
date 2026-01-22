@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { WishlistProduct } from '@/Services/wishlistService'
-import wishlistService from '@/Services/wishlistService'
+import type { WishlistProduct } from '@/services/wishlistService'
+import wishlistService from '@/services/wishlistService'
+import productService from '@/services/productService'
 
 export interface WishlistItem {
   id: string
@@ -67,7 +68,18 @@ export const useWishlistStore = defineStore('wishlist', () => {
     error.value = null
     try {
       const response = await wishlistService.getWishlist()
-      wishlistItems.value = response.data.map(mapProductToWishlistItem)
+      // Debug: log raw wishlist response
+      console.debug('wishlist raw response:', response.data)
+
+      // If backend returns an array of product IDs (string[]), fetch full product details
+      let products: WishlistProduct[] = response.data as any
+      if (products.length > 0 && typeof products[0] === 'string') {
+        const ids = products as unknown as string[]
+        const res = await productService.getWishlistProducts(ids)
+        products = res.data
+      }
+
+      wishlistItems.value = products.map(mapProductToWishlistItem)
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to fetch wishlist'
       console.error('Error fetching wishlist:', err)

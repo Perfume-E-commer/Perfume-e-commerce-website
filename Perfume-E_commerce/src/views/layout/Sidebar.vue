@@ -7,7 +7,8 @@
   >
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-between p-5 border-b border-gray-200">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1">
+          <img src="/public/perfumeLogos.png" alt="ScentHaven logo" class="w-16 h-16" />
           <svg
             width="140"
             height="40"
@@ -19,12 +20,11 @@
               x="10"
               y="35"
               font-family="Arial"
-              font-size="24"
+              font-size="30"
               fill="#280559"
               font-weight="bold"
             >
               ScentHaven
-              <tspan fill="#6366f1">.</tspan>
             </text>
           </svg>
         </div>
@@ -119,6 +119,7 @@ import { RouterLink } from 'vue-router'
 import ListSidebar from '../components/ListSidebar.vue'
 import adminService from '../../services/adminService'
 import { getImageUrl } from '../../utils/imageHelper'
+// import logo from '../../assets/logo.svg'
 
 defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['toggle'])

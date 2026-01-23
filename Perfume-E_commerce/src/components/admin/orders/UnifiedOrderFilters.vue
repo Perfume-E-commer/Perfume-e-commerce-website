@@ -57,8 +57,6 @@
         >
           <option value="">All Methods</option>
           <option value="Credit Card">Credit Card</option>
-          <option value="PayPal">PayPal</option>
-          <option value="Stripe">Stripe</option>
           <option value="Cash">Cash on Delivery</option>
         </select>
       </div>

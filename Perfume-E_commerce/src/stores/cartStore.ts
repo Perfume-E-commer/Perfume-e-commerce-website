@@ -15,7 +15,7 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[]
   totalPrice: number
-  subtotal: number      
+  subtotal: number
   shippingCost: number
 }
 
@@ -32,11 +32,11 @@ export interface UpdateCartQuantityPayload {
 }
 
 export const useCartStore = defineStore('cart', () => {
-  const cart = ref<Cart>({ 
-    items: [], 
+  const cart = ref<Cart>({
+    items: [],
     totalPrice: 0,
-    subtotal: 0,       
-    shippingCost: 0
+    subtotal: 0,
+    shippingCost: 0,
   })
   const isLoading = ref(false)
 

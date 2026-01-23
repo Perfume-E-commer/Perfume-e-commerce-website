@@ -372,7 +372,6 @@
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import type { Product, ProductVariant } from '../../../types/adminProduct'
 import adminService from '../../../services/adminService'
-import ProductSetting from './ProductSettings.vue'
 
 const props = defineProps<{
   modelValue: Product

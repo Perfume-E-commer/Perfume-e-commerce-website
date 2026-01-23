@@ -30,7 +30,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     error.value = null
     try {
       const response = await axios.get(`${API_BASE_URL}/wishlist`, {
-        headers: { Authorization: `Bearer ${authStore.token}` }
+        headers: { Authorization: `Bearer ${authStore.token}` },
       })
       wishlistItems.value = response.data
     } catch (err: any) {
@@ -44,7 +44,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
   const addToWishlist = async (payload: { productId: string; size?: string }) => {
     const authStore = useAuthStore()
     const toastStore = useToastStore()
-    
+
     if (!authStore.token) {
       toastStore.showToast('Please login to add to wishlist', 'error')
       return false
@@ -59,10 +59,10 @@ export const useWishlistStore = defineStore('wishlist', () => {
     try {
       await axios.post(
         `${API_BASE_URL}/wishlist/add`,
-        { productId: payload.productId, size: payload.size }, 
-        { headers: { Authorization: `Bearer ${authStore.token}` } }
+        { productId: payload.productId, size: payload.size },
+        { headers: { Authorization: `Bearer ${authStore.token}` } },
       )
-      
+
       await fetchWishlist()
       return true
     } catch (err: any) {
@@ -85,18 +85,18 @@ export const useWishlistStore = defineStore('wishlist', () => {
       await axios.post(
         `${API_BASE_URL}/wishlist/remove`,
         { productId, size },
-        { headers: { Authorization: `Bearer ${authStore.token}` } }
+        { headers: { Authorization: `Bearer ${authStore.token}` } },
       )
-      
+
       // Optimistic update: Remove from local state
-      wishlistItems.value = wishlistItems.value.filter(item => {
+      wishlistItems.value = wishlistItems.value.filter((item) => {
         const p = item.product || (item as any)
         // Keep item if ID doesn't match OR (if ID matches, size doesn't match)
         if (String(p.id) !== String(productId)) return true
         if (size && item.selectedSize !== size) return true
         return false // Remove match
       })
-      
+
       await fetchWishlist() // Sync to be sure
       return true
     } catch (err: any) {
@@ -109,25 +109,33 @@ export const useWishlistStore = defineStore('wishlist', () => {
 
   // CHANGED: Check logic for wrappers
   const isInWishlist = (productId: string, size?: string) => {
-    return wishlistItems.value.some(wrapper => {
-        const p = wrapper.product || (wrapper as any)
-        
-        // Basic check: Product ID matches
-        const idMatch = String(p.id) === String(productId)
-        if (!idMatch) return false
+    return wishlistItems.value.some((wrapper) => {
+      const p = wrapper.product || (wrapper as any)
 
-        // Strict check: If size provided, it must match. 
-        // If not provided, we might just return true (product is in list).
-        if (size) {
-            return wrapper.selectedSize === size
-        }
-        return true
+      // Basic check: Product ID matches
+      const idMatch = String(p.id) === String(productId)
+      if (!idMatch) return false
+
+      // Strict check: If size provided, it must match.
+      // If not provided, we might just return true (product is in list).
+      if (size) {
+        return wrapper.selectedSize === size
+      }
+      return true
     })
   }
 
   const clearWishlist = async () => {
     // You might need a specific endpoint for clear all, or loop remove
     // For now, resetting local state
+    wishlistItems.value = []
+  }
+
+  async function loadUserWishlist() {
+    await fetchWishlist()
+  }
+
+  function resetWishlist() {
     wishlistItems.value = []
   }
 
@@ -140,6 +148,8 @@ export const useWishlistStore = defineStore('wishlist', () => {
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
-    clearWishlist
+    clearWishlist,
+    loadUserWishlist,
+    resetWishlist,
   }
 })

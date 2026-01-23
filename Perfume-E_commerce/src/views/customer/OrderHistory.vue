@@ -17,8 +17,8 @@ onMounted(async () => {
 })
 
 const historyOrders = computed(() => {
-  return orders.value.filter(o => 
-    ['DELIVERED', 'CANCELLED', 'RETURNED', 'FAILED'].includes(o.status)
+  return orders.value.filter((o) =>
+    ['DELIVERED', 'CANCELLED', 'RETURNED', 'FAILED'].includes(o.status),
   )
 })
 </script>
@@ -26,7 +26,6 @@ const historyOrders = computed(() => {
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
     <main class="flex-grow w-full">
-      
       <div v-if="loading" class="flex justify-center py-20">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#280559]"></div>
       </div>
@@ -36,13 +35,8 @@ const historyOrders = computed(() => {
           <p>No order history found.</p>
         </div>
 
-        <OrderCard 
-          v-for="order in historyOrders" 
-          :key="order.id" 
-          :order="order" 
-        />
+        <OrderCard v-for="order in historyOrders" :key="order.id" :order="order" />
       </div>
-
     </main>
   </div>
 </template>

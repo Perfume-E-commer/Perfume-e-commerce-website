@@ -33,6 +33,20 @@ export default {
     return res.data
   },
 
+  async forgotPassword(email: string) {
+    const res = await axios.post(`${API}/forgot-password`, { email })
+    return res.data
+  },
+
+  async resetPassword(email: string, code: string, newPassword: string) {
+    const res = await axios.post(`${API}/reset-password`, { 
+      email, 
+      code, 
+      newPassword 
+    })
+    return res.data
+  },
+
   logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')

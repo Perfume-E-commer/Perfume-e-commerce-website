@@ -31,7 +31,7 @@ const activeProducts = computed(() => {
         class="flex flex-col justify-start items-center p-2 md:p-4 hover:border-2 hover:border-[#280559] cursor-pointer h-full rounded-lg transition-all duration-200"
       >
         <img
-          :src="item.image"
+          :src="String(item.image)"
           :alt="item.name"
           class="w-full h-45 md:h-75 object-contain hover:scale-105 transition-transform duration-300"
         />

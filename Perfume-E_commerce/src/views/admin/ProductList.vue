@@ -1,4 +1,4 @@
-<template>
+inte<template>
   <div>
     <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Products Management</h1>
@@ -146,7 +146,7 @@
             <tr v-for="product in displayedProducts" :key="product.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img
-                  :src="product.imageUrl || 'https://via.placeholder.com/50'"
+                  :src="getProductImage(product)"
                   :alt="product.name"
                   class="h-12 w-12 rounded object-cover"
                 />
@@ -330,6 +330,18 @@ const displayedProducts = computed(() => {
   }
   return products.value
 })
+
+const getProductImage = (product: Product) => {
+  if (product.variants && product.variants.length > 0 && product.variants[0].imageUrl) {
+    return product.variants[0].imageUrl
+  }
+  
+  if (product.images && product.images.length > 0) {
+    return product.images[0]
+  }
+
+  return 'https://via.placeholder.com/50'
+}
 
 const loadProducts = async () => {
   try {

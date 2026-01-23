@@ -14,7 +14,7 @@ export interface Product {
   discountedPrice?: number
   stock: number
   orders?: number
-  imageUrl?: string
+  images?: string[]  
   averageRating?: number
   totalReviews?: number
   ratings?: Rating[]

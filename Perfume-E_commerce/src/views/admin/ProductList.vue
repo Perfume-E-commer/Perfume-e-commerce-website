@@ -134,13 +134,8 @@ inte<template>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-if="displayedProducts.length === 0">
-              <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                 No products found.
-                {{
-                  showLowStockOnly
-                    ? 'Try turning off "Low Stock Only" filter.'
-                    : 'Click "Add New Product" to create one.'
-                }}
               </td>
             </tr>
             <tr v-for="product in displayedProducts" :key="product.id" class="hover:bg-gray-50">
@@ -332,15 +327,18 @@ const displayedProducts = computed(() => {
 })
 
 const getProductImage = (product: Product) => {
-  if (product.variants && product.variants.length > 0 && product.variants[0].imageUrl) {
-    return product.variants[0].imageUrl
+  if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+    const firstVariant = product.variants[0];
+    if (firstVariant && firstVariant.imageUrl) {
+      return firstVariant.imageUrl;
+    }
   }
   
-  if (product.images && product.images.length > 0) {
-    return product.images[0]
+  if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    return product.images[0];
   }
 
-  return 'https://via.placeholder.com/50'
+  return 'https://via.placeholder.com/50';
 }
 
 const loadProducts = async () => {

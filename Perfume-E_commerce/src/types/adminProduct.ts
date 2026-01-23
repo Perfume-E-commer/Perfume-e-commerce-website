@@ -9,15 +9,12 @@ export interface Product {
   occasion?: string
   gender?: string
   summary?: string
-  baseSize?: string;
+  baseSize?: string
   price: number
   discountedPrice?: number
   stock: number
   orders?: number
   imageUrl?: string
-  images?: string[]
-  taxIncluded?: boolean
-  isOnSale?: boolean
   averageRating?: number
   totalReviews?: number
   ratings?: Rating[]
@@ -27,7 +24,6 @@ export interface Product {
   scentNotes?: ScentNote[]
   minStockLevel?: number
   isActive?: boolean
-  isFeatured?: boolean
   createdAt?: string
   createdDate?: string
 }
@@ -41,12 +37,15 @@ export interface Rating {
   verified?: boolean
 }
 
+export interface ProductStorySection {
+  title: string
+  content: string
+}
+
 export interface ProductFilter {
   search?: string
   category?: string
   gender?: string
-  featured?: boolean
-  onSale?: boolean
   outOfStock?: boolean
   page: number
   size: number
@@ -70,8 +69,8 @@ export interface ProductVariant {
 }
 
 export interface ProductStory {
-  title: string
-  content: string
+  intro: ProductStorySection
+  overture: ProductStorySection
 }
 
 export interface ProductFeature {

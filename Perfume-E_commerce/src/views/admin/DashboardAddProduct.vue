@@ -89,35 +89,27 @@ const formData = ref({
   summary: '',
   scent: '', 
   occasion: '',
-  
-  imageUrl: '',
   images: [] as string[],
-  
   price: 0,
   discountedPrice: 0,
   stock: 0,
   minStockLevel: 5,
-  taxIncluded: false,
-  isOnSale: false,
-  isFeatured: false,
   isActive: true,
-  
   variants: [] as any[],
-  
   scentNotes: [] as any[], 
-  
   productStory: {         
     intro: { title: '', content: '' },
     overture: { title: '', content: '' }
   },
-  
   features: [] as any[]
 })
 
 const validateForm = () => {
   if (!formData.value.name) return 'Product Name is required.'
   if (formData.value.price <= 0) return 'Price must be greater than 0.'
-  if (!formData.value.imageUrl) return 'Main Product Image is required.'
+  if (!formData.value.variants || formData.value.variants.length === 0 || !formData.value.variants[0].imageUrl) {
+    return 'Main Product Image is required (It will be taken from the first variant).'
+  }
   return null
 }
 

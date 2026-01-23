@@ -38,6 +38,7 @@ export interface Product {
   totalReviews?: number
   brand?: string
   category?: string
+  stock: number;
   scent?: string | null
   occasion?: string | null
   productStorys: {

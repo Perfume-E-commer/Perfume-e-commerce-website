@@ -114,31 +114,34 @@ const addToCartHandler = async () => {
 }
 
 const isInWishlist = computed(() => {
-  return props.id ? wishlistStore.isInWishlist(String(props.id)) : false
+  if (!props.id) return false
+  return wishlistStore.isInWishlist(String(props.id))
 })
 
 const handleWishlistToggle = async () => {
-  if (!props.id) {
+  if (!props.id || !selectedVariant.value) {
     toastStore.showToast('Unable to add to wishlist', 'error')
     return
   }
 
-  const product = {
-    id: String(props.id),
+  const itemToAdd = {
+    productId: String(props.id),
+    size: selectedVariant.value.size
   }
 
   try {
     if (isInWishlist.value) {
-      const success = await wishlistStore.removeFromWishlist(String(props.id))
+      const success = await wishlistStore.removeFromWishlist(itemToAdd.productId, itemToAdd.size)
       if (success) {
-        toastStore.showToast(`${props.name} has been removed from your wishlist`, 'info')
+        toastStore.showToast(`${props.name} removed from wishlist`, 'info')
       } else {
         toastStore.showToast('Failed to remove from wishlist', 'error')
       }
     } else {
-      const success = await wishlistStore.addToWishlist(product)
+      // Assuming store.addToWishlist now accepts an object
+      const success = await wishlistStore.addToWishlist(itemToAdd)
       if (success) {
-        toastStore.showToast(`${props.name} has been added to your wishlist!`, 'success')
+        toastStore.showToast(`${props.name} added to your wishlist!`, 'success')
       } else {
         toastStore.showToast('Item is already in your wishlist', 'info')
       }
@@ -265,8 +268,8 @@ watch(
             @click="handleWishlistToggle"
             class="flex-1 py-3.5 flex justify-center items-center gap-2 uppercase rounded-lg luxurious-roman-regular tracking-widest text-sm transition-all duration-300 shadow-md bg-[#280559] text-white hover:bg-opacity-90"
           >
-            Wish List
-            <Heart class="w-4 h-4" />
+            {{ isInWishlist ? 'In Wishlist' : 'Wish List' }}
+            <Heart class="w-4 h-4" :fill="isInWishlist ? 'currentColor' : 'none'" />
           </button>
         </div>
       </div>

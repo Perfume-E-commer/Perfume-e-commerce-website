@@ -12,6 +12,7 @@ function transformBackendProduct(backendData: any): Product {
       backendData.variants && backendData.variants.length > 0
         ? backendData.variants[0].imageUrl
         : '',
+    stock: backendData.stock || 0,
     summary: backendData.summary || '',
     images: backendData.images || [],
     descriptions: backendData.description,

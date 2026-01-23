@@ -1,169 +1,134 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { WishlistProduct } from '@/services/wishlistService'
-import wishlistService from '@/services/wishlistService'
-import productService from '@/services/productService'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
+import { useToastStore } from '@/stores/toastStore'
+import type { Product } from '@/types/clientProduct'
 
-export interface WishlistItem {
-  id: string
-  name: string
-  brand: string
-  price: number
-  discountedPrice?: number
-  image: string
-  category?: string
-  description?: string
-  stock: number
-  averageRating: number
-  variants: Array<{
-    id: string
-    size: string
-    imageUrl: string
-    price: number
-    stock: number
-  }>
-}
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 
-export interface AddToWishlistPayload {
-  id: string
-  name?: string
-  price?: number
-  image?: string
-  category?: string
-  size?: string
-  description?: string
+export interface WishlistItemWrapper {
+  product: Product
+  selectedSize: string | null
 }
 
 export const useWishlistStore = defineStore('wishlist', () => {
-  const wishlistItems = ref<WishlistItem[]>([])
+  const wishlistItems = ref<WishlistItemWrapper[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
   const wishlistCount = computed(() => wishlistItems.value.length)
 
-  const isInWishlist = (productId: string) => {
-    return wishlistItems.value.some((item) => item.id === productId)
-  }
-
-  // Map API response to WishlistItem
-  const mapProductToWishlistItem = (product: WishlistProduct): WishlistItem => {
-    return {
-      id: product.id,
-      name: product.name,
-      brand: product.brand,
-      price: product.discountedPrice || product.price,
-      discountedPrice: product.discountedPrice,
-      image: product.imageUrl || (product.images && product.images[0]) || '',
-      category: product.category,
-      description: product.description,
-      stock: product.stock,
-      averageRating: product.averageRating,
-      variants: product.variants || [],
-    }
-  }
-
-  // Fetch wishlist from API
   const fetchWishlist = async () => {
+    const authStore = useAuthStore()
+    if (!authStore.token) {
+      wishlistItems.value = []
+      return
+    }
+
     isLoading.value = true
     error.value = null
     try {
-      const response = await wishlistService.getWishlist()
-      // Debug: log raw wishlist response
-      console.debug('wishlist raw response:', response.data)
-
-      // If backend returns an array of product IDs (string[]), fetch full product details
-      let products: WishlistProduct[] = response.data as any
-      if (products.length > 0 && typeof products[0] === 'string') {
-        const ids = products as unknown as string[]
-        const res = await productService.getWishlistProducts(ids)
-        products = res.data
-      }
-
-      wishlistItems.value = products.map(mapProductToWishlistItem)
+      const response = await axios.get(`${API_BASE_URL}/wishlist`, {
+        headers: { Authorization: `Bearer ${authStore.token}` }
+      })
+      wishlistItems.value = response.data
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to fetch wishlist'
-      console.error('Error fetching wishlist:', err)
+      console.error('Failed to fetch wishlist:', err)
+      error.value = err.response?.data?.message || 'Failed to load wishlist'
     } finally {
       isLoading.value = false
     }
   }
 
-  // Add to wishlist via API
-  const addToWishlist = async (product: AddToWishlistPayload) => {
-    if (isInWishlist(product.id)) {
+  const addToWishlist = async (payload: { productId: string; size?: string }) => {
+    const authStore = useAuthStore()
+    const toastStore = useToastStore()
+    
+    if (!authStore.token) {
+      toastStore.showToast('Please login to add to wishlist', 'error')
+      return false
+    }
+
+    if (isInWishlist(payload.productId, payload.size)) {
+      toastStore.showToast('Item already in wishlist', 'info')
       return false
     }
 
     isLoading.value = true
-    error.value = null
     try {
-      await wishlistService.addToWishlist(product.id)
-      // Refetch to get the full product data
+      await axios.post(
+        `${API_BASE_URL}/wishlist/add`,
+        { productId: payload.productId, size: payload.size }, 
+        { headers: { Authorization: `Bearer ${authStore.token}` } }
+      )
+      
       await fetchWishlist()
       return true
     } catch (err: any) {
+      console.error('Failed to add to wishlist:', err)
       error.value = err.response?.data?.message || 'Failed to add to wishlist'
-      console.error('Error adding to wishlist:', err)
       return false
     } finally {
       isLoading.value = false
     }
   }
 
-  // Remove from wishlist via API
-  const removeFromWishlist = async (productId: string) => {
+  // CHANGED: Accepts size parameter
+  const removeFromWishlist = async (productId: string, size?: string) => {
+    const authStore = useAuthStore()
+    if (!authStore.token) return false
+
     isLoading.value = true
-    error.value = null
     try {
-      await wishlistService.removeFromWishlist(productId)
-      wishlistItems.value = wishlistItems.value.filter((item) => item.id !== productId)
+      // Send JSON body to remove specific variant
+      await axios.post(
+        `${API_BASE_URL}/wishlist/remove`,
+        { productId, size },
+        { headers: { Authorization: `Bearer ${authStore.token}` } }
+      )
+      
+      // Optimistic update: Remove from local state
+      wishlistItems.value = wishlistItems.value.filter(item => {
+        const p = item.product || (item as any)
+        // Keep item if ID doesn't match OR (if ID matches, size doesn't match)
+        if (String(p.id) !== String(productId)) return true
+        if (size && item.selectedSize !== size) return true
+        return false // Remove match
+      })
+      
+      await fetchWishlist() // Sync to be sure
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to remove from wishlist'
-      console.error('Error removing from wishlist:', err)
+      console.error('Failed to remove from wishlist:', err)
       return false
     } finally {
       isLoading.value = false
     }
   }
 
-  // Toggle wishlist status
-  const toggleWishlist = async (product: AddToWishlistPayload) => {
-    if (isInWishlist(product.id)) {
-      return await removeFromWishlist(product.id)
-    } else {
-      return await addToWishlist(product)
-    }
+  // CHANGED: Check logic for wrappers
+  const isInWishlist = (productId: string, size?: string) => {
+    return wishlistItems.value.some(wrapper => {
+        const p = wrapper.product || (wrapper as any)
+        
+        // Basic check: Product ID matches
+        const idMatch = String(p.id) === String(productId)
+        if (!idMatch) return false
+
+        // Strict check: If size provided, it must match. 
+        // If not provided, we might just return true (product is in list).
+        if (size) {
+            return wrapper.selectedSize === size
+        }
+        return true
+    })
   }
 
-  // Clear wishlist (remove all items)
   const clearWishlist = async () => {
-    isLoading.value = true
-    error.value = null
-    try {
-      // Remove all items one by one
-      const removePromises = wishlistItems.value.map((item) =>
-        wishlistService.removeFromWishlist(item.id),
-      )
-      await Promise.all(removePromises)
-      wishlistItems.value = []
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to clear wishlist'
-      console.error('Error clearing wishlist:', err)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // Load wishlist for current user (call this after login)
-  const loadUserWishlist = async () => {
-    await fetchWishlist()
-  }
-
-  // Clear wishlist from memory (call this on logout)
-  const resetWishlist = () => {
+    // You might need a specific endpoint for clear all, or loop remove
+    // For now, resetting local state
     wishlistItems.value = []
-    error.value = null
   }
 
   return {
@@ -171,13 +136,10 @@ export const useWishlistStore = defineStore('wishlist', () => {
     wishlistCount,
     isLoading,
     error,
-    isInWishlist,
+    fetchWishlist,
     addToWishlist,
     removeFromWishlist,
-    toggleWishlist,
-    clearWishlist,
-    loadUserWishlist,
-    resetWishlist,
-    fetchWishlist,
+    isInWishlist,
+    clearWishlist
   }
 })

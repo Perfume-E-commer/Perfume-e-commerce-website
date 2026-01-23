@@ -1,4 +1,4 @@
-<template>
+inte<template>
   <div>
     <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Products Management</h1>
@@ -134,19 +134,14 @@
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-if="displayedProducts.length === 0">
-              <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                 No products found.
-                {{
-                  showLowStockOnly
-                    ? 'Try turning off "Low Stock Only" filter.'
-                    : 'Click "Add New Product" to create one.'
-                }}
               </td>
             </tr>
             <tr v-for="product in displayedProducts" :key="product.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">
                 <img
-                  :src="product.imageUrl || 'https://via.placeholder.com/50'"
+                  :src="getProductImage(product)"
                   :alt="product.name"
                   class="h-12 w-12 rounded object-cover"
                 />
@@ -330,6 +325,21 @@ const displayedProducts = computed(() => {
   }
   return products.value
 })
+
+const getProductImage = (product: Product) => {
+  if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+    const firstVariant = product.variants[0];
+    if (firstVariant && firstVariant.imageUrl) {
+      return firstVariant.imageUrl;
+    }
+  }
+  
+  if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    return product.images[0];
+  }
+
+  return 'https://via.placeholder.com/50';
+}
 
 const loadProducts = async () => {
   try {

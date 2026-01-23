@@ -25,6 +25,8 @@ const props = defineProps<{
   id: string | number | undefined
   name: string
   description: string
+  summary?: string
+  images?: string[]
   image: string
   price: number
   stock: number
@@ -70,7 +72,6 @@ const currentImage = ref<string>('')
 const initialize = () => {
   if (parsedVariants.value && parsedVariants.value.length > 0) {
     selectedVariant.value = parsedVariants.value[0] as ProductVariant
-    currentImage.value = selectedVariant.value!.imageUrl || props.image
   } else {
     selectedVariant.value = {
       id: 'default',
@@ -79,8 +80,8 @@ const initialize = () => {
       price: props.price || 0,
       stock: props.stock || 0,
     }
-    currentImage.value = props.image
   }
+  currentImage.value = props.image
 }
 
 const handleImagePreview = (imagePath: string) => {
@@ -89,8 +90,6 @@ const handleImagePreview = (imagePath: string) => {
 
 const handleVariantClick = (variant: ProductVariant) => {
   selectedVariant.value = variant
-  // Optional: Switch main image when variant is clicked
-  // currentImage.value = variant.imageUrl
 }
 
 const addToCartHandler = async () => {
@@ -115,31 +114,34 @@ const addToCartHandler = async () => {
 }
 
 const isInWishlist = computed(() => {
-  return props.id ? wishlistStore.isInWishlist(String(props.id)) : false
+  if (!props.id) return false
+  return wishlistStore.isInWishlist(String(props.id))
 })
 
 const handleWishlistToggle = async () => {
-  if (!props.id) {
+  if (!props.id || !selectedVariant.value) {
     toastStore.showToast('Unable to add to wishlist', 'error')
     return
   }
 
-  const product = {
-    id: String(props.id),
+  const itemToAdd = {
+    productId: String(props.id),
+    size: selectedVariant.value.size
   }
 
   try {
     if (isInWishlist.value) {
-      const success = await wishlistStore.removeFromWishlist(String(props.id))
+      const success = await wishlistStore.removeFromWishlist(itemToAdd.productId, itemToAdd.size)
       if (success) {
-        toastStore.showToast(`${props.name} has been removed from your wishlist`, 'info')
+        toastStore.showToast(`${props.name} removed from wishlist`, 'info')
       } else {
         toastStore.showToast('Failed to remove from wishlist', 'error')
       }
     } else {
-      const success = await wishlistStore.addToWishlist(product)
+      // Assuming store.addToWishlist now accepts an object
+      const success = await wishlistStore.addToWishlist(itemToAdd)
       if (success) {
-        toastStore.showToast(`${props.name} has been added to your wishlist!`, 'success')
+        toastStore.showToast(`${props.name} added to your wishlist!`, 'success')
       } else {
         toastStore.showToast('Item is already in your wishlist', 'info')
       }
@@ -167,17 +169,18 @@ watch(
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-16 items-start">
       <div class="flex flex-col lg:flex-row gap-4 w-full">
         <div
+          v-if="images && images.length > 0"
           class="flex flex-row lg:flex-col gap-3 order-2 lg:order-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 scrollbar-hide"
         >
           <img
-            v-for="(variant, index) in parsedVariants"
+            v-for="(img, index) in images"
             :key="index"
-            :src="variant.imageUrl || image"
-            :alt="variant.size"
-            @click="handleImagePreview(variant.imageUrl || image)"
+            :src="img"
+            :alt="`${name} - view ${index + 1}`"
+            @click="handleImagePreview(img)"
             class="w-20 h-20 lg:w-24 lg:h-24 object-cover rounded-md border cursor-pointer shrink-0 transition-all duration-300"
             :class="
-              currentImage === (variant.imageUrl || image)
+              currentImage === img
                 ? 'border-[#280559] opacity-100 ring-1 ring-[#280559]'
                 : 'border-transparent opacity-60 hover:opacity-100'
             "
@@ -199,7 +202,7 @@ watch(
         <div class="flex flex-col gap-2 luxurious-roman-regular">
           <h1 class="text-3xl md:text-4xl lg:text-5xl uppercase leading-tight">{{ name }}</h1>
           <p class="text-gray-600 leading-relaxed text-sm md:text-base">
-            {{ description }}
+            {{ summary }}
           </p>
         </div>
 
@@ -265,15 +268,24 @@ watch(
             @click="handleWishlistToggle"
             class="flex-1 py-3.5 flex justify-center items-center gap-2 uppercase rounded-lg luxurious-roman-regular tracking-widest text-sm transition-all duration-300 shadow-md bg-[#280559] text-white hover:bg-opacity-90"
           >
-            Wish List
-            <Heart class="w-4 h-4" />
+            {{ isInWishlist ? 'In Wishlist' : 'Wish List' }}
+            <Heart class="w-4 h-4" :fill="isInWishlist ? 'currentColor' : 'none'" />
           </button>
         </div>
       </div>
     </div>
 
     <div v-if="parsedStory" class="flex flex-col gap-16 mt-20 md:mt-32">
-      <div v-if="parsedStory.intro" class="w-full mx-auto text-center md:text-left">
+      <div v-if="description" class="w-full mx-auto text-center md:text-left">
+        <h2 class="luxurious-roman-regular text-2xl md:text-3xl text-[#280559] mb-4">
+          Product Details
+        </h2>
+        <p class="text-gray-600 luxurious-roman-regular leading-relaxed text-base md:text-lg">
+          {{ description }}
+        </p>
+      </div>
+
+      <div v-if="parsedStory.intro?.title" class="w-full mx-auto text-center md:text-left">
         <h2 class="luxurious-roman-regular text-2xl md:text-3xl text-[#280559] mb-4">
           {{ parsedStory.intro.title }}
         </h2>
@@ -282,7 +294,7 @@ watch(
         </p>
       </div>
 
-      <div v-if="parsedStory.overture" class="w-full mx-auto text-center md:text-left">
+      <div v-if="parsedStory.overture?.title" class="w-full mx-auto text-center md:text-left">
         <h2 class="luxurious-roman-regular text-2xl md:text-3xl text-[#280559] mb-4">
           {{ parsedStory.overture.title }}
         </h2>
@@ -346,7 +358,6 @@ watch(
 </template>
 
 <style scoped>
-/* Utility to hide scrollbar for clean horizontal scrolling */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }

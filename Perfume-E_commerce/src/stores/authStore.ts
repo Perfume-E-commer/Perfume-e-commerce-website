@@ -5,8 +5,9 @@ import { useWishlistStore } from '@/stores/wishlistStore'
 import { useCartStore } from '@/stores/cartStore'
 
 interface User {
-  email: string
-  role: 'USER' | 'ADMIN'
+  id: string;
+  email: string;
+  role: 'USER' | 'ADMIN';
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -32,7 +33,7 @@ export const useAuthStore = defineStore('auth', {
         const data = await authService.login(email, password)
 
         this.token = data.token
-        this.user = { email: data.email, role: data.role }
+        this.user = { id: data.id, email: data.email, role: data.role }
 
         localStorage.setItem('token', data.token)
         localStorage.setItem('user', JSON.stringify(this.user))

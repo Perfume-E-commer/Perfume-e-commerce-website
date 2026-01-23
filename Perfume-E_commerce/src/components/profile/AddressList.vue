@@ -72,11 +72,7 @@
             <div class="grow">
               <div class="flex items-center gap-3 mb-1">
                 <h4 class="font-bold text-gray-900 text-base">{{ addr.fullName }}</h4>
-                <span
-                  v-if="!addr.isDefault"
-                  class="text-[10px] bg-white border border-gray-200 text-gray-400 font-bold px-2 py-0.5 rounded uppercase tracking-wide shadow-sm"
-                  >{{ addr.type || 'HOME' }}</span
-                >
+                
               </div>
 
               <p class="text-sm text-gray-600 leading-relaxed mb-3">

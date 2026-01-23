@@ -15,6 +15,8 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[]
   totalPrice: number
+  subtotal: number      
+  shippingCost: number
 }
 
 export interface AddToCartPayload {
@@ -30,7 +32,12 @@ export interface UpdateCartQuantityPayload {
 }
 
 export const useCartStore = defineStore('cart', () => {
-  const cart = ref<Cart>({ items: [], totalPrice: 0 })
+  const cart = ref<Cart>({ 
+    items: [], 
+    totalPrice: 0,
+    subtotal: 0,       
+    shippingCost: 0
+  })
   const isLoading = ref(false)
 
   const itemCount = computed(() => {
@@ -78,10 +85,6 @@ export const useCartStore = defineStore('cart', () => {
     const item = findCartItem(payload.productId, payload.size)
     if (item) {
       item.quantity = payload.quantity
-      cart.value.totalPrice = cart.value.items.reduce(
-        (total, item) => total + item.quantity * item.price,
-        0,
-      )
     }
 
     try {
@@ -141,7 +144,7 @@ export const useCartStore = defineStore('cart', () => {
   }
 
   function resetCart() {
-    cart.value = { items: [], totalPrice: 0 }
+    cart.value = { items: [], totalPrice: 0, subtotal: 0, shippingCost: 0 }
   }
 
   return {

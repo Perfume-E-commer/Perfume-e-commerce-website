@@ -28,14 +28,17 @@ export interface Product {
   id?: string | number 
   name: string
   price: number
-  image: string
+  image: String
+  summary?: string
   descriptions: string
+  images?: string[]
   variants: ProductVariant[]
   RatingReviews?: RatingReview[]
   averageRating?: number
   totalReviews?: number
   brand?: string
   category?: string
+  stock: number;
   scent?: string | null
   occasion?: string | null
   productStorys: {

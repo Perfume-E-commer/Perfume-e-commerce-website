@@ -1,6 +1,8 @@
 import api from './apiClient'
 
 export interface Address {
+  id?: string;          
+  _id?: string;
   houseNumber: string;
   street: string;
   village: string;

@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useCartStore } from '@/stores/cartStore'
 
-// Assuming your cart store has the following methods/properties:
-// cartStore.cart.items: Array<CartItem>
-// cartStore.cart.totalPrice: number
-// cartStore.isLoading: boolean
-// cartStore.fetchCart()
-// cartStore.removeFromCart(productId)
-// cartStore.addToCart(productId, quantity)
-
 const cartStore = useCartStore()
+
+const shippingFee = ref(5.0)
+
+const finalTotal = computed(() => {
+  return cartStore.cart.totalPrice + shippingFee.value
+})
 
 onMounted(() => {
   cartStore.fetchCart()
@@ -81,7 +79,7 @@ const increaseQuantity = (productId: string, currentQuantity: number, size?: str
           class="flex items-center border border-gray-100 rounded-lg p-6 bg-white shadow-sm relative"
         >
           <button
-            @click="cartStore.removeFromCart(item.productId)"
+            @click="cartStore.removeFromCart(item.productId, item.size)"
             class="absolute top-4 right-4 text-gray-500 hover:text-red-600 transition"
           >
             <svg
@@ -104,20 +102,33 @@ const increaseQuantity = (productId: string, currentQuantity: number, size?: str
             class="w-24 h-24 bg-gray-100 rounded-md shrink-0 overflow-hidden border border-gray-200"
           >
             <div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-              <img
-                :src="item.imageUrl"
-                :alt="item.productName"
-                class="object-cover w-full h-full"
-              />
+              <RouterLink :to="{ name: 'ProductDetail', params: { id: item.productId } }">
+                <img
+                  :src="item.imageUrl"
+                  :alt="item.productName"
+                  class="object-cover w-full h-full hover:opacity-90 transition"
+                />
+              </RouterLink>
             </div>
           </div>
 
           <div class="flex-1 ml-6">
             <h3 class="text-lg font-serif font-medium text-gray-900 mb-1">
-              {{ item.productName }}
+              <RouterLink
+                :to="{ name: 'ProductDetail', params: { id: item.productId } }"
+                class="hover:text-[#2E0249] transition-colors"
+              >
+                {{ item.productName }}
+              </RouterLink>
             </h3>
-            <p class="text-sm text-gray-500">Category: {{ item.category }}</p>
-            <p class="text-sm text-gray-500 mb-4">Size: {{ item.size }}</p>
+
+            <p v-if="item.category" class="text-sm text-gray-500">
+              Category: <span class="font-medium text-gray-700">{{ item.category }}</span>
+            </p>
+
+            <p v-if="item.size" class="text-sm text-gray-500 mb-4">
+              Size: <span class="font-medium text-gray-700">{{ item.size }}</span>
+            </p>
 
             <div class="flex items-center space-x-6">
               <div class="flex items-center border border-gray-300 rounded">
@@ -152,19 +163,19 @@ const increaseQuantity = (productId: string, currentQuantity: number, size?: str
 
           <div class="flex justify-between mb-3 text-gray-700">
             <span>Subtotal</span>
-            <span class="font-medium">{{ formatPrice(cartStore.cart.totalPrice) }}</span>
+            <span class="font-medium">{{ formatPrice(cartStore.cart.subtotal || 0) }}</span>
           </div>
 
           <div class="flex justify-between mb-6 text-gray-700">
             <span>Shipping</span>
-            <span class="font-medium">Free</span>
+            <span class="font-medium">{{ formatPrice(cartStore.cart.shippingCost || 0) }}</span>
           </div>
 
           <div class="border-t border-gray-200 my-4"></div>
 
           <div class="flex justify-between mb-8 text-lg font-bold text-gray-900">
             <span>Total</span>
-            <span>{{ formatPrice(cartStore.cart.totalPrice) }}</span>
+            <span>{{ formatPrice(cartStore.cart.totalPrice || 0) }}</span>
           </div>
 
           <RouterLink

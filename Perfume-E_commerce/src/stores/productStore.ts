@@ -8,7 +8,13 @@ function transformBackendProduct(backendData: any): Product {
     id: backendData.id,
     name: backendData.name,
     price: backendData.price,
-    image: backendData.imageUrl,
+    image:
+      backendData.variants && backendData.variants.length > 0
+        ? backendData.variants[0].imageUrl
+        : '',
+    stock: backendData.stock || 0,
+    summary: backendData.summary || '',
+    images: backendData.images || [],
     descriptions: backendData.description,
     variants: (backendData.variants || []).map((v: any) => ({
       id: v.id || v.size,
@@ -230,13 +236,13 @@ export const useProductStore = defineStore('product', () => {
           let matches = false
 
           if (filterType === 'brand') {
-            matches = product.brand && filterValues.includes(product.brand)
+            matches = !!(product.brand && filterValues.includes(product.brand))
           } else if (filterType === 'category') {
-            matches = product.category && filterValues.includes(product.category)
+            matches = !!(product.category && filterValues.includes(product.category))
           } else if (filterType === 'scent') {
-            matches = product.scent && filterValues.includes(product.scent)
+            matches = !!(product.scent && filterValues.includes(product.scent))
           } else if (filterType === 'occasion') {
-            matches = product.occasion && filterValues.includes(product.occasion)
+            matches = !!(product.occasion && filterValues.includes(product.occasion))
           }
           if (!matches) {
             return false
@@ -288,7 +294,6 @@ export const useProductStore = defineStore('product', () => {
   }
 
   return {
-    // State
     products,
     allProducts,
     currentProduct,
@@ -298,11 +303,9 @@ export const useProductStore = defineStore('product', () => {
     activeFilters,
     sortOption,
 
-    // Getters
     hasProducts,
     totalProducts,
 
-    // Actions
     fetchAllProducts,
     fetchProducts,
     fetchProductById,

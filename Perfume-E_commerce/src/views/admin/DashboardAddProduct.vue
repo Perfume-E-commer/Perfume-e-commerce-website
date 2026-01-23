@@ -132,24 +132,15 @@ const formData = ref<any>({
   summary: '',
   scent: '',
   occasion: '',
-
-  imageUrl: '',
   images: [] as string[],
-
   price: 0,
   discountedPrice: 0,
   stock: 0,
   minStockLevel: 5,
-  taxIncluded: false,
-  isOnSale: false,
-  isFeatured: false,
   isActive: true,
-
   variants: [] as any[],
-
-  scentNotes: [] as any[],
-
-  productStory: {
+  scentNotes: [] as any[], 
+  productStory: {         
     intro: { title: '', content: '' },
     overture: { title: '', content: '' },
   },
@@ -195,7 +186,9 @@ const validateForm = () => {
   if (formData.value.discountedPrice < 0) return 'Discounted price cannot be negative.'
   if (formData.value.discountedPrice > formData.value.price)
     return 'Discounted price must be less than or equal to Base Price.'
-  if (!formData.value.imageUrl) return 'Main Product Image is required.'
+  if (!formData.value.imageUrl && (!formData.value.variants?.[0]?.imageUrl)) {
+    return 'Main Product Image is required.'
+  }
   return null
 }
 
@@ -242,12 +235,10 @@ onMounted(async () => {
       const data = res.data
 
       formData.value = {
-        ...formData.value,
-        ...data,
-        productStory: data.productStory || {
-          intro: { title: '', content: '' },
-          overture: { title: '', content: '' },
-        },
+        ...formData.value, 
+        ...data, 
+        isActive: data.active !== undefined ? data.active : true,         
+        productStory: data.productStory || { intro: { title: '', content: '' }, overture: { title: '', content: '' } },
         scentNotes: data.scentNotes || [],
         features: data.features || [],
         images: data.images || [],

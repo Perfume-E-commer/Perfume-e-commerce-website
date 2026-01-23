@@ -26,7 +26,7 @@
         <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ stats.totalOrders }}</h3>
       </div>
       <div class="mt-3 text-xs text-gray-500">
-        <span class="font-medium text-gray-900">{{ stats.avgOrderValue }}</span> avg. per order
+        <span class="font-medium text-gray-900">{{ avgOrderValue }}</span> avg. per order
       </div>
     </div>
 
@@ -82,6 +82,11 @@ const props = defineProps<{
     pendingPayment: number // Count of 'PENDING' payment status
   }
 }>()
+
+const avgOrderValue = computed(() => {
+  if (props.stats.totalOrders === 0) return formatCurrency(0)
+  return formatCurrency(props.stats.totalRevenue / props.stats.totalOrders)
+})
 
 // Helper to format currency
 const formatCurrency = (value: number) => {

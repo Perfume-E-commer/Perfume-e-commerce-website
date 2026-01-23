@@ -81,14 +81,6 @@
         @add-address="handleAddAddress"
         @delete-address="handleDeleteAddress"
       />
-
-      <hr class="border-gray-100 mx-8" />
-
-      <PaymentList
-        :credit-cards="creditCards"
-        @add-card="handleAddCard"
-        @delete-card="handleDeleteCard"
-      />
     </div>
 
     <div
@@ -154,7 +146,6 @@ import { ref, onMounted } from 'vue'
 import userService, { type Address, type CreditCard } from '@/services/userService'
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import AddressList from '@/components/profile/AddressList.vue'
-import PaymentList from '@/components/profile/PaymentList.vue'
 
 const isLoading = ref(true)
 const isSaving = ref(false)

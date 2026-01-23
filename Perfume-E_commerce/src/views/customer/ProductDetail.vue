@@ -92,6 +92,8 @@ const productTitle = computed(() => selectedProduct.value?.name || '')
           :id="selectedProduct.id"
           :name="selectedProduct.name"
           :description="selectedProduct.descriptions || ''"
+          :summary="selectedProduct.summary || ''"
+          :images="selectedProduct.images || []"
           :image="selectedProduct.image || ''"
           :price="selectedProduct.price || 0"
           :variants="selectedProduct.variants || []"

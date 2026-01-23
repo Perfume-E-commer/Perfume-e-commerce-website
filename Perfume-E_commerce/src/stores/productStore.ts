@@ -12,6 +12,8 @@ function transformBackendProduct(backendData: any): Product {
       backendData.variants && backendData.variants.length > 0
         ? backendData.variants[0].imageUrl
         : '',
+    summary: backendData.summary || '',
+    images: backendData.images || [],
     descriptions: backendData.description,
     variants: (backendData.variants || []).map((v: any) => ({
       id: v.id || v.size,

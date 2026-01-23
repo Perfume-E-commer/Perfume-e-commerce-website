@@ -147,7 +147,8 @@ onMounted(async () => {
 
       formData.value = {
         ...formData.value, 
-        ...data,          
+        ...data, 
+        isActive: data.active !== undefined ? data.active : true,         
         productStory: data.productStory || { intro: { title: '', content: '' }, overture: { title: '', content: '' } },
         scentNotes: data.scentNotes || [],
         features: data.features || [],

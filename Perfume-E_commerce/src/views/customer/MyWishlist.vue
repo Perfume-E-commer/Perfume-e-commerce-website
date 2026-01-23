@@ -50,6 +50,9 @@ const viewProduct = (productId: string) => {
 }
 
 const getProductImage = (item: (typeof wishlistStore.wishlistItems)[0]) => {
+  if (item.variants && item.variants.length > 0 && item.variants[0].imageUrl) {
+    return item.variants[0].imageUrl
+  }
   return item.image || '/placeholder-product.png'
 }
 </script>
@@ -137,7 +140,7 @@ const getProductImage = (item: (typeof wishlistStore.wishlistItems)[0]) => {
                   $ {{ item.price.toFixed(2) }}
                 </p>
                 <span
-                  v-if="item.discountedPrice && item.discountedPrice < item.price"
+                  v-if="(item as any).discountedPrice && (item as any).discountedPrice < item.price"
                   class="text-sm text-gray-400 line-through"
                 >
                   $ {{ item.price.toFixed(2) }}
@@ -160,10 +163,6 @@ const getProductImage = (item: (typeof wishlistStore.wishlistItems)[0]) => {
                 </svg>
                 <span class="text-xs text-gray-500">({{ item.averageRating.toFixed(1) }})</span>
               </div>
-
-              <p v-if="item.description" class="hidden sm:block text-sm text-gray-500 line-clamp-2">
-                {{ item.description }}
-              </p>
 
               <p v-if="item.stock <= 0" class="text-xs text-red-500 font-medium mt-1">
                 Out of Stock

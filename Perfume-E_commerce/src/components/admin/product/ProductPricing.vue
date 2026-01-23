@@ -369,11 +369,6 @@
         </div>
       </div>
     </div>
-
-    <ProductSetting
-      :modelValue="modelValue"
-      @update:modelValue="$emit('update:modelValue', $event)"
-    />
   </div>
 </template>
 

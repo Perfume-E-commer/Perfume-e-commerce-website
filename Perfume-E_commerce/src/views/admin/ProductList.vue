@@ -126,7 +126,7 @@
                 Status
               </th> -->
               <th
-                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Actions
               </th>
@@ -196,7 +196,7 @@
                   {{ product.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </td> -->
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                 <router-link
                   :to="`/admin/products/edit/${product.id}`"
                   class="text-indigo-600 hover:text-indigo-900 mr-4"

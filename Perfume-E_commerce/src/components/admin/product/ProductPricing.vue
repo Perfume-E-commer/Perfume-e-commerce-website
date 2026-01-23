@@ -56,13 +56,9 @@
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
             <input
               :value="modelValue.discountedPrice"
-              @input="
-                updateField(
-                  'discountedPrice',
-                  parseFloat(($event.target as HTMLInputElement).value),
-                )
-              "
+              @input="(e) => setDiscountedPrice(parseFloat((e.target as HTMLInputElement).value))"
               type="number"
+              :max="basePrice"
               min="0"
               step="0.01"
               placeholder="Optional"
@@ -373,7 +369,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
 import type { Product, ProductVariant } from '../../../types/adminProduct'
 import adminService from '../../../services/adminService'
 import ProductSetting from './ProductSettings.vue'
@@ -402,6 +398,11 @@ const baseVariant = computed(() => {
   return null
 })
 
+const basePrice = computed(() => {
+  const bp = baseVariant.value ? Number(baseVariant.value.price) : Number(props.modelValue.price)
+  return isNaN(bp) ? 0 : bp
+})
+
 const additionalVariants = computed(() => {
   const result = variants.value.length > 1 ? variants.value.slice(1) : []
   console.log('additionalVariants computed:', result)
@@ -420,6 +421,23 @@ const discountPercentage = computed(() => {
   }
   return 0
 })
+
+const setDiscountedPrice = (val: number) => {
+  const raw = Number.isNaN(val) ? 0 : val
+  const capped = Math.min(Math.max(raw, 0), basePrice.value)
+  updateField('discountedPrice', capped)
+}
+
+// If base price is lowered, ensure discounted price does not exceed it
+watch(
+  () => basePrice.value,
+  (newBase) => {
+    const dp = Number(props.modelValue.discountedPrice) || 0
+    if (dp > newBase) {
+      updateField('discountedPrice', newBase)
+    }
+  },
+)
 
 onMounted(() => {
   if (!props.modelValue.variants || props.modelValue.variants.length === 0) {
@@ -487,6 +505,9 @@ const handleVariantUpload = async (event: Event, index: number) => {
   try {
     const res = await adminService.uploadImage(file)
     const currentVariants = [...(props.modelValue.variants || [])]
+    if (!currentVariants[index]) {
+      currentVariants[index] = { size: '', price: 0, stock: 0, minStock: 5, imageUrl: '' }
+    }
     currentVariants[index].imageUrl = res.data.url
     updateField('variants', currentVariants)
   } catch (error) {
@@ -494,6 +515,9 @@ const handleVariantUpload = async (event: Event, index: number) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       const currentVariants = [...(props.modelValue.variants || [])]
+      if (!currentVariants[index]) {
+        currentVariants[index] = { size: '', price: 0, stock: 0, minStock: 5, imageUrl: '' }
+      }
       currentVariants[index].imageUrl = e.target?.result as string
       updateField('variants', currentVariants)
     }

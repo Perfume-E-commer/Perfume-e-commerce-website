@@ -8,7 +8,8 @@
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-between p-5 border-b border-gray-200">
         <div class="flex items-center gap-1">
-          <img src="/public/perfumeLogos.png" alt="ScentHaven logo" class="w-16 h-16" />
+          <img src="/public/Logo.png" alt="ScentHaven logo" />
+          <!-- <img src="/public/perfumeLogos.png" alt="ScentHaven logo" class="w-16 h-16" />
           <svg
             width="140"
             height="40"
@@ -26,7 +27,7 @@
             >
               ScentHaven
             </text>
-          </svg>
+          </svg> -->
         </div>
         <button
           class="text-gray-600 hover:text-indigo-600 rounded-lg p-1.5 transition-all duration-200"

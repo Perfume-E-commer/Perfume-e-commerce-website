@@ -150,9 +150,7 @@ export const adminService = {
     }
 
     return api.put('/admin/profile', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      // Let the browser set the Content-Type with boundary for multipart/form-data
     })
   },
 
@@ -167,9 +165,7 @@ export const adminService = {
     formData.append('file', file)
 
     return api.post('/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      // Let the browser set Content-Type (including boundary)
     })
   },
 }

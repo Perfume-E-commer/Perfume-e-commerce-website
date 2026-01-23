@@ -92,6 +92,7 @@
         <div class="flex items-center gap-3 mb-3">
           <img
             :src="getImageUrl(adminProfile.avatar)"
+            @error="onImgError"
             class="w-10 h-10 rounded-full border border-gray-200 object-cover"
             alt="Admin"
           />
@@ -140,6 +141,12 @@ const handleItemClick = () => {
   if (isMobile.value) {
     emit('toggle')
   }
+}
+
+const onImgError = (e: Event) => {
+  const img = e.target as HTMLImageElement
+  img.src = getImageUrl(undefined)
+  img.onerror = null
 }
 
 // Fetch Profile Data on Mount

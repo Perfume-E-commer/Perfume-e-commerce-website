@@ -41,6 +41,7 @@
 
               <img
                 :src="getImageUrl(adminProfile.avatar)"
+                @error="onImgError"
                 alt="Profile"
                 class="w-9 h-9 rounded-full object-cover border border-gray-200 shadow-sm"
               />
@@ -124,6 +125,12 @@ const adminProfile = ref({
 const logout = () => {
   authService.logout()
   router.push('/login')
+}
+
+const onImgError = (e: Event) => {
+  const img = e.target as HTMLImageElement
+  img.src = getImageUrl(undefined)
+  img.onerror = null
 }
 
 onMounted(async () => {

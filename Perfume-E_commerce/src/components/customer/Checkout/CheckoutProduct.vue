@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { reactive, onMounted, ref } from 'vue'
+import { reactive, onMounted, ref, computed } from 'vue'
 import { useCartStore } from '@/stores/cartStore'
 import userService from '@/services/userService'
 import type { Address } from '@/services/userService'
 import CheckoutCustomerInfo from './CheckoutCustomerInfo.vue'
 import CheckoutAddressSelector from './CheckoutAddressSelector.vue'
 import CheckoutOrderSummary from './CheckoutOrderSummary.vue'
-import orderService from '@/services/orderService' 
+import orderService from '@/services/orderService'
 import { useRouter } from 'vue-router'
+import apiClient from '@/services/apiClient'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -17,13 +18,49 @@ const userInfo = ref({ firstName: '', lastName: '', email: '' })
 
 const checkoutData = reactive({
   selectedAddress: null as Address | null,
-  paymentMethod: '', 
+  paymentMethod: '',
+  promoCode: '',
+  discountAmount: 0,
   isProcessing: false,
 })
 
 onMounted(() => {
   cartStore.fetchCart()
   fetchProfileAndAddresses()
+})
+
+const onApplyCoupon = async (code: string) => {
+  if (!code) return
+
+  try {
+    const response = await apiClient.get('/promotions/validate', {
+      params: { code: code },
+    })
+
+    const promo = response.data
+
+    if (promo.discountPercentage) {
+      const subtotal = cartStore.cart.totalPrice || 0
+      checkoutData.discountAmount = (subtotal * promo.discountPercentage) / 100
+    } else {
+      checkoutData.discountAmount = promo.discountAmount || 0
+    }
+
+    checkoutData.promoCode = promo.code
+    alert(`Coupon "${promo.code}" applied!`)
+  } catch (error: any) {
+    console.error('Coupon error:', error)
+    alert(error.response?.data || 'Invalid coupon code')
+    checkoutData.discountAmount = 0
+    checkoutData.promoCode = ''
+  }
+}
+
+const total = computed(() => {
+  const baseTotal = cartStore.cart.totalPrice || 0
+  const discount = checkoutData.discountAmount || 0
+
+  return Math.max(0, baseTotal - discount)
 })
 
 const fetchProfileAndAddresses = async () => {
@@ -41,7 +78,7 @@ const fetchProfileAndAddresses = async () => {
     savedAddresses.value = data.addresses || []
 
     const defaultAddr = savedAddresses.value.find((a: Address) => a.isDefault)
-    
+
     if (defaultAddr) {
       checkoutData.selectedAddress = defaultAddr
     } else if (savedAddresses.value.length > 0) {
@@ -49,7 +86,6 @@ const fetchProfileAndAddresses = async () => {
     } else {
       checkoutData.selectedAddress = null
     }
-
   } catch (error) {
     console.error('Failed to fetch user data:', error)
   } finally {
@@ -73,14 +109,15 @@ const handleCheckout = async () => {
 
   const orderPayload = {
     shippingAddress: checkoutData.selectedAddress,
-    paymentMethod: checkoutData.paymentMethod, 
+    paymentMethod: checkoutData.paymentMethod,
+    promoCode: checkoutData.promoCode,
     cartItems: cartStore.cart.items,
   }
 
   try {
     await orderService.placeOrder(orderPayload)
     alert('Order placed successfully!')
-    router.push('/account/orders') 
+    router.push('/account/orders')
   } catch (error) {
     console.error('Checkout failed:', error)
     alert('Failed to place order. Please try again.')
@@ -129,7 +166,12 @@ const handleCheckout = async () => {
                 class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500"
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
@@ -145,7 +187,12 @@ const handleCheckout = async () => {
         </form>
       </div>
 
-      <CheckoutOrderSummary />
+      <CheckoutOrderSummary
+        :discount="checkoutData.discountAmount"
+        @apply-coupon="onApplyCoupon"
+        :total="total"
+        :promo-code="checkoutData.promoCode"
+      />
     </div>
   </div>
 </template>

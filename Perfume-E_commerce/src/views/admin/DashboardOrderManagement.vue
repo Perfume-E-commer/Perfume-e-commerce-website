@@ -105,23 +105,23 @@ const filters = ref({
 
 const handleStatusUpdate = async (orderId: string, newStatus: string) => {
   try {
-    await adminService.updateOrderStatus(orderId, newStatus);
-    loadData(); // Refresh data
+    await adminService.updateOrderStatus(orderId, newStatus)
+    loadData() // Refresh data
   } catch (error) {
-    console.error("Failed to update order status", error);
-    alert("Failed to update order status");
+    console.error('Failed to update order status', error)
+    alert('Failed to update order status')
   }
-};
+}
 
 const handlePaymentToggle = async (orderId: string, newStatus: string) => {
   try {
-    await adminService.updatePaymentStatus(orderId, newStatus);
-    loadData(); // Refresh data
+    await adminService.updatePaymentStatus(orderId, newStatus)
+    loadData() // Refresh data
   } catch (error) {
-    console.error("Failed to update payment status", error);
-    alert("Failed to update payment status");
+    console.error('Failed to update payment status', error)
+    alert('Failed to update payment status')
   }
-};
+}
 
 // --- Logic ---
 
@@ -149,22 +149,46 @@ const filteredOrders = computed(() => {
   return (
     rawOrders.value
       .filter((order) => {
-        // Search (ID, Name, Email)
-        const q = filters.value.search.toLowerCase()
-        const idMatches = order.id && order.id.toLowerCase().includes(q)
-        const nameMatches = (order.user?.firstName + ' ' + order.user?.lastName)
-          .toLowerCase()
-          .includes(q)
-        const emailMatches = (order.email || order.user?.email || '').toLowerCase().includes(q)
-        const searchMatch = !q || idMatches || nameMatches || emailMatches
+        // Safe coercions: ensure we always compare strings
+        const q = String(filters.value.search || '').toLowerCase()
 
-        // Status Match
-        const statusMatch = !filters.value.status || order.status === filters.value.status
+        const idStr = String(order.id ?? '')
+        const idMatches = idStr.toLowerCase().includes(q)
+
+        // Order number (e.g. "ORD-XXX")
+        const orderNumberStr = String(order.orderNumber || '')
+        const orderNumberMatches = orderNumberStr.toLowerCase().includes(q)
+
+        // Try known customer name/email locations returned by backend
+        const firstName = String(order.user?.firstName || '')
+        const lastName = String(order.user?.lastName || '')
+        const nameStr = `${firstName} ${lastName}`.trim()
+        const nameMatches = nameStr.toLowerCase().includes(q)
+
+        // Backend attaches user email as `userEmail` (see sample /api/dev/orders)
+        const emailStr = String(order.userEmail || order.email || order.user?.email || '')
+        const emailMatches = emailStr.toLowerCase().includes(q)
+
+        // Shipping address full name (backend uses shippingAddress.fullName)
+        const shippingFullName = String(order.shippingAddress?.fullName || '')
+        const shippingNameMatches = shippingFullName.toLowerCase().includes(q)
+
+        const searchMatch =
+          !q ||
+          idMatches ||
+          orderNumberMatches ||
+          nameMatches ||
+          emailMatches ||
+          shippingNameMatches
+
+        // Status Match (compare exact if provided)
+        const statusMatch =
+          !filters.value.status || String(order.status || '') === String(filters.value.status)
 
         // Payment Method Match
         const methodMatch =
           !filters.value.paymentMethod ||
-          (order.paymentMethod || 'Credit Card') === filters.value.paymentMethod
+          String(order.paymentMethod || 'Credit Card') === String(filters.value.paymentMethod)
 
         // Date Range Match
         let dateMatch = true

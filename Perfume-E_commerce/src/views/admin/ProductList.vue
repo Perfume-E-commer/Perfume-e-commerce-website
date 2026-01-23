@@ -1,4 +1,5 @@
-inte<template>
+inte
+<template>
   <div>
     <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Products Management</h1>
@@ -134,9 +135,7 @@ inte<template>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr v-if="displayedProducts.length === 0">
-              <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                No products found.
-              </td>
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">No products found.</td>
             </tr>
             <tr v-for="product in displayedProducts" :key="product.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">
@@ -328,17 +327,17 @@ const displayedProducts = computed(() => {
 
 const getProductImage = (product: Product) => {
   if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
-    const firstVariant = product.variants[0];
+    const firstVariant = product.variants[0]
     if (firstVariant && firstVariant.imageUrl) {
-      return firstVariant.imageUrl;
+      return firstVariant.imageUrl
     }
   }
-  
+
   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-    return product.images[0];
+    return product.images[0]
   }
 
-  return 'https://via.placeholder.com/50';
+  return 'https://via.placeholder.com/50'
 }
 
 const loadProducts = async () => {

@@ -14,7 +14,7 @@ export interface Product {
   discountedPrice?: number
   stock: number
   orders?: number
-  images?: string[]  
+  images?: string[]
   averageRating?: number
   totalReviews?: number
   ratings?: Rating[]
@@ -24,6 +24,8 @@ export interface Product {
   scentNotes?: ScentNote[]
   minStockLevel?: number
   isActive?: boolean
+  isFeatured?: boolean
+  isOnSale?: boolean
   createdAt?: string
   createdDate?: string
 }

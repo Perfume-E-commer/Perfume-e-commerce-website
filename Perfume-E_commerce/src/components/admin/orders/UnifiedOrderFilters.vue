@@ -13,7 +13,7 @@
           </svg>
         </div>
         <input
-          v-model="filters.search"
+          v-model="localFilters.search"
           type="text"
           placeholder="Search order #, customer name or email..."
           class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm transition"
@@ -32,7 +32,7 @@
       <div>
         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">From Date</label>
         <input
-          v-model="filters.startDate"
+          v-model="localFilters.startDate"
           type="date"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
         />
@@ -41,7 +41,7 @@
       <div>
         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">To Date</label>
         <input
-          v-model="filters.endDate"
+          v-model="localFilters.endDate"
           type="date"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
         />
@@ -52,7 +52,7 @@
           >Payment Method</label
         >
         <select
-          v-model="filters.paymentMethod"
+          v-model="localFilters.paymentMethod"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
         >
           <option value="">All Methods</option>
@@ -66,7 +66,7 @@
       <div>
         <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Order Status</label>
         <select
-          v-model="filters.status"
+          v-model="localFilters.status"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
         >
           <option value="">All Statuses</option>
@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, toRefs } from 'vue'
+import { reactive, watch } from 'vue'
 
 // Accept parent filters via v-model:filters
 const props = defineProps<{

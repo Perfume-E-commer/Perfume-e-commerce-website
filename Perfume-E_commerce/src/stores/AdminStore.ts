@@ -24,8 +24,8 @@ export const useProductStore = defineStore('product', {
     getProductById: (state) => (id: string) => {
       return state.products.find((product) => product.id === id)
     },
-    featuredProducts: (state) => state.products.filter((p) => p.isFeatured),
-    onSaleProducts: (state) => state.products.filter((p) => p.isOnSale),
+    featuredProducts: (state) => state.products.filter((p) => p.isFeatured === true),
+    onSaleProducts: (state) => state.products.filter((p) => p.isOnSale === true),
     outOfStockProducts: (state) => state.products.filter((p) => p.stock <= 0),
   },
 

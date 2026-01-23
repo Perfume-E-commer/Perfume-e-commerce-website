@@ -40,6 +40,8 @@ function transformBackendProduct(backendData: any): Product {
     category: backendData.category,
     scent: backendData.scent,
     occasion: backendData.occasion,
+    isFeatured: backendData.isFeatured || false,
+    isOnSale: backendData.isOnSale || false,
   }
 }
 

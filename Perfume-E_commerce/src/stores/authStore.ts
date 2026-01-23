@@ -5,9 +5,9 @@ import { useWishlistStore } from '@/stores/wishlistStore'
 import { useCartStore } from '@/stores/cartStore'
 
 interface User {
-  id: string;
-  email: string;
-  role: 'USER' | 'ADMIN';
+  id: string
+  email: string
+  role: 'USER' | 'ADMIN'
 }
 
 export const useAuthStore = defineStore('auth', {

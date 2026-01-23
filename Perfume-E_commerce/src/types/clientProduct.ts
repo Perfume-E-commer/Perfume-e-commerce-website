@@ -25,10 +25,10 @@ export interface ProductVariant {
 }
 
 export interface Product {
-  id?: string | number 
+  id?: string | number
   name: string
   price: number
-  image: String
+  image: string
   summary?: string
   descriptions: string
   images?: string[]
@@ -38,7 +38,7 @@ export interface Product {
   totalReviews?: number
   brand?: string
   category?: string
-  stock: number;
+  stock: number
   scent?: string | null
   occasion?: string | null
   productStorys: {
@@ -48,6 +48,9 @@ export interface Product {
     features: StorySection[]
     scentNotes: ScentNote[]
   }
+
+  isFeatured?: boolean
+  isOnSale?: boolean
 }
 
 export interface RatingReview {

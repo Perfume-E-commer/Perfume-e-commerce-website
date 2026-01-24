@@ -7,34 +7,47 @@ import PanigationProduct from '@/components/customer/product/PanigationProduct.v
 import SpecailOffers from '@/components/customer/product/SpecailOffers.vue'
 import ProductListPerfume from '@/components/customer/product/ProductListPerfume.vue'
 import { useProductStore } from '@/stores/productStore'
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, computed } from 'vue'
 import Loading from '@/components/layout/Loading.vue'
 import { storeToRefs } from 'pinia'
 
 const productStore = useProductStore()
 
-const { products, loading } = storeToRefs(productStore)
+const { products, allProducts, loading } = storeToRefs(productStore)
 const { fetchProducts, updateFilters, updateSort } = productStore
 
+const uniqueBrands = computed(() => {
+  const brands = allProducts.value.map((p) => p.brand).filter(Boolean)
+  return [...new Set(brands)]
+})
+
+const uniqueScents = computed(() => {
+  const scents = allProducts.value.map((p) => p.scent).filter(Boolean)
+  return [...new Set(scents)]
+})
+
+const uniqueCategories = computed(() => {
+  const cats = allProducts.value.map((p) => p.category).filter(Boolean)
+  return [...new Set(cats)]
+})
+
+const uniqueOccasions = computed(() => {
+  const occasions = allProducts.value.map((p) => p.occasion).filter(Boolean)
+  return [...new Set(occasions)]
+})
 onMounted(() => {
   fetchProducts(0, 12)
   console.log('perfume list: ', productStore.products)
 })
 
-watch(products, () => {
-  console.log('Perfume List', productStore.products)
-})
-
 const handleFilterChange = (filters: Record<string, any>) => {
   console.log('Filters applied:', filters)
   updateFilters(filters)
-  fetchProducts(0, 4) 
 }
 
 const handleSortChange = (sortOption: string) => {
   console.log('Sort applied:', sortOption)
   updateSort(sortOption)
-  fetchProducts(0, 4)
 }
 
 const SpecialOffer = [
@@ -77,7 +90,14 @@ const SpecialOffer = [
         Best Selling Products
       </h1>
       <section class="bg-white">
-        <MenuFilter @filterChange="handleFilterChange" @sortChange="handleSortChange" />
+        <MenuFilter 
+          :brands="uniqueBrands"
+          :scents="uniqueScents"
+          :categories="uniqueCategories"
+          :occasions="uniqueOccasions"
+          @filterChange="handleFilterChange" 
+          @sortChange="handleSortChange" 
+        />
       </section>
       <section v-if="!loading" class="bg-white">
         <div v-if="products.length === 0" class="flex flex-col items-center justify-center py-20">

@@ -17,27 +17,27 @@ const { products, allProducts, loading } = storeToRefs(productStore)
 const { fetchProducts, updateFilters, updateSort } = productStore
 
 const uniqueBrands = computed(() => {
-  const brands = allProducts.value.map((p) => p.brand).filter(Boolean)
+  const brands = allProducts.value.map(p => p.brand).filter(Boolean) as string[]
   return [...new Set(brands)]
 })
 
 const uniqueScents = computed(() => {
-  const scents = allProducts.value.map((p) => p.scent).filter(Boolean)
+  const scents = allProducts.value.map(p => p.scent).filter(Boolean) as string[]
   return [...new Set(scents)]
 })
 
 const uniqueCategories = computed(() => {
-  const cats = allProducts.value.map((p) => p.category).filter(Boolean)
+  const cats = allProducts.value.map(p => p.category).filter(Boolean) as string[]
   return [...new Set(cats)]
 })
 
 const uniqueOccasions = computed(() => {
-  const occasions = allProducts.value.map((p) => p.occasion).filter(Boolean)
+  const occasions = allProducts.value.map(p => p.occasion).filter(Boolean) as string[]
   return [...new Set(occasions)]
 })
+
 onMounted(() => {
   fetchProducts(0, 12)
-  console.log('perfume list: ', productStore.products)
 })
 
 const handleFilterChange = (filters: Record<string, any>) => {

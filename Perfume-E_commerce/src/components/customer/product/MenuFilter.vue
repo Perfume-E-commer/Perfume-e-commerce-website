@@ -1,44 +1,34 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 
-// --- 1. TYPES ---
 type FilterCategory = 'brand' | 'scent' | 'category' | 'occasion'
 
-// --- 2. EMITS ---
+const props = defineProps<{
+  brands: string[]
+  scents: string[]
+  categories: string[]
+  occasions: string[]
+}>()
+
 const emit = defineEmits<{
   filterChange: [filters: Record<string, any>]
   sortChange: [sortOption: string]
 }>()
 
-// --- 3. DATA ---
 const activeDropdown = ref<string | null>(null)
-const isMobileMenuOpen = ref(false) // New state for mobile menu
+const isMobileMenuOpen = ref(false)
 
 const filters = ref({
-  brand: [
-    { id: 1, label: 'Chanel', checked: false },
-    { id: 2, label: 'Dior', checked: false },
-    { id: 3, label: 'Gucci', checked: false },
-  ],
-  scent: [
-    { id: 1, label: 'Floral', checked: false },
-    { id: 2, label: 'Woody', checked: false },
-    { id: 3, label: 'Citrus', checked: false },
-  ],
-  category: [
-    { id: 1, label: 'MEN', checked: false },
-    { id: 2, label: 'WOMEN', checked: false },
-  ],
-  occasion: [
-    { id: 1, label: 'Daily', checked: false },
-    { id: 2, label: 'Party', checked: false },
-  ],
+  brand: [] as { id: string; label: string; checked: boolean }[],
+  scent: [] as { id: string; label: string; checked: boolean }[],
+  category: [] as { id: string; label: string; checked: boolean }[],
+  occasion: [] as { id: string; label: string; checked: boolean }[],
   sort: [
-    { id: 0, label: 'Default', value: 'default', checked: true },
-    { id: 1, label: 'Price: Low to High', value: 'price_asc', checked: false },
-    { id: 2, label: 'Price: High to Low', value: 'price_desc', checked: false },
-    { id: 3, label: 'Rating: High to Low', value: 'rating_desc', checked: false },
-    { id: 4, label: 'Rating: Low to High', value: 'rating_asc', checked: false },
+    { id: 'default', label: 'Default', value: 'default', checked: true },
+    { id: 'price_asc', label: 'Price: Low to High', value: 'price_asc', checked: false },
+    { id: 'price_desc', label: 'Price: High to Low', value: 'price_desc', checked: false },
+    { id: 'rating_desc', label: 'Rating: High to Low', value: 'rating_desc', checked: false },
+    { id: 'rating_asc', label: 'Rating: Low to High', value: 'rating_asc', checked: false },
   ],
 })
 
@@ -49,7 +39,30 @@ const filterGroups: { key: FilterCategory; label: string }[] = [
   { key: 'occasion', label: 'Occasions' },
 ]
 
-// --- 4. COMPUTED ---
+const updateFilterOptions = (
+  currentOptions: { id: string; label: string; checked: boolean }[],
+  newValues: string[]
+) => {
+  const checkedSet = new Set(currentOptions.filter(o => o.checked).map(o => o.label))
+  
+  return newValues.map(value => ({
+    id: value, 
+    label: value,
+    checked: checkedSet.has(value)
+  }))
+}
+
+watch(
+  () => [props.brands, props.scents, props.categories, props.occasions],
+  () => {
+    filters.value.brand = updateFilterOptions(filters.value.brand, props.brands || [])
+    filters.value.scent = updateFilterOptions(filters.value.scent, props.scents || [])
+    filters.value.category = updateFilterOptions(filters.value.category, props.categories || [])
+    filters.value.occasion = updateFilterOptions(filters.value.occasion, props.occasions || [])
+  },
+  { immediate: true, deep: true }
+)
+
 const selectedFilters = computed(() => {
   const selected: Record<string, string[]> = {}
   filterGroups.forEach((group) => {
@@ -63,7 +76,6 @@ const selectedFilters = computed(() => {
   return selected
 })
 
-// --- 5. LOGIC ---
 const toggleDropdown = (key: string) => {
   if (activeDropdown.value === key) {
     activeDropdown.value = null
@@ -83,7 +95,6 @@ const closeAll = (e: Event) => {
   }
 }
 
-// Emit filter changes whenever filters are updated
 watch(
   selectedFilters,
   (newFilters) => {
@@ -92,10 +103,8 @@ watch(
   { deep: true },
 )
 
-// Handle sort changes
 const handleSortChange = (sortValue: string) => {
   emit('sortChange', sortValue)
-  // Reset all sort options except the selected one
   filters.value.sort.forEach((option) => {
     option.checked = option.value === sortValue
   })

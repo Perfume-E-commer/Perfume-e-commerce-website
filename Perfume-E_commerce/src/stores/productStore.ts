@@ -23,7 +23,10 @@ function transformBackendProduct(backendData: any): Product {
       price: v.price,
       stock: v.stock,
     })),
-    averageRating: backendData.averageRating || 0,
+    averageRating: (() => {
+      const raw = Number(backendData.averageRating) || 0
+      return Math.max(0, Math.min(5, raw))
+    })(),
     totalReviews: backendData.totalReviews || 0,
     productStorys: {
       intro: backendData.productStory?.intro || { title: '', content: '' },
@@ -245,6 +248,17 @@ export const useProductStore = defineStore('product', () => {
             matches = !!(product.scent && filterValues.includes(product.scent))
           } else if (filterType === 'occasion') {
             matches = !!(product.occasion && filterValues.includes(product.occasion))
+          } else if (filterType === 'price') {
+            // filterValues expected as [min, max]
+            const min = Number(filterValues[0]) || 0
+            const max = Number(filterValues[1]) || Number.POSITIVE_INFINITY
+            matches =
+              typeof product.price === 'number' && product.price >= min && product.price <= max
+          } else if (filterType === 'rating') {
+            // filterValues are strings '0'..'5'
+            const avg = Number(product.averageRating) || 0
+            const star = avg === 0 ? 0 : Math.floor(avg)
+            matches = filterValues.includes(String(star))
           }
           if (!matches) {
             return false
@@ -258,6 +272,21 @@ export const useProductStore = defineStore('product', () => {
       filtered.sort((a, b) => a.price - b.price)
     } else if (sortOption.value === 'price_desc') {
       filtered.sort((a, b) => b.price - a.price)
+    } else if (sortOption.value && sortOption.value.startsWith('rating_eq_')) {
+      // sort so products with exact floored star count come first
+      const parts = sortOption.value.split('_')
+      const target = Number(parts.pop())
+      filtered.sort((a, b) => {
+        const aAvg = Number(a.averageRating) || 0
+        const bAvg = Number(b.averageRating) || 0
+        const aStar = aAvg === 0 ? 0 : Math.floor(aAvg)
+        const bStar = bAvg === 0 ? 0 : Math.floor(bAvg)
+        const aMatch = aStar === target ? 0 : 1
+        const bMatch = bStar === target ? 0 : 1
+        if (aMatch !== bMatch) return aMatch - bMatch
+        // secondary sort by average rating desc
+        return bAvg - aAvg
+      })
     } else if (sortOption.value === 'rating_desc') {
       filtered.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0))
     } else if (sortOption.value === 'rating_asc') {

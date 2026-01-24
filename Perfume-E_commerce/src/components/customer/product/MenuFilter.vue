@@ -1,7 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 
-type FilterCategory = 'brand' | 'scent' | 'category' | 'occasion'
+type FilterCategory = 'brand' | 'scent' | 'category' | 'occasion' | 'price' | 'rating' | 'sort'
+
+type Option = { id: string; label: string; checked: boolean }
+type SortOption = { id: string; label: string; value?: string; checked: boolean }
+type RatingOption = { id: string; label: string; checked: boolean }
+type PriceOption = {
+  id: string
+  label: string
+  min: number
+  max: number
+  selectedMin: number
+  selectedMax: number
+}
+
+type Filters = {
+  brand: Option[]
+  scent: Option[]
+  category: Option[]
+  occasion: Option[]
+  sort: SortOption[]
+  rating: RatingOption[]
+  price: PriceOption[]
+}
 
 const props = defineProps<{
   brands: string[]
@@ -18,18 +40,29 @@ const emit = defineEmits<{
 const activeDropdown = ref<string | null>(null)
 const isMobileMenuOpen = ref(false)
 
-const filters = ref({
-  brand: [] as { id: string; label: string; checked: boolean }[],
-  scent: [] as { id: string; label: string; checked: boolean }[],
-  category: [] as { id: string; label: string; checked: boolean }[],
-  occasion: [] as { id: string; label: string; checked: boolean }[],
+const filters = ref<Filters>({
+  brand: [],
+  scent: [],
+  category: [],
+  occasion: [],
   sort: [
     { id: 'default', label: 'Default', value: 'default', checked: true },
-    { id: 'price_asc', label: 'Price: Low to High', value: 'price_asc', checked: false },
-    { id: 'price_desc', label: 'Price: High to Low', value: 'price_desc', checked: false },
-    { id: 'rating_desc', label: 'Rating: High to Low', value: 'rating_desc', checked: false },
-    { id: 'rating_asc', label: 'Rating: Low to High', value: 'rating_asc', checked: false },
+    { id: 'rating_eq_0', label: 'Rating: 0 stars', value: 'rating_eq_0', checked: false },
+    { id: 'rating_eq_1', label: 'Rating: 1 star', value: 'rating_eq_1', checked: false },
+    { id: 'rating_eq_2', label: 'Rating: 2 stars', value: 'rating_eq_2', checked: false },
+    { id: 'rating_eq_3', label: 'Rating: 3 stars', value: 'rating_eq_3', checked: false },
+    { id: 'rating_eq_4', label: 'Rating: 4 stars', value: 'rating_eq_4', checked: false },
+    { id: 'rating_eq_5', label: 'Rating: 5 stars', value: 'rating_eq_5', checked: false },
   ],
+  rating: [
+    { id: '0', label: 'No rating', checked: false },
+    { id: '1', label: '1 star', checked: false },
+    { id: '2', label: '2 stars', checked: false },
+    { id: '3', label: '3 stars', checked: false },
+    { id: '4', label: '4 stars', checked: false },
+    { id: '5', label: '5 stars', checked: false },
+  ],
+  price: [{ id: 'price', label: 'Price', min: 0, max: 1000, selectedMin: 0, selectedMax: 1000 }],
 })
 
 const filterGroups: { key: FilterCategory; label: string }[] = [
@@ -41,14 +74,14 @@ const filterGroups: { key: FilterCategory; label: string }[] = [
 
 const updateFilterOptions = (
   currentOptions: { id: string; label: string; checked: boolean }[],
-  newValues: string[]
+  newValues: string[],
 ) => {
-  const checkedSet = new Set(currentOptions.filter(o => o.checked).map(o => o.label))
-  
-  return newValues.map(value => ({
-    id: value, 
+  const checkedSet = new Set(currentOptions.filter((o) => o.checked).map((o) => o.label))
+
+  return newValues.map((value) => ({
+    id: value,
     label: value,
-    checked: checkedSet.has(value)
+    checked: checkedSet.has(value),
   }))
 }
 
@@ -60,19 +93,32 @@ watch(
     filters.value.category = updateFilterOptions(filters.value.category, props.categories || [])
     filters.value.occasion = updateFilterOptions(filters.value.occasion, props.occasions || [])
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 )
 
 const selectedFilters = computed(() => {
   const selected: Record<string, string[]> = {}
-  filterGroups.forEach((group) => {
-    const checkedItems = filters.value[group.key]
-      .filter((item) => item.checked)
-      .map((item) => item.label)
-    if (checkedItems.length > 0) {
-      selected[group.key] = checkedItems
+
+  // handle price separately
+  const priceOption = filters.value.price && filters.value.price[0]
+  if (priceOption) {
+    const min = Number(priceOption.selectedMin ?? priceOption.min ?? 0)
+    const max = Number(priceOption.selectedMax ?? priceOption.max ?? 1000)
+    if (min !== Number(priceOption.min) || max !== Number(priceOption.max)) {
+      selected.price = [String(min), String(max)]
     }
+  }
+
+  // checkbox-like groups
+  const checkboxKeys: FilterCategory[] = ['brand', 'scent', 'category', 'occasion', 'rating']
+  checkboxKeys.forEach((key) => {
+    const options = filters.value[key] as Array<{ id: string; label?: string; checked?: boolean }>
+    const checkedItems = options
+      .filter((item) => !!item.checked)
+      .map((item) => (key === 'rating' ? item.id : item.label || item.id))
+    if (checkedItems.length > 0) selected[key] = checkedItems
   })
+
   return selected
 })
 
@@ -98,6 +144,7 @@ const closeAll = (e: Event) => {
 watch(
   selectedFilters,
   (newFilters) => {
+    console.debug('MenuFilter selectedFilters ->', newFilters)
     emit('filterChange', newFilters)
   },
   { deep: true },
@@ -149,18 +196,104 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
               <ul class="p-3 space-y-2">
                 <li v-for="option in filters[group.key]" :key="option.id">
                   <label
+                    v-if="group.key !== 'price'"
                     class="flex items-center hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors duration-150"
                   >
                     <input
                       :id="`desktop-${group.key}-${option.id}`"
                       type="checkbox"
-                      v-model="option.checked"
+                      v-model="(option as any).checked"
                       class="w-4 h-4 border-gray-300 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <span class="ms-2 text-sm font-medium text-gray-900">
-                      {{ option.label }}
+                      <template v-if="group.key === 'rating'">
+                        <span class="flex items-center gap-1" aria-hidden="true">
+                          <svg
+                            v-for="i in 5"
+                            :key="i"
+                            class="w-4 h-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            :class="{
+                              'fill-[#280559] text-[#280559]': i <= Number(option.id),
+                              'text-gray-300': i > Number(option.id),
+                            }"
+                          >
+                            <path
+                              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.173c.969 0 1.371 1.24.588 1.81l-3.376 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118L10 15.347l-3.376 2.455c-.785.57-1.84-.197-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.631 9.393c-.783-.57-.38-1.81.588-1.81h4.173a1 1 0 00.95-.69L9.049 2.927z"
+                            />
+                          </svg>
+                        </span>
+                        <span class="ms-2 text-sm text-gray-700">
+                          {{ option.id === '0' ? 'No rating' : option.id + ' star' }}
+                        </span>
+                      </template>
+                      <template v-else>{{ option.label }}</template>
                     </span>
                   </label>
+
+                  <!-- Price range UI (desktop) -->
+                  <div v-else class="px-3 py-2">
+                    <div class="text-sm text-gray-700 mb-2">Price range</div>
+                    <div class="flex items-center gap-3">
+                      <input
+                        type="number"
+                        class="w-20 p-1 border rounded"
+                        :min="(option as any).min"
+                        :max="(option as any).max"
+                        v-model.number="(option as any).selectedMin"
+                        @input="
+                          (option as any).selectedMin = Math.min(
+                            (option as any).selectedMin,
+                            (option as any).selectedMax,
+                          )
+                        "
+                      />
+                      <span class="text-sm">—</span>
+                      <input
+                        type="number"
+                        class="w-20 p-1 border rounded"
+                        :min="(option as any).min"
+                        :max="(option as any).max"
+                        v-model.number="(option as any).selectedMax"
+                        @input="
+                          (option as any).selectedMax = Math.max(
+                            (option as any).selectedMax,
+                            (option as any).selectedMin,
+                          )
+                        "
+                      />
+                    </div>
+                    <div class="mt-3">
+                      <input
+                        type="range"
+                        :min="(option as any).min"
+                        :max="(option as any).max"
+                        v-model.number="(option as any).selectedMin"
+                        @input="
+                          (option as any).selectedMin = Math.min(
+                            (option as any).selectedMin,
+                            (option as any).selectedMax,
+                          )
+                        "
+                        class="w-full"
+                      />
+                      <input
+                        type="range"
+                        :min="(option as any).min"
+                        :max="(option as any).max"
+                        v-model.number="(option as any).selectedMax"
+                        @input="
+                          (option as any).selectedMax = Math.max(
+                            (option as any).selectedMax,
+                            (option as any).selectedMin,
+                          )
+                        "
+                        class="w-full mt-2"
+                      />
+                    </div>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -203,15 +336,117 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
                   type="radio"
                   :value="option.value"
                   :checked="option.checked"
-                  @change="handleSortChange(option.value)"
+                  @change="handleSortChange(option.value as string)"
                   class="w-4 h-4 border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <span class="ms-2 text-sm font-medium text-gray-900">
-                  {{ option.label }}
+                  <template v-if="option.value && option.value.includes('rating')">
+                    <span class="flex items-center gap-1" aria-hidden="true">
+                      <svg
+                        v-for="i in 5"
+                        :key="i"
+                        class="w-4 h-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        :class="{
+                          'fill-[#280559] text-[#280559]':
+                            option.value === 'rating_desc' ||
+                            (option.value === 'rating_asc' && i === 1) ||
+                            (option.value &&
+                              option.value.startsWith &&
+                              option.value.startsWith('rating_eq_') &&
+                              i <= Number(option.value.split('_').pop())),
+                          'text-gray-300': !(
+                            option.value === 'rating_desc' ||
+                            (option.value === 'rating_asc' && i === 1) ||
+                            (option.value &&
+                              option.value.startsWith &&
+                              option.value.startsWith('rating_eq_') &&
+                              i <= Number(option.value.split('_').pop()))
+                          ),
+                        }"
+                      >
+                        <path
+                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.173c.969 0 1.371 1.24.588 1.81l-3.376 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118L10 15.347l-3.376 2.455c-.785.57-1.84-.197-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.631 9.393c-.783-.57-.38-1.81.588-1.81h4.173a1 1 0 00.95-.69L9.049 2.927z"
+                        />
+                      </svg>
+                    </span>
+                    <span class="sr-only">
+                      {{
+                        option.value === 'rating_desc'
+                          ? 'Rating: High to Low'
+                          : 'Rating: Low to High'
+                      }}
+                    </span>
+                  </template>
+                  <template v-else>{{ option.label }}</template>
                 </span>
               </label>
             </li>
           </ul>
+
+          <!-- Desktop price UI inside Sort dropdown -->
+          <div v-if="filters.price && filters.price[0]" class="border-t pt-3 px-3">
+            <div class="text-sm text-gray-700 mb-2">Price range</div>
+            <div class="flex items-center gap-3">
+              <input
+                type="number"
+                class="w-20 p-1 border rounded"
+                :min="filters.price[0].min"
+                :max="filters.price[0].max"
+                v-model.number="filters.price[0].selectedMin"
+                @input="
+                  filters.price[0].selectedMin = Math.min(
+                    filters.price[0].selectedMin,
+                    filters.price[0].selectedMax,
+                  )
+                "
+              />
+              <span class="text-sm">—</span>
+              <input
+                type="number"
+                class="w-20 p-1 border rounded"
+                :min="filters.price[0].min"
+                :max="filters.price[0].max"
+                v-model.number="filters.price[0].selectedMax"
+                @input="
+                  filters.price[0].selectedMax = Math.max(
+                    filters.price[0].selectedMax,
+                    filters.price[0].selectedMin,
+                  )
+                "
+              />
+            </div>
+            <div class="mt-3">
+              <input
+                type="range"
+                :min="filters.price[0].min"
+                :max="filters.price[0].max"
+                v-model.number="filters.price[0].selectedMin"
+                @input="
+                  filters.price[0].selectedMin = Math.min(
+                    filters.price[0].selectedMin,
+                    filters.price[0].selectedMax,
+                  )
+                "
+                class="w-full"
+              />
+              <input
+                type="range"
+                :min="filters.price[0].min"
+                :max="filters.price[0].max"
+                v-model.number="filters.price[0].selectedMax"
+                @input="
+                  filters.price[0].selectedMax = Math.max(
+                    filters.price[0].selectedMax,
+                    filters.price[0].selectedMin,
+                  )
+                "
+                class="w-full mt-2"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -286,18 +521,104 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
             <ul class="space-y-2 py-2">
               <li v-for="option in filters[group.key]" :key="option.id">
                 <label
+                  v-if="group.key !== 'price'"
                   class="flex items-center cursor-pointer p-1 rounded hover:bg-gray-50 transition-colors duration-150"
                 >
                   <input
                     :id="`mobile-${group.key}-${option.id}`"
                     type="checkbox"
-                    v-model="option.checked"
+                    v-model="(option as any).checked"
                     class="w-5 h-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
                   />
                   <span class="ms-3 text-base text-gray-700">
-                    {{ option.label }}
+                    <template v-if="group.key === 'rating'">
+                      <span class="flex items-center gap-1" aria-hidden="true">
+                        <svg
+                          v-for="i in 5"
+                          :key="i"
+                          class="w-5 h-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          :class="{
+                            'fill-[#280559] text-[#280559]': i <= Number(option.id),
+                            'text-gray-300': i > Number(option.id),
+                          }"
+                        >
+                          <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.173c.969 0 1.371 1.24.588 1.81l-3.376 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118L10 15.347l-3.376 2.455c-.785.57-1.84-.197-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.631 9.393c-.783-.57-.38-1.81.588-1.81h4.173a1 1 0 00.95-.69L9.049 2.927z"
+                          />
+                        </svg>
+                      </span>
+                      <span class="ms-3 text-base text-gray-700">{{
+                        option.id === '0' ? 'No rating' : option.id + ' star'
+                      }}</span>
+                    </template>
+                    <template v-else>{{ option.label }}</template>
                   </span>
                 </label>
+
+                <!-- Price UI for mobile -->
+                <div v-else class="px-3 py-2">
+                  <div class="text-sm text-gray-700 mb-2">Price range</div>
+                  <div class="flex items-center gap-3">
+                    <input
+                      type="number"
+                      class="w-20 p-1 border rounded"
+                      :min="(option as any).min"
+                      :max="(option as any).max"
+                      v-model.number="(option as any).selectedMin"
+                      @input="
+                        (option as any).selectedMin = Math.min(
+                          (option as any).selectedMin,
+                          (option as any).selectedMax,
+                        )
+                      "
+                    />
+                    <span class="text-sm">—</span>
+                    <input
+                      type="number"
+                      class="w-20 p-1 border rounded"
+                      :min="(option as any).min"
+                      :max="(option as any).max"
+                      v-model.number="(option as any).selectedMax"
+                      @input="
+                        (option as any).selectedMax = Math.max(
+                          (option as any).selectedMax,
+                          (option as any).selectedMin,
+                        )
+                      "
+                    />
+                  </div>
+                  <div class="mt-3">
+                    <input
+                      type="range"
+                      :min="(option as any).min"
+                      :max="(option as any).max"
+                      v-model.number="(option as any).selectedMin"
+                      @input="
+                        (option as any).selectedMin = Math.min(
+                          (option as any).selectedMin,
+                          (option as any).selectedMax,
+                        )
+                      "
+                      class="w-full"
+                    />
+                    <input
+                      type="range"
+                      :min="(option as any).min"
+                      :max="(option as any).max"
+                      v-model.number="(option as any).selectedMax"
+                      @input="
+                        (option as any).selectedMax = Math.max(
+                          (option as any).selectedMax,
+                          (option as any).selectedMin,
+                        )
+                      "
+                      class="w-full mt-2"
+                    />
+                  </div>
+                </div>
               </li>
             </ul>
           </div>
@@ -338,11 +659,51 @@ onUnmounted(() => document.removeEventListener('click', closeAll))
                     type="radio"
                     :value="option.value"
                     :checked="option.checked"
-                    @change="handleSortChange(option.value)"
+                    @change="handleSortChange(option.value as string)"
                     class="w-5 h-5 border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span class="ms-3 text-base text-gray-700">
-                    {{ option.label }}
+                    <template v-if="option.value && option.value.includes('rating')">
+                      <span class="flex items-center gap-1" aria-hidden="true">
+                        <svg
+                          v-for="i in 5"
+                          :key="i"
+                          class="w-5 h-5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          :class="{
+                            'fill-[#280559] text-[#280559]':
+                              option.value === 'rating_desc' ||
+                              (option.value === 'rating_asc' && i === 1) ||
+                              (option.value &&
+                                option.value.startsWith &&
+                                option.value.startsWith('rating_eq_') &&
+                                i <= Number(option.value.split('_').pop())),
+                            'text-gray-300': !(
+                              option.value === 'rating_desc' ||
+                              (option.value === 'rating_asc' && i === 1) ||
+                              (option.value &&
+                                option.value.startsWith &&
+                                option.value.startsWith('rating_eq_') &&
+                                i <= Number(option.value.split('_').pop()))
+                            ),
+                          }"
+                        >
+                          <path
+                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.966a1 1 0 00.95.69h4.173c.969 0 1.371 1.24.588 1.81l-3.376 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.921-.755 1.688-1.54 1.118L10 15.347l-3.376 2.455c-.785.57-1.84-.197-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.631 9.393c-.783-.57-.38-1.81.588-1.81h4.173a1 1 0 00.95-.69L9.049 2.927z"
+                          />
+                        </svg>
+                      </span>
+                      <span class="sr-only">
+                        {{
+                          option.value === 'rating_desc'
+                            ? 'Rating: High to Low'
+                            : 'Rating: Low to High'
+                        }}
+                      </span>
+                    </template>
+                    <template v-else>{{ option.label }}</template>
                   </span>
                 </label>
               </li>

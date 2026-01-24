@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import authService from '@/services/authService'
 const routes: RouteRecordRaw[] = [
+  // CUSTOMER ROUTES (Public)
   {
-    path: '/:pathMatch(.*)*',
-    name: '404',
-    redirect: '/404',
+    path: '/',
+    name: 'home',
+    component: () => import('@/views/customer/HomePage.vue'),
   },
   {
     path: '/404',
@@ -14,13 +15,6 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     redirect: '/404',
-  },
-
-  // CUSTOMER ROUTES (Public)
-  {
-    path: '/',
-    name: 'home',
-    component: () => import('@/views/customer/HomePage.vue'),
   },
   {
     path: '/aboutus',
@@ -42,16 +36,11 @@ const routes: RouteRecordRaw[] = [
     name: 'productlist',
     component: () => import('@/views/customer/ProductList.vue'),
   },
-  // {
-  //   path: '/productlist/:id',
-  //   name: 'productdetail',
-  //   component: () => import('@/views/customer/ProductDetail.vue'),
-  // },
+
   {
     path: '/productdetail/:id',
     name: 'ProductDetail',
     component: () => import('@/views/customer/ProductDetail.vue'),
-    meta: { requiresAuth: true },
   },
 
   {
@@ -81,18 +70,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/auth/VerifyEmail.vue'),
   },
   {
-    path: '/account',
-    name: 'account',
-    component: () => import('@/views/customer/UserProfile.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/account',
-    name: 'account',
-    component: () => import('@/views/customer/UserProfile.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/cart',
     name: 'cart',
     component: () => import('@/views/customer/CartView.vue'),
@@ -113,13 +90,13 @@ const routes: RouteRecordRaw[] = [
     path: '/forgot-password',
     name: 'forgot-password',
     component: import('@/views/auth/ForgotPassword.vue'),
-    meta: { requiresAuth: false }
+    meta: { requiresAuth: false },
   },
   {
     path: '/reset-password',
     name: 'reset-password',
     component: import('@/views/auth/ResetPassword.vue'),
-    meta: { requiresAuth: false }
+    meta: { requiresAuth: false },
   },
 
   // admin

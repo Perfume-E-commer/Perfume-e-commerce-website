@@ -76,7 +76,6 @@ const authStore = useAuthStore();
 const handleSignOut = () => {
   if(confirm("Are you sure you want to sign out?")) {
     authStore.logout();
-    router.push('/login');
   }
 };
 </script>

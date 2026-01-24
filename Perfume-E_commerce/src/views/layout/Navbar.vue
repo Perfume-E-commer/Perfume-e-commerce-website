@@ -107,7 +107,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import adminService from '../../services/adminService'
-import authService from '../../services/authService'
+import { useAuthStore } from '../../stores/authStore'
 import { getImageUrl } from '../../utils/imageHelper'
 
 defineProps<{ isSidebarOpen: boolean }>()
@@ -115,6 +115,7 @@ defineEmits(['toggle-sidebar'])
 
 const router = useRouter()
 const isDropdownOpen = ref(false)
+const authStore = useAuthStore()
 
 const adminProfile = ref({
   name: 'Admin',
@@ -123,8 +124,7 @@ const adminProfile = ref({
 })
 
 const logout = () => {
-  authService.logout()
-  router.push('/login')
+  authStore.logout()
 }
 
 const onImgError = (e: Event) => {

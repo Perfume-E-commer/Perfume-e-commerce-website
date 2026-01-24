@@ -209,7 +209,7 @@ const isLoggedIn = computed(() => !!authStore.token)
           </div>
         </div>
 
-        <NotificationBell />
+        <NotificationBell v-if="authStore.isAuthenticated"/>
 
         <div class="flex gap-4 items-center">
           <button

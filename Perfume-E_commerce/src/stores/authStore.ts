@@ -99,7 +99,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
-      // Reset wishlist before clearing user data
       const wishlistStore = useWishlistStore()
       wishlistStore.resetWishlist()
 
@@ -108,7 +107,7 @@ export const useAuthStore = defineStore('auth', {
       authService.logout()
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      router.push('/login')
+      router.push('/')
     },
   },
 })

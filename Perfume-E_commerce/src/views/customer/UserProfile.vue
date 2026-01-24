@@ -165,7 +165,6 @@ const form = ref({
 
 const passwordForm = ref({ currentPassword: '', newPassword: '', confirmPassword: '' })
 
-// Fetch Data
 const fetchProfile = async () => {
   isLoading.value = true
   try {

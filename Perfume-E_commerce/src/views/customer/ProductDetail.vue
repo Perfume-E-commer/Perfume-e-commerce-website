@@ -98,7 +98,7 @@ const productTitle = computed(() => selectedProduct.value?.name || '')
           :price="selectedProduct.price || 0"
           :variants="selectedProduct.variants || []"
           :story="selectedProduct.productStorys || null"
-          :stock="selectedProduct.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0"
+          :stock="selectedProduct.stock || 0"
           :average-rating="selectedProduct.averageRating || 0"
           :total-reviews="selectedProduct.totalReviews || 0"
           :category="selectedProduct.category || ''"

@@ -71,7 +71,8 @@ const currentImage = ref<string>('')
 
 const initialize = () => {
   if (parsedVariants.value && parsedVariants.value.length > 0) {
-    selectedVariant.value = parsedVariants.value[0] as ProductVariant
+    selectedVariant.value = parsedVariants.value[0] as ProductVariant;
+    currentImage.value = selectedVariant.value.imageUrl || props.image;
   } else {
     selectedVariant.value = {
       id: 'default',
@@ -79,9 +80,9 @@ const initialize = () => {
       imageUrl: props.image,
       price: props.price || 0,
       stock: props.stock || 0,
-    }
+    };
+    currentImage.value = props.image;
   }
-  currentImage.value = props.image
 }
 
 const handleImagePreview = (imagePath: string) => {
@@ -89,12 +90,27 @@ const handleImagePreview = (imagePath: string) => {
 }
 
 const handleVariantClick = (variant: ProductVariant) => {
-  selectedVariant.value = variant
+  selectedVariant.value = variant;
+  if (variant.imageUrl) {
+    currentImage.value = variant.imageUrl;
+  } else {
+    currentImage.value = props.image;
+  }
 }
 
 const addToCartHandler = async () => {
   if (!selectedVariant.value || !props.id || quantity.value < 1) {
     toastStore.showToast('Please select a valid product and quantity', 'error')
+    return
+  }
+
+  if (selectedVariant.value.stock <= 0) {
+    toastStore.showToast('This item is currently out of stock.', 'error')
+    return
+  }
+
+  if (quantity.value > selectedVariant.value.stock) {
+    toastStore.showToast(`Only ${selectedVariant.value.stock} left in stock.`, 'error')
     return
   }
 
@@ -126,7 +142,7 @@ const handleWishlistToggle = async () => {
 
   const itemToAdd = {
     productId: String(props.id),
-    size: selectedVariant.value.size
+    size: selectedVariant.value.size,
   }
 
   try {
@@ -260,9 +276,15 @@ watch(
         <div class="flex flex-col sm:flex-row gap-3 mt-4 w-full lg:max-w-md">
           <button
             @click="addToCartHandler"
-            class="flex-1 border border-[#280559] py-3.5 text-[#280559] hover:bg-[#280559] hover:text-white uppercase tracking-widest text-sm rounded-lg luxurious-roman-regular transition-all duration-300"
+            :disabled="!selectedVariant || selectedVariant.stock <= 0"
+            class="flex-1 border py-3.5 uppercase tracking-widest text-sm rounded-lg luxurious-roman-regular transition-all duration-300"
+            :class="
+              !selectedVariant || selectedVariant.stock <= 0
+                ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+                : 'border-[#280559] text-[#280559] hover:bg-[#280559] hover:text-white'
+            "
           >
-            Add to Bag
+            {{ !selectedVariant || selectedVariant.stock <= 0 ? 'Out of Stock' : 'Add to Bag' }}
           </button>
           <button
             @click="handleWishlistToggle"

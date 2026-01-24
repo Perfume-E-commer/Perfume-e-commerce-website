@@ -82,7 +82,7 @@ export interface AdminProfile {
 
 export const adminService = {
   getDashboardStats() {
-    return api.get<AdminDashboardResponse>('/admin/dashboard-stats')
+    return api.get<AdminDashboardResponse>('/admin/dashboard')
   },
 
   getAllOrders(

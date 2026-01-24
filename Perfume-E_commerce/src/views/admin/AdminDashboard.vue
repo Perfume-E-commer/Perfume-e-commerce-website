@@ -174,6 +174,12 @@
               </svg>
               Low Stock
             </h3>
+            <router-link
+              to="/admin/inventory"
+              class="text-indigo-600 text-xs font-bold hover:underline"
+            >
+              View All
+            </router-link>
           </div>
 
           <div class="p-4 space-y-3 max-h-[450px] overflow-y-auto custom-scrollbar">
@@ -295,57 +301,77 @@
         </div>
 
         <div class="space-y-6">
-          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div
-              class="p-4 border-b border-gray-100 bg-indigo-50 flex justify-between items-center"
-            >
-              <h3 class="font-bold text-indigo-800">Active Discounts</h3>
-            </div>
-            <div class="p-4 space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-              <div
-                v-if="activePromotions.length === 0"
-                class="text-center text-gray-400 text-xs py-4"
-              >
-                No products currently on discount.
+          <div class="bg-white rounded-xl border border-gray-100 p-4">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <h3 class="font-medium text-gray-900">Active Promotions</h3>
               </div>
-
-              <div
-                v-for="product in activePromotions.slice(0, 5)"
-                :key="product.id"
-                @click="router.push(`/admin/products/edit/${product.id}`)"
-                class="flex items-center gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-gray-50 transition-colors p-2 -mx-2 rounded-lg group"
+              <router-link
+                to="/admin/promotions"
+                class="text-indigo-600 text-xs font-bold hover:underline"
               >
-                <div
-                  class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200 group-hover:border-indigo-200 transition-colors"
-                >
-                  <img
-                    :src="product.imageUrl"
-                    :alt="product.name"
-                    class="w-full h-full object-cover"
+                View all
+              </router-link>
+            </div>
+
+            <!-- Promotions List -->
+            <div
+              v-if="!dashboardData.activePromotions || dashboardData.activePromotions.length === 0"
+              class="text-center py-6"
+            >
+              <div class="text-gray-300 mb-2">
+                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                   />
-                </div>
+                </svg>
+              </div>
+              <p class="text-gray-500 text-sm">No active promotions</p>
+              <p class="text-gray-400 text-xs mt-1">Create promotions in the Promotions tab</p>
+            </div>
 
-                <div class="flex-1 min-w-0">
-                  <p
-                    class="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors"
-                  >
-                    {{ product.name }}
-                  </p>
-                  <div class="flex items-center gap-2 text-xs">
-                    <span class="font-bold text-indigo-700">{{
-                      formatCurrency(product.discountedPrice)
-                    }}</span>
-                    <span class="text-gray-400 line-through">{{
-                      formatCurrency(product.price)
-                    }}</span>
+            <div v-else class="space-y-3">
+              <div
+                v-for="promo in dashboardData.activePromotions"
+                :key="promo.id"
+                class="group p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+              >
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-medium text-gray-900">{{ promo.code }}</span>
+                      <span
+                        class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded"
+                      >
+                        {{ promo.discountPercentage }}% off
+                      </span>
+                    </div>
+                    <div class="flex items-center text-xs text-gray-400">
+                      <svg
+                        class="w-3 h-3 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>Ends {{ formatDate(promo.validUntil) }}</span>
+                    </div>
                   </div>
+                  <div
+                    class="w-1 h-6 bg-green-100 group-hover:bg-green-200 rounded transition-colors"
+                  ></div>
                 </div>
-
-                <span
-                  class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-1 rounded whitespace-nowrap"
-                >
-                  {{ calculateDiscount(product.price, product.discountedPrice) }}% OFF
-                </span>
               </div>
             </div>
           </div>
@@ -364,6 +390,14 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const isLoading = ref(true)
+
+interface ActivePromotion {
+  id: string
+  code: string
+  discountPercentage: number
+  validUntil: string
+}
+
 const dashboardData = ref<AdminDashboardResponse>({
   totalOrders30d: 0,
   revenue30d: 0,

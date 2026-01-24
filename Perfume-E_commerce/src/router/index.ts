@@ -109,6 +109,18 @@ const routes: RouteRecordRaw[] = [
     name: 'register',
     component: () => import('@/views/auth/RegisterAuth.vue'),
   },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: import('@/views/auth/ForgotPassword.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: import('@/views/auth/ResetPassword.vue'),
+    meta: { requiresAuth: false }
+  },
 
   // admin
   {

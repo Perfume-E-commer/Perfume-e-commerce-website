@@ -64,9 +64,10 @@
             <button
               type="button"
               @click="showPass1 = !showPass1"
-              class="absolute right-4 top-3.5 text-gray-400 hover:text-[#280559]"
+              class="absolute right-4 top-3.5 text-gray-400 hover:text-[#280559] transition"
             >
-              <span v-if="showPass1">🙈</span><span v-else>👁️</span>
+              <span v-if="showPass1">Hide</span>
+              <span v-else>Show</span>
             </button>
           </div>
         </div>
@@ -84,9 +85,10 @@
             <button
               type="button"
               @click="showPass2 = !showPass2"
-              class="absolute right-4 top-3.5 text-gray-400 hover:text-[#280559]"
+              class="absolute right-4 top-3.5 text-gray-400 hover:text-[#280559] transition"
             >
-              <span v-if="showPass2">🙈</span><span v-else>👁️</span>
+              <span v-if="showPass2">Hide</span>
+              <span v-else>Show</span>
             </button>
           </div>
           <p v-if="passwordMismatch" class="text-red-500 text-xs mt-1 pl-1">

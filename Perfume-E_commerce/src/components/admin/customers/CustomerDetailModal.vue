@@ -47,12 +47,7 @@
                     customer?.phoneNumber || 'Not provided'
                   }}</span>
                 </div>
-                <div>
-                  <span class="block text-gray-500 text-xs">Primary Address</span>
-                  <span class="font-medium text-gray-900">{{
-                    customer?.address || 'No address on file'
-                  }}</span>
-                </div>
+
                 <div>
                   <span class="block text-gray-500 text-xs">Joined</span>
                   <span class="font-medium text-gray-900">{{

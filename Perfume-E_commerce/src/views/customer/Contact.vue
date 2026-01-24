@@ -1,6 +1,48 @@
 <script setup lang="ts">
 import Navbar from '@/components/layout/Navbar.vue'
 import Footer from '@/components/layout/Footer.vue'
+import { ref } from 'vue'
+import { contactService } from '@/services/contactService'
+
+const formData = ref({
+  name: '',
+  email: '',
+  subject: '',
+  message: '',
+})
+
+const isLoading = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
+
+const handleSend = async () => {
+  const payload = {
+    name: formData.value.name.trim(),
+    email: formData.value.email.trim(),
+    subject: formData.value.subject.trim(),
+    message: formData.value.message.trim()
+  }
+
+  if (!payload.name || !payload.email || !payload.message) {
+    errorMessage.value = "Please fill in all required fields."
+    return
+  }
+
+  isLoading.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  try {
+    await contactService.sendMessage(payload)
+    successMessage.value = "Message sent successfully!"
+    formData.value = { name: '', email: '', subject: '', message: '' }
+  } catch (error: any) {
+    console.error(error)
+    errorMessage.value = error.response?.data || "Failed to send message."
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -63,32 +105,48 @@ import Footer from '@/components/layout/Footer.vue'
         </div>
       </div>
       <div class="w-full max-w-lg luxurious-roman-regular text-black space-y-5">
+        <div
+          v-if="successMessage"
+          class="p-3 bg-green-50 text-green-700 border border-green-200 rounded"
+        >
+          {{ successMessage }}
+        </div>
+        <div v-if="errorMessage" class="p-3 bg-red-50 text-red-700 border border-red-200 rounded">
+          {{ errorMessage }}
+        </div>
         <div class="flex gap-4">
           <input
+            v-model="formData.name"
             type="text"
             placeholder="Your Name"
-            class="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1"
+            class="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1 outline-none"
           />
           <input
+            v-model="formData.email"
             type="email"
             placeholder="Your Email"
-            class="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1"
+            class="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1 outline-none"
           />
         </div>
         <input
+          v-model="formData.subject"
           type="text"
           placeholder="Subject"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1 outline-none"
         />
         <textarea
+          v-model="formData.message"
           placeholder="Message"
           rows="5"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#280559] focus:ring-1 outline-none"
         ></textarea>
         <button
-          class="mt-2 px-6 py-3 bg-[#280559] text-white rounded-lg luxurious-roman-regular hover:bg-[#3a067e] transition-all"
+          @click="handleSend"
+          :disabled="isLoading"
+          class="mt-2 px-6 py-3 bg-[#280559] text-white rounded-lg hover:bg-[#3a067e] transition-all disabled:opacity-70 flex items-center gap-2"
         >
-          Send Message
+          <span v-if="isLoading">Sending...</span>
+          <span v-else>Send Message</span>
         </button>
       </div>
     </section>

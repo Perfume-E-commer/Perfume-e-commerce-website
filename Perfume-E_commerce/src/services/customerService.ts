@@ -57,7 +57,6 @@ export const customerService = {
         query: params.search,
         page: params.page,
         size: params.size,
-        ...params.filters 
       }
     });
   },

@@ -183,9 +183,6 @@ window.addEventListener('scroll', () => {
 const validateForm = () => {
   if (!formData.value.name) return 'Product Name is required.'
   if (formData.value.price <= 0) return 'Price must be greater than 0.'
-  if (formData.value.discountedPrice < 0) return 'Discounted price cannot be negative.'
-  if (formData.value.discountedPrice > formData.value.price)
-    return 'Discounted price must be less than or equal to Base Price.'
   if (!formData.value.imageUrl && !formData.value.variants?.[0]?.imageUrl) {
     return 'Main Product Image is required.'
   }

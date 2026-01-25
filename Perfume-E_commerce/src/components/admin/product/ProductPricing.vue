@@ -43,31 +43,6 @@
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            Discounted Price
-            <span
-              v-if="discountPercentage > 0"
-              class="ml-2 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full"
-            >
-              {{ discountPercentage }}% OFF
-            </span>
-          </label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-            <input
-              :value="modelValue.discountedPrice"
-              @input="(e) => setDiscountedPrice(parseFloat((e.target as HTMLInputElement).value))"
-              type="number"
-              :max="basePrice"
-              min="0"
-              step="0.01"
-              placeholder="Optional"
-              class="w-full pl-8 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none hover:border-gray-400 transition-colors"
-            />
-          </div>
-        </div>
-
-        <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">Base Size</label>
           <div class="relative">
             <input
@@ -179,6 +154,7 @@
         >
           <!-- Remove Button -->
           <button
+            type="button" 
             @click="removeVariant(index)"
             class="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             aria-label="Remove variant"
@@ -412,32 +388,6 @@ const totalStock = computed(() => {
   return variants.value.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
 })
 
-const discountPercentage = computed(() => {
-  const price = props.modelValue.price
-  const discount = props.modelValue.discountedPrice
-  if (price > 0 && discount && discount < price) {
-    return Math.round(((price - discount) / price) * 100)
-  }
-  return 0
-})
-
-const setDiscountedPrice = (val: number) => {
-  const raw = Number.isNaN(val) ? 0 : val
-  const capped = Math.min(Math.max(raw, 0), basePrice.value)
-  updateField('discountedPrice', capped)
-}
-
-// If base price is lowered, ensure discounted price does not exceed it
-watch(
-  () => basePrice.value,
-  (newBase) => {
-    const dp = Number(props.modelValue.discountedPrice) || 0
-    if (dp > newBase) {
-      updateField('discountedPrice', newBase)
-    }
-  },
-)
-
 onMounted(() => {
   if (!props.modelValue.variants || props.modelValue.variants.length === 0) {
     const initVariants: ProductVariant[] = [
@@ -459,7 +409,6 @@ const syncPriceToRoot = () => {
   }
 }
 
-// Recalculate total stock whenever any variant stock changes
 const recalculateTotalStock = () => {
   updateField('stock', totalStock.value)
 }

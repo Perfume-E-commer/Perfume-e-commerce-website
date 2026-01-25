@@ -11,7 +11,6 @@ export interface Product {
   summary?: string
   baseSize?: string
   price: number
-  discountedPrice?: number
   stock: number
   orders?: number
   images?: string[]

@@ -434,10 +434,14 @@ const addVariant = () => {
 
 const removeVariant = (offsetIndex: number) => {
   const realIndex = offsetIndex + 1
-  const updatedList = [...variants.value]
+  const updatedList = [...(props.modelValue.variants || [])]
   updatedList.splice(realIndex, 1)
-  updateField('variants', updatedList)
-  recalculateTotalStock()
+  const newTotalStock = updatedList.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+  emit('update:modelValue', { 
+    ...props.modelValue, 
+    variants: updatedList,
+    stock: newTotalStock
+  })
 }
 
 const toggleVariantInputType = (index: number, type: 'url' | 'upload') => {

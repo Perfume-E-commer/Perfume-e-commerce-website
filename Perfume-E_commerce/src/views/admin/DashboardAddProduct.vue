@@ -237,14 +237,22 @@ onMounted(async () => {
       const res = await productService.getProductById(productId.value)
       const data = res.data
 
-      formData.value = {
+            formData.value = {
         ...formData.value,
         ...data,
         isActive: data.active !== undefined ? data.active : true,
-        productStory: data.productStory || {
-          intro: { title: '', content: '' },
-          overture: { title: '', content: '' },
+        
+        productStory: {
+          intro: { 
+            title: data.productStory?.intro?.title || '', 
+            content: data.productStory?.intro?.content || '' 
+          },
+          overture: { 
+            title: data.productStory?.overture?.title || '', 
+            content: data.productStory?.overture?.content || '' 
+          },
         },
+        
         scentNotes: data.scentNotes || [],
         features: data.features || [],
         images: data.images || [],

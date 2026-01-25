@@ -202,16 +202,22 @@ const handleSubmit = async () => {
 
   isLoading.value = true
   try {
-    // Flatten productStory for backend compatibility
-    const { productStory, ...rest } = formData.value
     const payload = {
-      ...rest,
-      productStory: {
-        title: (productStory.intro?.title || '') + ' ' + (productStory.overture?.title || ''),
-        content:
-          (productStory.intro?.content || '') + '\n' + (productStory.overture?.content || ''),
-      },
+      ...formData.value,
+      
+      active: formData.value.isActive,
+
+      productStory: formData.value.productStory,
+
+      features: (formData.value.features || []).filter(
+        (f: any) => f.title?.trim() !== '' || f.content?.trim() !== ''
+      ),
+
+      scentNotes: (formData.value.scentNotes || []).filter(
+        (n: any) => n.scent?.trim() !== '' || n.type?.trim() !== ''
+      )
     }
+
     if (isEditMode.value) {
       await productService.updateProduct(productId.value, payload)
     } else {

@@ -138,19 +138,18 @@ export const adminService = {
   updateProfile(data: Partial<AdminProfile>, imageFile?: File) {
     const formData = new FormData()
 
-    formData.append(
-      'data',
-      new Blob([JSON.stringify(data)], {
-        type: 'application/json',
-      }),
-    )
+    Object.keys(data).forEach((key) => {
+      const value = data[key as keyof AdminProfile]
+      if (value !== null && value !== undefined) {
+        formData.append(key, String(value))
+      }
+    })
 
     if (imageFile) {
       formData.append('image', imageFile)
     }
 
     return api.put('/admin/profile', formData, {
-      // Let the browser set the Content-Type with boundary for multipart/form-data
     })
   },
 
